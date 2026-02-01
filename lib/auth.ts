@@ -1,9 +1,12 @@
 import { betterAuth } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
 
-// TODO: Replace with Convex adapter after component setup
-// For now using memory adapter to allow deployment
+// Better Auth configuration
+// Using memory adapter for now - will migrate to Convex adapter later
 export const auth = betterAuth({
+  // Base URL for callbacks and redirects
+  baseURL: process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  
   database: memoryAdapter({}),
   
   emailAndPassword: {
@@ -15,4 +18,7 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
   },
+  
+  // Enable social providers when ready
+  socialProviders: {},
 });
