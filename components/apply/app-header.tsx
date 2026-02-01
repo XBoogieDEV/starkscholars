@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { User } from "@/convex/_generated/dataModel";
+// import { User } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +13,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User as UserIcon } from "lucide-react";
 
 interface AppHeaderProps {
-  user: User;
+  user: {
+    _id: string;
+    email: string;
+    name?: string;
+    role: string;
+  };
 }
 
 export function AppHeader({ user }: AppHeaderProps) {
