@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
@@ -9,7 +10,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Ensure trailing slashes for cleaner URLs
   trailingSlash: true,
 };
 
