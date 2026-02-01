@@ -24,8 +24,5 @@ export default async function middleware(request: NextRequest) {
     }
   }
   
-  // TODO: Add role-based checks after session is validated
-  // This will be enhanced with actual role checking once Better Auth is fully configured
-  
   return NextResponse.next();
 }

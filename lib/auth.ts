@@ -1,20 +1,14 @@
 import { betterAuth } from "better-auth";
-import { convexAdapter } from "better-auth/adapters/convex";
+import { memoryAdapter } from "better-auth/adapters/memory";
 
+// TODO: Replace with Convex adapter after component setup
+// For now using memory adapter to allow deployment
 export const auth = betterAuth({
-  database: convexAdapter(),
+  database: memoryAdapter({}),
   
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
-  },
-  
-  magicLink: {
-    enabled: true,
-    sendMagicLink: async ({ email, url }) => {
-      // TODO: Implement email sending via Resend
-      console.log("Magic link for", email, url);
-    },
+    requireEmailVerification: false, // Simplified for initial deployment
   },
   
   session: {
