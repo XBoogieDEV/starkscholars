@@ -178,11 +178,11 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
   };
 
   const hasEducatorOrCommunity = recommendations?.some(
-    (r) => r.recommenderType === "educator" || r.recommenderType === "community_group"
+    (r: any) => r.recommenderType === "educator" || r.recommenderType === "community_group"
   );
 
   const allSubmitted = recommendations?.length === 2 && recommendations.every(
-    (r) => r.status === "submitted"
+    (r: any) => r.status === "submitted"
   );
 
   return (
@@ -201,7 +201,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
       {recommendations && recommendations.length > 0 && (
         <div className="space-y-4">
           <h4 className="font-medium text-gray-900">Your Recommendations</h4>
-          {recommendations.map((rec) => (
+          {recommendations.map((rec: any) => (
             <Card key={rec._id}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
