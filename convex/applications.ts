@@ -224,6 +224,77 @@ export const updateCurrentStep = mutation({
   },
 });
 
+export const submit = mutation({
+  args: {
+    applicationId: v.id("applications"),
+    signature: v.string(),
+  },
+  handler: async (ctx, { applicationId, signature }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const application = await ctx.db.get(applicationId);
+    if (!application) throw new Error("Application not found");
+
+    // Validate all requirements are met
+    const validations = [
+      { check: !!application.firstName && !!application.lastName, error: "Personal information incomplete" },
+      { check: !!application.streetAddress && application.state === "MI", error: "Address incomplete" },
+      { check: !!application.highSchoolName && !!application.gpa && (application.gpa || 0) >= 3.0, error: "Education requirements not met" },
+      { check: application.isFullTimeStudent === true && application.isMichiganResident === true, error: "Eligibility requirements not met" },
+      { check: !!application.essayText && (application.essayWordCount || 0) >= 450 && (application.essayWordCount || 0) <= 550, error: "Essay requirements not met" },
+      { check: !!application.transcriptFileId, error: "Transcript not uploaded" },
+    ];
+
+    for (const validation of validations) {
+      if (!validation.check) {
+        throw new Error(validation.error);
+      }
+    }
+
+    // Check recommendations
+    const recommendations = await ctx.db
+      .query("recommendations")
+      .withIndex("by_application", (q) => q.eq("applicationId", applicationId))
+      .collect();
+
+    if (recommendations.length < 2) {
+      throw new Error("Need 2 recommendations");
+    }
+
+    const allSubmitted = recommendations.every((r) => r.status === "submitted");
+    if (!allSubmitted) {
+      throw new Error("Not all recommendations received");
+    }
+
+    // Validate signature matches name
+    const fullName = `${application.firstName} ${application.lastName}`.toLowerCase().trim();
+    const sigLower = signature.toLowerCase().trim();
+    if (sigLower !== fullName) {
+      throw new Error("Signature does not match name");
+    }
+
+    // Update application status
+    await ctx.db.patch(applicationId, {
+      status: "submitted",
+      submittedAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    // Send confirmation email
+    await ctx.scheduler.runAfter(0, "emails:sendApplicationSubmitted", {
+      applicationId,
+    });
+
+    // Trigger AI summary generation
+    await ctx.scheduler.runAfter(0, "ai:generateSummary", {
+      applicationId,
+    });
+
+    return { success: true };
+  },
+});
+
 // ============================================
 // INTERNAL
 // ============================================

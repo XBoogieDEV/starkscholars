@@ -16,6 +16,7 @@ import { EducationStep } from "@/components/apply/steps/education-step";
 import { EligibilityStep } from "@/components/apply/steps/eligibility-step";
 import { DocumentsStep } from "@/components/apply/steps/documents-step";
 import { RecommendationsStep } from "@/components/apply/steps/recommendations-step";
+import { ReviewSubmitStep } from "@/components/apply/steps/review-submit-step";
 
 const steps = [
   { id: 1, title: "Personal Information", component: PersonalInfoStep },
@@ -24,7 +25,7 @@ const steps = [
   { id: 4, title: "Eligibility", component: EligibilityStep },
   { id: 5, title: "Documents & Essay", component: DocumentsStep },
   { id: 6, title: "Recommendations", component: RecommendationsStep },
-  { id: 7, title: "Review & Submit", component: null }, // TODO
+  { id: 7, title: "Review & Submit", component: ReviewSubmitStep },
 ];
 
 export default function StepPage() {
@@ -137,7 +138,7 @@ export default function StepPage() {
         </div>
 
         <div className="flex gap-3">
-          {nextStep && StepComponent && (
+          {nextStep && (
             <Button variant="outline" asChild>
               <Link href={`/apply/step/${nextStep}`}>
                 Skip for now

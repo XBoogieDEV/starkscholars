@@ -255,3 +255,66 @@ export const notifyRecommendationReceived = action({
 
 // Import api for internal use
 import { api } from "./_generated/api";
+
+// ============================================
+// APPLICATION EMAILS
+// ============================================
+
+export const sendApplicationSubmitted = action({
+  args: { applicationId: v.id("applications") },
+  handler: async (ctx, { applicationId }) => {
+    const application = await ctx.runQuery(api.applications.getById, {
+      id: applicationId,
+    });
+    if (!application) throw new Error("Application not found");
+
+    const user = await ctx.runQuery(api.users.getById, { id: application.userId });
+    if (!user) throw new Error("User not found");
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #15803d;">Application Submitted!</h2>
+        
+        <p>Hello ${application.firstName || user.name || "Applicant"},</p>
+        
+        <p>
+          Congratulations! Your application for the <strong>William R. Stark Financial Assistance Program</strong>
+          has been submitted successfully.
+        </p>
+        
+        <div style="background: #dcfce7; padding: 16px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #166534;">What Happens Next?</h3>
+          <ul style="margin-bottom: 0; padding-left: 20px;">
+            <li>Your application will be reviewed by the scholarship committee</li>
+            <li>All committee members will evaluate your application</li>
+            <li>Selections will be announced after the deadline (April 15, 2026)</li>
+            <li>You will be notified via email of the decision</li>
+          </ul>
+        </div>
+        
+        <p>
+          <strong>Application Reference:</strong> ${application._id}<br>
+          <strong>Submitted:</strong> ${new Date().toLocaleDateString()}
+        </p>
+        
+        <p>
+          You can track the status of your application at any time by visiting your
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/apply/status">application status page</a>.
+        </p>
+        
+        <p>
+          <em>Best regards,</em><br>
+          <strong>William R. Stark Financial Assistance Committee</strong>
+        </p>
+      </div>
+    `;
+
+    await sendEmail({
+      to: user.email,
+      subject: "Application Submitted - William R. Stark Scholarship",
+      html,
+    });
+
+    return { success: true };
+  },
+});
