@@ -139,64 +139,6 @@ export const sendRecommendationRequest = action({
   },
 });
 
-export const sendWithdrawalConfirmation = action({
-  args: {
-    applicationId: v.id("applications"),
-    reason: v.optional(v.string()),
-  },
-  handler: async (ctx, { applicationId, reason }) => {
-    const application = await ctx.runQuery(api.applications.getById, {
-      id: applicationId,
-    });
-    if (!application) throw new Error("Application not found");
-
-    const user = await ctx.runQuery(api.users.getById, { id: application.userId });
-    if (!user) throw new Error("User not found");
-
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
-
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #dc2626;">Application Withdrawn</h2>
-        
-        <p>Hello ${application.firstName || user.name || "Applicant"},</p>
-        
-        <p>
-          Your application for the William R. Stark Financial Assistance Program 
-          has been withdrawn as requested.
-        </p>
-        
-        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
-        
-        <div style="background: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0;">
-          <p style="margin: 0;">
-            If you withdrew before the deadline (April 15, 2026), you may submit 
-            a new application if you wish.
-          </p>
-        </div>
-        
-        <p>
-          If you have any questions, please contact us at 
-          <a href="mailto:blackgoldmine@sbcglobal.net">blackgoldmine@sbcglobal.net</a>.
-        </p>
-        
-        <p>
-          <em>Best regards,</em><br>
-          <strong>William R. Stark Financial Assistance Committee</strong>
-        </p>
-      </div>
-    `;
-
-    await sendEmail({
-      to: user.email,
-      subject: "Application Withdrawn - Stark Scholars",
-      html,
-    });
-
-    return { success: true };
-  },
-});
-
 export const sendRecommendationReminder = action({
   args: { recommendationId: v.id("recommendations") },
   handler: async (ctx, { recommendationId }) => {
