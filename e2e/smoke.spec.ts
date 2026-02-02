@@ -9,7 +9,7 @@ test.describe("Smoke Tests", () => {
     await page.goto("/");
     
     // Basic check that page loaded
-    await expect(page).toHaveTitle(/William R. Stark|Create Next App/i);
+    await expect(page).toHaveTitle(/Stark Scholars|Create Next App/i);
     
     // Check that body exists
     await expect(page.locator("body")).toBeVisible();

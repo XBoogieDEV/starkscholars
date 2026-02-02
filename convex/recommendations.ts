@@ -1,6 +1,7 @@
 import { v } from "convex/values";
-import { query, mutation, internalMutation } from "./_generated/server";
-import { generateSecureToken } from "./utils";
+import { query, mutation, internalQuery, internalMutation } from "./_generated/server";
+import { api } from "./_generated/api";
+import { generateSecureToken, checkRateLimit } from "./utils";
 
 // ============================================
 // QUERIES
@@ -50,6 +51,12 @@ export const create = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
 
+    // Rate limiting check
+    const rateLimit = await checkRateLimit(ctx, "recommendation:create", identity.subject);
+    if (!rateLimit.allowed) {
+      throw new Error(`Rate limit exceeded. Try again in ${rateLimit.retryAfter} seconds.`);
+    }
+
     // Check if application exists and belongs to user
     const application = await ctx.db.get(args.applicationId);
     if (!application) throw new Error("Application not found");
@@ -69,7 +76,7 @@ export const create = mutation({
     });
 
     // Send email notification
-    await ctx.scheduler.runAfter(0, "emails:sendRecommendationRequest", {
+    await ctx.scheduler.runAfter(0, api.emails.sendRecommendationRequest, {
       recommendationId,
     });
 
@@ -78,6 +85,17 @@ export const create = mutation({
       status: "email_sent",
       emailSentAt: Date.now(),
       updatedAt: Date.now(),
+    });
+
+    // Log recommendation request
+    await logAction(ctx, {
+      action: "recommendation:requested",
+      userId: identity.subject,
+      applicationId: args.applicationId,
+      details: { 
+        recommenderEmail: args.recommenderEmail,
+        recommenderName: args.recommenderName,
+      },
     });
 
     return recommendationId;
@@ -115,14 +133,24 @@ export const submitRecommendation = mutation({
       updatedAt: Date.now(),
     });
 
+    // Log recommendation submission
+    await logAction(ctx, {
+      action: "recommendation:submitted",
+      applicationId: rec.applicationId,
+      details: { 
+        recommenderName: args.recommenderName,
+        hasFile: !!args.letterFileId,
+      },
+    });
+
     // Notify applicant
-    await ctx.scheduler.runAfter(0, "emails:notifyRecommendationReceived", {
+    await ctx.scheduler.runAfter(0, api.emails.notifyRecommendationReceived, {
       applicationId: rec.applicationId,
       recommenderName: args.recommenderName,
     });
 
     // Trigger AI summary regeneration
-    await ctx.scheduler.runAfter(0, "ai:generateSummary", {
+    await ctx.scheduler.runAfter(0, api.ai.generateSummary, {
       applicationId: rec.applicationId,
     });
 
@@ -135,6 +163,12 @@ export const sendReminder = mutation({
   handler: async (ctx, { recommendationId }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
+
+    // Rate limiting check
+    const rateLimit = await checkRateLimit(ctx, "recommendation:sendReminder", identity.subject);
+    if (!rateLimit.allowed) {
+      throw new Error(`Rate limit exceeded. Try again in ${rateLimit.retryAfter} seconds.`);
+    }
 
     const rec = await ctx.db.get(recommendationId);
     if (!rec) throw new Error("Recommendation not found");
@@ -149,7 +183,7 @@ export const sendReminder = mutation({
     }
 
     // Send reminder email
-    await ctx.scheduler.runAfter(0, "emails:sendRecommendationReminder", {
+    await ctx.scheduler.runAfter(0, api.emails.sendRecommendationReminder, {
       recommendationId,
     });
 
@@ -158,6 +192,17 @@ export const sendReminder = mutation({
       emailRemindersSent: rec.emailRemindersSent + 1,
       lastReminderAt: Date.now(),
       updatedAt: Date.now(),
+    });
+
+    // Log reminder sent
+    await logAction(ctx, {
+      action: "recommendation:reminder_sent",
+      userId: identity.subject,
+      applicationId: rec.applicationId,
+      details: { 
+        recommenderEmail: rec.recommenderEmail,
+        reminderNumber: rec.emailRemindersSent + 1,
+      },
     });
 
     return { success: true };
@@ -179,6 +224,13 @@ export const markAsViewed = mutation({
         status: "viewed",
         updatedAt: Date.now(),
       });
+
+      // Log recommendation viewed
+      await logAction(ctx, {
+        action: "recommendation:viewed",
+        applicationId: rec.applicationId,
+        details: { recommenderEmail: rec.recommenderEmail },
+      });
     }
 
     return { success: true };
@@ -188,6 +240,16 @@ export const markAsViewed = mutation({
 // ============================================
 // INTERNAL
 // ============================================
+
+export const getByApplicationInternal = internalQuery({
+  args: { applicationId: v.id("applications") },
+  handler: async (ctx, { applicationId }) => {
+    return await ctx.db
+      .query("recommendations")
+      .withIndex("by_application", (q) => q.eq("applicationId", applicationId))
+      .collect();
+  },
+});
 
 export const updateStatusInternal = internalMutation({
   args: {

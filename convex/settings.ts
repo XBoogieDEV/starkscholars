@@ -20,6 +20,8 @@ export const set = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
     
+    if (!identity.email) throw new Error("User email not available");
+    
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", identity.email))
@@ -51,6 +53,9 @@ export const set = mutation({
   },
 });
 
+// Deadline: April 15, 2026 at 11:59 PM EST (UTC-4)
+export const DEADLINE_TIMESTAMP = new Date("2026-04-15T23:59:59-04:00").getTime();
+
 export const getDeadline = query({
   args: {},
   handler: async (ctx) => {
@@ -59,7 +64,20 @@ export const getDeadline = query({
       .withIndex("by_key", (q) => q.eq("key", "application_deadline"))
       .first();
     
-    // Default deadline: April 15, 2026
-    return setting ? parseInt(setting.value) : new Date("2026-04-15T23:59:59-05:00").getTime();
+    // Default deadline: April 15, 2026 at 11:59 PM EST
+    return setting ? parseInt(setting.value) : DEADLINE_TIMESTAMP;
+  },
+});
+
+export const isDeadlinePassed = query({
+  args: {},
+  handler: async (ctx) => {
+    const setting = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "application_deadline"))
+      .first();
+    
+    const deadline = setting ? parseInt(setting.value) : DEADLINE_TIMESTAMP;
+    return Date.now() > deadline;
   },
 });

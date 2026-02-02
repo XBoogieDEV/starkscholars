@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +23,13 @@ export default function RegisterPage() {
     confirmPassword: "",
     agreeToTerms: false,
   });
+  
+  // Debounced email check for duplicate prevention
+  const debouncedEmail = useDebounce(formData.email, 500);
+  const emailCheck = useQuery(
+    api.users.checkEmailExists,
+    debouncedEmail && debouncedEmail.includes("@") ? { email: debouncedEmail } : "skip"
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,18 +40,28 @@ export default function RegisterPage() {
       // Validate passwords match
       if (formData.password !== formData.confirmPassword) {
         setError("Passwords do not match");
+        setIsLoading(false);
         return;
       }
 
       // Validate password strength
       if (formData.password.length < 8) {
         setError("Password must be at least 8 characters");
+        setIsLoading(false);
         return;
       }
 
       // Validate terms
       if (!formData.agreeToTerms) {
         setError("You must agree to the terms");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Check for duplicate email
+      if (emailCheck?.exists) {
+        setError("An account with this email already exists. Please sign in instead.");
+        setIsLoading(false);
         return;
       }
 
@@ -85,7 +105,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-amber-800">
-            William R. Stark
+            Stark Scholars
           </h1>
           <p className="text-gray-600">Financial Assistance Program</p>
         </div>
@@ -117,7 +137,19 @@ export default function RegisterPage() {
                     setFormData((prev) => ({ ...prev, email: e.target.value }))
                   }
                   required
+                  className={emailCheck?.exists ? "border-amber-500 focus-visible:ring-amber-500" : ""}
                 />
+                {emailCheck?.exists && (
+                  <div className="flex items-center gap-2 text-sm text-amber-600">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>
+                      An account with this email already exists.{" "}
+                      <Link href="/login" className="underline font-medium">
+                        Sign in instead
+                      </Link>
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -161,11 +193,11 @@ export default function RegisterPage() {
                 />
                 <Label htmlFor="terms" className="text-sm font-normal cursor-pointer">
                   I agree to the{" "}
-                  <Link href="#" className="text-amber-600 hover:underline">
+                  <Link href="/terms" className="text-amber-600 hover:underline" target="_blank">
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link href="#" className="text-amber-600 hover:underline">
+                  <Link href="/privacy" className="text-amber-600 hover:underline" target="_blank">
                     Privacy Policy
                   </Link>
                 </Label>

@@ -105,6 +105,10 @@ export default defineSchema({
     updatedAt: v.number(),
     submittedAt: v.optional(v.number()),
     
+    // Withdrawal tracking
+    withdrawnAt: v.optional(v.number()),
+    withdrawnReason: v.optional(v.string()),
+    
     // AI Generated Content
     aiSummary: v.optional(v.string()),
     aiHighlights: v.optional(v.array(v.string())),

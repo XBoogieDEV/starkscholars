@@ -131,7 +131,65 @@ export const sendRecommendationRequest = action({
 
     await sendEmail({
       to: rec.recommenderEmail,
-      subject: `Recommendation Request for ${application.firstName} ${application.lastName} - William R. Stark Scholarship`,
+      subject: `Recommendation Request for ${application.firstName} ${application.lastName} - Stark Scholars`,
+      html,
+    });
+
+    return { success: true };
+  },
+});
+
+export const sendWithdrawalConfirmation = action({
+  args: {
+    applicationId: v.id("applications"),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, { applicationId, reason }) => {
+    const application = await ctx.runQuery(api.applications.getById, {
+      id: applicationId,
+    });
+    if (!application) throw new Error("Application not found");
+
+    const user = await ctx.runQuery(api.users.getById, { id: application.userId });
+    if (!user) throw new Error("User not found");
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #dc2626;">Application Withdrawn</h2>
+        
+        <p>Hello ${application.firstName || user.name || "Applicant"},</p>
+        
+        <p>
+          Your application for the William R. Stark Financial Assistance Program 
+          has been withdrawn as requested.
+        </p>
+        
+        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
+        
+        <div style="background: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0;">
+            If you withdrew before the deadline (April 15, 2026), you may submit 
+            a new application if you wish.
+          </p>
+        </div>
+        
+        <p>
+          If you have any questions, please contact us at 
+          <a href="mailto:blackgoldmine@sbcglobal.net">blackgoldmine@sbcglobal.net</a>.
+        </p>
+        
+        <p>
+          <em>Best regards,</em><br>
+          <strong>William R. Stark Financial Assistance Committee</strong>
+        </p>
+      </div>
+    `;
+
+    await sendEmail({
+      to: user.email,
+      subject: "Application Withdrawn - Stark Scholars",
       html,
     });
 
@@ -245,7 +303,7 @@ export const notifyRecommendationReceived = action({
 
     await sendEmail({
       to: user.email,
-      subject: "Recommendation Received - William R. Stark Scholarship",
+      subject: "Recommendation Received - Stark Scholars",
       html,
     });
 
@@ -255,6 +313,173 @@ export const notifyRecommendationReceived = action({
 
 // Import api for internal use
 import { api } from "./_generated/api";
+
+// ============================================
+// USER ACCOUNT EMAILS
+// ============================================
+
+export const sendWelcomeEmail = action({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    const user = await ctx.runQuery(api.users.getById, { id: userId });
+    if (!user) throw new Error("User not found");
+    
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #d97706;">Welcome to Stark Scholars!</h2>
+        
+        <p>Hello ${user.name || "Scholar"},</p>
+        
+        <p>
+          Thank you for creating an account. You're now one step closer to applying for 
+          the William R. Stark Financial Assistance Program.
+        </p>
+        
+        <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #92400e;">Next Steps</h3>
+          <ol style="margin-bottom: 0;">
+            <li>Complete your application (7 steps)</li>
+            <li>Request 2 recommendation letters</li>
+            <li>Submit before the deadline: <strong>April 15, 2026</strong></li>
+          </ol>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a 
+            href="${appUrl}/apply/dashboard" 
+            style="background: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;"
+          >
+            Start Your Application
+          </a>
+        </div>
+        
+        <p>
+          If you have any questions, please contact us at 
+          <a href="mailto:blackgoldmine@sbcglobal.net">blackgoldmine@sbcglobal.net</a>.
+        </p>
+        
+        <p>
+          <em>Best regards,</em><br>
+          <strong>William R. Stark Financial Assistance Committee</strong>
+        </p>
+      </div>
+    `;
+    
+    await sendEmail({
+      to: user.email,
+      subject: "Welcome to Stark Scholars",
+      html,
+    });
+    
+    return { success: true };
+  }
+});
+
+export const sendEmailVerification = action({
+  args: { 
+    email: v.string(),
+    name: v.optional(v.string()),
+    url: v.string() // Verification URL from Better Auth
+  },
+  handler: async (ctx, { email, name, url }) => {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #d97706;">Verify Your Email Address</h2>
+        
+        <p>Hello ${name || "Scholar"},</p>
+        
+        <p>
+          Please verify your email address to complete your registration for the 
+          William R. Stark Financial Assistance Program.
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a 
+            href="${url}" 
+            style="background: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;"
+          >
+            Verify Email Address
+          </a>
+        </div>
+        
+        <p style="font-size: 12px; color: #666;">
+          Or copy and paste this link: ${url}
+        </p>
+        
+        <p>
+          If you didn't create an account, you can safely ignore this email.
+        </p>
+        
+        <p>
+          <em>Best regards,</em><br>
+          <strong>William R. Stark Financial Assistance Committee</strong>
+        </p>
+      </div>
+    `;
+    
+    await sendEmail({
+      to: email,
+      subject: "Verify Your Email - Stark Scholars",
+      html,
+    });
+    
+    return { success: true };
+  }
+});
+
+export const sendPasswordResetEmail = action({
+  args: { 
+    email: v.string(),
+    url: v.string()  // Reset URL from Better Auth
+  },
+  handler: async (ctx, { email, url }) => {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #d97706;">Reset Your Password</h2>
+        
+        <p>Hello,</p>
+        
+        <p>
+          You requested a password reset for your Stark Scholars account.
+          Click the button below to create a new password.
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a 
+            href="${url}" 
+            style="background: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;"
+          >
+            Reset Password
+          </a>
+        </div>
+        
+        <p style="font-size: 12px; color: #666;">
+          Or copy and paste this link: ${url}
+        </p>
+        
+        <p>
+          This link will expire in 1 hour. If you didn't request this reset, 
+          you can safely ignore this email.
+        </p>
+        
+        <p>
+          <em>Best regards,</em><br>
+          <strong>Stark Scholars Platform</strong>
+        </p>
+      </div>
+    `;
+    
+    await sendEmail({
+      to: email,
+      subject: "Reset Your Password - Stark Scholars",
+      html
+    });
+    
+    return { success: true };
+  }
+});
 
 // ============================================
 // APPLICATION EMAILS
@@ -311,7 +536,65 @@ export const sendApplicationSubmitted = action({
 
     await sendEmail({
       to: user.email,
-      subject: "Application Submitted - William R. Stark Scholarship",
+      subject: "Application Submitted - Stark Scholars",
+      html,
+    });
+
+    return { success: true };
+  },
+});
+
+export const sendWithdrawalConfirmation = action({
+  args: {
+    applicationId: v.id("applications"),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, { applicationId, reason }) => {
+    const application = await ctx.runQuery(api.applications.getById, {
+      id: applicationId,
+    });
+    if (!application) throw new Error("Application not found");
+
+    const user = await ctx.runQuery(api.users.getById, { id: application.userId });
+    if (!user) throw new Error("User not found");
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #dc2626;">Application Withdrawn</h2>
+        
+        <p>Hello ${application.firstName || user.name || "Applicant"},</p>
+        
+        <p>
+          Your application for the William R. Stark Financial Assistance Program 
+          has been withdrawn as requested.
+        </p>
+        
+        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
+        
+        <div style="background: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0;">
+            If you withdrew before the deadline (April 15, 2026), you may submit 
+            a new application if you wish.
+          </p>
+        </div>
+        
+        <p>
+          If you have any questions, please contact us at 
+          <a href="mailto:blackgoldmine@sbcglobal.net">blackgoldmine@sbcglobal.net</a>.
+        </p>
+        
+        <p>
+          <em>Best regards,</em><br>
+          <strong>William R. Stark Financial Assistance Committee</strong>
+        </p>
+      </div>
+    `;
+
+    await sendEmail({
+      to: user.email,
+      subject: "Application Withdrawn - Stark Scholars",
       html,
     });
 

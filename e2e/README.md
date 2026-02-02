@@ -1,6 +1,6 @@
 # E2E Testing with Playwright
 
-This directory contains end-to-end tests for the William R. Stark Scholarship Platform using Playwright.
+This directory contains end-to-end tests for the Stark Scholars Platform using Playwright.
 
 ## Test Coverage
 

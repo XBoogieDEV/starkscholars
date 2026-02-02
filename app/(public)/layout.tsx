@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { CookieConsent } from "@/components/cookie-consent";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "William R. Stark Financial Assistance Program",
+  title: "Stark Scholars | William R. Stark Financial Assistance Program",
   description: "Scholarship application platform for Michigan students",
 };
 
@@ -30,6 +31,7 @@ export default function RootLayout({
       >
         {children}
         <Toaster />
+        <CookieConsent />
       </body>
     </html>
   );

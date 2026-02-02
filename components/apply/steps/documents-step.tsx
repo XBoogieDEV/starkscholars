@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowRight, Loader2, Upload, File, X } from "lucide-react";
+import { Id } from "@/convex/_generated/dataModel";
+import { ArrowRight, Loader2, Upload, File, X, CheckCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface DocumentsStepProps {
@@ -19,8 +20,20 @@ interface DocumentsStepProps {
 const ESSAY_MIN_WORDS = 450;
 const ESSAY_MAX_WORDS = 550;
 
+const ALLOWED_FILE_TYPES = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
+const ALLOWED_EXTENSIONS = [".pdf", ".jpg", ".jpeg", ".png"];
+
 const countWords = (text: string): number => {
   return text.trim().split(/\s+/).filter((word) => word.length > 0).length;
+};
+
+const isValidFileType = (file: File): boolean => {
+  // Check MIME type
+  if (ALLOWED_FILE_TYPES.includes(file.type)) return true;
+  
+  // Check extension as fallback
+  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+  return ALLOWED_EXTENSIONS.includes(ext);
 };
 
 export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
@@ -29,11 +42,13 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
   
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<{
+    transcript?: "uploading" | "success" | "error";
+  }>({});
   const [essayText, setEssayText] = useState(application.essayText || "");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [files, setFiles] = useState<{
     transcript?: File;
-    essay?: File;
   }>({});
   
   const transcriptRef = useRef<HTMLInputElement>(null);
@@ -41,14 +56,24 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
   const wordCount = countWords(essayText);
   const isEssayValid = wordCount >= ESSAY_MIN_WORDS && wordCount <= ESSAY_MAX_WORDS;
 
-  const handleFileChange = (type: "transcript" | "essay", file: File | null) => {
+  const handleFileChange = (type: "transcript", file: File | null) => {
     if (file) {
-      // Validate file size (10MB max for transcript, 5MB for essay)
-      const maxSize = type === "transcript" ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+      // Validate file type
+      if (!isValidFileType(file)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF, JPG, or PNG file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (10MB max)
+      const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
         toast({
           title: "File too large",
-          description: `${type === "transcript" ? "Transcript" : "Essay"} must be less than ${type === "transcript" ? "10MB" : "5MB"}.`,
+          description: "Transcript must be less than 10MB.",
           variant: "destructive",
         });
         return;
@@ -58,32 +83,38 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
     }
   };
 
-  const uploadFile = async (file: File, type: "transcript" | "essay") => {
-    try {
-      const uploadUrl = await generateUploadUrl({ type });
-      
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": file.type,
-        },
-        body: file,
-      });
-      
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-      
-      const result = await response.json();
-      return result.storageId;
-    } catch (error) {
-      throw new Error(`Failed to upload ${type}`);
+  const uploadFileToStorage = async (file: File, type: "transcript" | "essay"): Promise<string> => {
+    // Step 1: Request upload URL from Convex
+    const uploadUrl = await generateUploadUrl({ type });
+    
+    // Step 2: Upload file directly to Convex storage
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+      },
+      body: file,
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Upload failed: ${errorText}`);
     }
+    
+    // Step 3: Get storageId from response
+    const result = await response.json();
+    
+    if (!result.storageId) {
+      throw new Error("No storageId returned from upload");
+    }
+    
+    return result.storageId;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setUploadStatus({});
 
     try {
       // Validate essay
@@ -100,14 +131,22 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
 
       // Upload transcript if provided
       if (files.transcript) {
-        transcriptFileId = await uploadFile(files.transcript, "transcript");
+        setUploadStatus({ transcript: "uploading" });
+        try {
+          transcriptFileId = await uploadFileToStorage(files.transcript, "transcript");
+          setUploadStatus({ transcript: "success" });
+        } catch (error) {
+          setUploadStatus({ transcript: "error" });
+          throw new Error("Failed to upload transcript. Please try again.");
+        }
       }
 
+      // Save to application
       await updateStep5({
         applicationId: application._id,
         essayText: essayText,
         essayWordCount: wordCount,
-        transcriptFileId,
+        transcriptFileId: transcriptFileId as Id<"_storage"> | undefined,
       });
 
       toast({
@@ -117,9 +156,10 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
 
       onComplete();
     } catch (error) {
+      console.error("Submit error:", error);
       toast({
         title: "Error",
-        description: "Failed to save. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to save. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -167,14 +207,22 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
             <div className="flex items-center justify-center gap-2">
               <File className="h-5 w-5 text-amber-600" />
               <span className="text-sm">{files.transcript.name}</span>
+              {uploadStatus.transcript === "success" && (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              )}
+              {uploadStatus.transcript === "uploading" && (
+                <Loader2 className="h-4 w-4 animate-spin text-amber-600" />
+              )}
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => {
                   setFiles((prev) => ({ ...prev, transcript: undefined }));
+                  setUploadStatus({});
                   if (transcriptRef.current) transcriptRef.current.value = "";
                 }}
+                disabled={isLoading}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -184,12 +232,20 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
               type="button"
               variant="outline"
               onClick={() => transcriptRef.current?.click()}
+              disabled={isLoading}
             >
               <Upload className="mr-2 h-4 w-4" />
               Upload Transcript
             </Button>
           )}
         </div>
+
+        {uploadStatus.transcript === "uploading" && (
+          <p className="text-sm text-amber-600 flex items-center gap-2">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Uploading transcript...
+          </p>
+        )}
       </div>
 
       {/* Essay Section */}
@@ -214,6 +270,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
             onChange={(e) => setEssayText(e.target.value)}
             placeholder="Start writing your essay here..."
             className="min-h-[300px]"
+            disabled={isLoading}
           />
           
           {/* Word Count */}

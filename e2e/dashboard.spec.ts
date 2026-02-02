@@ -9,7 +9,7 @@ test.describe("Dashboard Page", () => {
   test("should display dashboard layout correctly @desktop", async ({ page }) => {
     // Check header
     await expect(page.locator("header")).toBeVisible();
-    await expect(page.locator("text=William R. Stark")).toBeVisible();
+    await expect(page.locator("text=Stark Scholars")).toBeVisible();
     
     // Check navigation links
     await expect(page.locator("nav >> text=Dashboard")).toBeVisible();

@@ -1,10 +1,23 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 import {
   CheckCircle2,
   Clock,
@@ -13,6 +26,7 @@ import {
   Users,
   GraduationCap,
   Award,
+  AlertTriangle,
 } from "lucide-react";
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
@@ -34,6 +48,34 @@ export default function StatusPage() {
     application ? { applicationId: application._id } : "skip"
   );
   const deadline = useQuery(api.settings.getDeadline);
+  
+  // Withdrawal mutation and state
+  const withdraw = useMutation(api.applications.withdraw);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawReason, setWithdrawReason] = useState("");
+  const [withdrawing, setWithdrawing] = useState(false);
+  
+  // Only show withdraw button if application exists and is in a withdrawable state
+  const canWithdraw = application && 
+    !["withdrawn", "selected", "not_selected"].includes(application.status);
+  
+  const handleWithdraw = async () => {
+    if (!application) return;
+    
+    setWithdrawing(true);
+    try {
+      await withdraw({
+        applicationId: application._id,
+        reason: withdrawReason || undefined,
+      });
+      toast.success("Application withdrawn successfully");
+      setWithdrawOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to withdraw application");
+    } finally {
+      setWithdrawing(false);
+    }
+  };
 
   if (!application) {
     return (
@@ -316,6 +358,112 @@ export default function StatusPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Withdrawal Status Banner */}
+      {application?.status === "withdrawn" && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-red-900">Application Withdrawn</h3>
+                <p className="text-sm text-red-700 mt-1">
+                  You withdrew this application on{" "}
+                  {application.withdrawnAt 
+                    ? new Date(application.withdrawnAt).toLocaleDateString() 
+                    : "N/A"}
+                  .
+                </p>
+                {application.withdrawnReason && (
+                  <p className="text-sm text-red-600 mt-2">
+                    <strong>Reason:</strong> {application.withdrawnReason}
+                  </p>
+                )}
+                <p className="text-sm text-red-600 mt-2">
+                  If you withdrew before the deadline, you may create a new application from the dashboard.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Withdrawal Action */}
+      {canWithdraw && (
+        <Card className="border-amber-200">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900">Need to Withdraw?</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  If you need to withdraw your application, you can do so here. 
+                  This action cannot be undone. If you withdraw before the deadline, 
+                  you may submit a new application.
+                </p>
+                
+                <Dialog open={withdrawOpen} onOpenChange={setWithdrawOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4 border-red-300 text-red-700 hover:bg-red-50"
+                    >
+                      Withdraw Application
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2 text-red-600">
+                        <AlertTriangle className="h-5 w-5" />
+                        Withdraw Application
+                      </DialogTitle>
+                      <DialogDescription>
+                        This action cannot be undone. Your application will be permanently withdrawn.
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4 py-4">
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <p className="text-sm text-amber-800">
+                          <strong>Important:</strong> If you withdraw before the deadline (April 15, 2026), 
+                          you may submit a new application. After the deadline, you cannot reapply.
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Reason (optional)</label>
+                        <Textarea
+                          placeholder="Why are you withdrawing your application?"
+                          value={withdrawReason}
+                          onChange={(e) => setWithdrawReason(e.target.value)}
+                          className="min-h-[100px]"
+                        />
+                      </div>
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setWithdrawOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        onClick={handleWithdraw}
+                        disabled={withdrawing}
+                      >
+                        {withdrawing ? "Withdrawing..." : "Yes, Withdraw Application"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Footer */}
       <p className="text-center text-sm text-gray-500">

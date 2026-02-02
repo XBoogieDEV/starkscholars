@@ -1,5 +1,8 @@
 import { v } from "convex/values";
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server";
+import { api } from "./_generated/api";
+import { checkRateLimit } from "./utils";
+import { logAction } from "./auditLog";
 
 // ============================================
 // QUERIES
@@ -22,6 +25,104 @@ export const getById = query({
   },
 });
 
+// Get validation status for review step
+export const getValidationStatus = query({
+  args: { applicationId: v.id("applications") },
+  handler: async (ctx, { applicationId }) => {
+    const application = await ctx.db.get(applicationId);
+    if (!application) throw new Error("Application not found");
+
+    // Get recommendations
+    const recommendations = await ctx.db
+      .query("recommendations")
+      .withIndex("by_application", (q) => q.eq("applicationId", applicationId))
+      .collect();
+
+    const submittedRecommendations = recommendations.filter(
+      (r) => r.status === "submitted"
+    );
+
+    // Calculate completion percentage
+    const totalRequirements = 8;
+    let metRequirements = 0;
+
+    // 1. All 7 steps completed
+    const allStepsCompleted = application.completedSteps.length >= 7;
+    if (allStepsCompleted) metRequirements++;
+
+    // 2. GPA >= 3.0
+    const gpaMet = (application.gpa || 0) >= 3.0;
+    if (gpaMet) metRequirements++;
+
+    // 3. Michigan resident
+    const michiganResident = application.isMichiganResident === true;
+    if (michiganResident) metRequirements++;
+
+    // 4. Full-time student
+    const fullTimeStudent = application.isFullTimeStudent === true;
+    if (fullTimeStudent) metRequirements++;
+
+    // 5. At least 2 recommendations submitted
+    const recommendationsMet = submittedRecommendations.length >= 2;
+    if (recommendationsMet) metRequirements++;
+
+    // 6. Required files uploaded
+    const profilePhotoUploaded = !!application.profilePhotoId;
+    const transcriptUploaded = !!application.transcriptFileId;
+    const essayUploaded = !!application.essayText || !!application.essayFileId;
+    const filesMet = profilePhotoUploaded && transcriptUploaded && essayUploaded;
+    if (filesMet) metRequirements++;
+
+    // 7. Essay word count valid (450-550)
+    const wordCount = application.essayWordCount || 0;
+    const essayValid = wordCount >= 450 && wordCount <= 550;
+    if (essayValid) metRequirements++;
+
+    // 8. Eligibility info complete (name, address, education)
+    const personalComplete = !!(application.firstName && application.lastName && application.phone && application.dateOfBirth);
+    const addressComplete = !!(application.streetAddress && application.city && application.state && application.zipCode);
+    const educationComplete = !!(application.highSchoolName && application.collegeName && application.yearInCollege);
+    const infoMet = personalComplete && addressComplete && educationComplete;
+    if (infoMet) metRequirements++;
+
+    return {
+      // Overall status
+      completionPercentage: Math.round((metRequirements / totalRequirements) * 100),
+      canSubmit: metRequirements === totalRequirements,
+      
+      // Individual validations
+      allStepsCompleted,
+      gpaMet,
+      michiganResident,
+      fullTimeStudent,
+      recommendationsMet,
+      recommendationsCount: submittedRecommendations.length,
+      filesMet,
+      profilePhotoUploaded,
+      transcriptUploaded,
+      essayUploaded,
+      essayValid,
+      wordCount,
+      infoMet,
+      personalComplete,
+      addressComplete,
+      educationComplete,
+      
+      // Requirements detail
+      requirements: [
+        { id: "steps", label: "All 7 steps completed", met: allStepsCompleted },
+        { id: "gpa", label: "GPA ≥ 3.0", met: gpaMet, value: application.gpa },
+        { id: "resident", label: "Michigan resident confirmed", met: michiganResident },
+        { id: "fulltime", label: "Full-time student confirmed", met: fullTimeStudent },
+        { id: "recommendations", label: "At least 2 recommendations received", met: recommendationsMet, value: `${submittedRecommendations.length}/2` },
+        { id: "photo", label: "Profile photo uploaded", met: profilePhotoUploaded },
+        { id: "transcript", label: "Transcript uploaded", met: transcriptUploaded },
+        { id: "essay", label: "Essay complete (450-550 words)", met: essayValid, value: `${wordCount} words` },
+      ],
+    };
+  },
+});
+
 export const getMyApplication = query({
   args: {},
   handler: async (ctx) => {
@@ -30,7 +131,7 @@ export const getMyApplication = query({
     
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", identity.email))
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
     
     if (!user) return null;
@@ -56,7 +157,7 @@ export const create = mutation({
     
     if (existing) return existing._id;
     
-    return await ctx.db.insert("applications", {
+    const applicationId = await ctx.db.insert("applications", {
       userId,
       status: "draft",
       currentStep: 1,
@@ -64,6 +165,15 @@ export const create = mutation({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // Log application creation
+    await logAction(ctx, {
+      action: "application:created",
+      userId,
+      applicationId,
+    });
+    
+    return applicationId;
   },
 });
 
@@ -77,9 +187,18 @@ export const updateStep1 = mutation({
     profilePhotoId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
-    const { applicationId, ...data } = args;
+    const { applicationId, profilePhotoId, ...data } = args;
     const application = await ctx.db.get(applicationId);
     if (!application) throw new Error("Application not found");
+    
+    // Validate profile photo if provided
+    if (profilePhotoId) {
+      await ctx.runMutation(api.storage.validateAndSaveUpload, {
+        storageId: profilePhotoId,
+        fileType: "photo",
+        applicationId: applicationId
+      });
+    }
     
     const completedSteps = application.completedSteps.includes(1) 
       ? application.completedSteps 
@@ -87,9 +206,22 @@ export const updateStep1 = mutation({
     
     await ctx.db.patch(applicationId, {
       ...data,
+      ...(profilePhotoId && { profilePhotoId }),
       completedSteps,
       updatedAt: Date.now(),
     });
+
+    // Log step completion
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity) {
+      await logStepUpdate(ctx, {
+        userId: identity.subject,
+        applicationId,
+        step: 1,
+        stepName: "Personal Information",
+        details: { profilePhotoUpdated: !!profilePhotoId },
+      });
+    }
     
     return applicationId;
   },
@@ -117,6 +249,18 @@ export const updateStep2 = mutation({
       completedSteps,
       updatedAt: Date.now(),
     });
+
+    // Log step completion
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity) {
+      await logStepUpdate(ctx, {
+        userId: identity.subject,
+        applicationId,
+        step: 2,
+        stepName: "Address",
+        details: { city: data.city },
+      });
+    }
     
     return applicationId;
   },
@@ -152,6 +296,18 @@ export const updateStep3 = mutation({
       completedSteps,
       updatedAt: Date.now(),
     });
+
+    // Log step completion
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity) {
+      await logStepUpdate(ctx, {
+        userId: identity.subject,
+        applicationId,
+        step: 3,
+        stepName: "Education",
+        details: { gpa: data.gpa, collegeName: data.collegeName },
+      });
+    }
     
     return applicationId;
   },
@@ -179,6 +335,21 @@ export const updateStep4 = mutation({
       completedSteps,
       updatedAt: Date.now(),
     });
+
+    // Log step completion
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity) {
+      await logStepUpdate(ctx, {
+        userId: identity.subject,
+        applicationId,
+        step: 4,
+        stepName: "Eligibility",
+        details: { 
+          isMichiganResident: data.isMichiganResident,
+          isFullTimeStudent: data.isFullTimeStudent,
+        },
+      });
+    }
     
     return applicationId;
   },
@@ -193,9 +364,27 @@ export const updateStep5 = mutation({
     essayWordCount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const { applicationId, ...data } = args;
+    const { applicationId, transcriptFileId, essayFileId, ...data } = args;
     const application = await ctx.db.get(applicationId);
     if (!application) throw new Error("Application not found");
+    
+    // Validate transcript file if provided
+    if (transcriptFileId) {
+      await ctx.runMutation(api.storage.validateAndSaveUpload, {
+        storageId: transcriptFileId,
+        fileType: "transcript",
+        applicationId: applicationId
+      });
+    }
+    
+    // Validate essay file if provided
+    if (essayFileId) {
+      await ctx.runMutation(api.storage.validateAndSaveUpload, {
+        storageId: essayFileId,
+        fileType: "essay",
+        applicationId: applicationId
+      });
+    }
     
     const completedSteps = application.completedSteps.includes(5) 
       ? application.completedSteps 
@@ -203,9 +392,27 @@ export const updateStep5 = mutation({
     
     await ctx.db.patch(applicationId, {
       ...data,
+      ...(transcriptFileId && { transcriptFileId }),
+      ...(essayFileId && { essayFileId }),
       completedSteps,
       updatedAt: Date.now(),
     });
+
+    // Log step completion
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity) {
+      await logStepUpdate(ctx, {
+        userId: identity.subject,
+        applicationId,
+        step: 5,
+        stepName: "Documents & Essay",
+        details: { 
+          transcriptUploaded: !!transcriptFileId,
+          essayUploaded: !!essayFileId,
+          wordCount: data.essayWordCount,
+        },
+      });
+    }
     
     return applicationId;
   },
@@ -230,8 +437,20 @@ export const submit = mutation({
     signature: v.string(),
   },
   handler: async (ctx, { applicationId, signature }) => {
+    // DEADLINE CHECK: Must be first - server-side enforcement
+    const DEADLINE = new Date("2026-04-15T23:59:59-04:00").getTime();
+    if (Date.now() > DEADLINE) {
+      throw new Error("Application deadline has passed. Applications closed on April 15, 2026.");
+    }
+
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
+    
+    // Rate limiting check
+    const rateLimit = await checkRateLimit(ctx, "application:submit", identity.subject);
+    if (!rateLimit.allowed) {
+      throw new Error(`Rate limit exceeded. Try again in ${rateLimit.retryAfter} seconds.`);
+    }
 
     const application = await ctx.db.get(applicationId);
     if (!application) throw new Error("Application not found");
@@ -281,17 +500,97 @@ export const submit = mutation({
       updatedAt: Date.now(),
     });
 
+    // Log submission
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .first();
+      
+    await logAction(ctx, {
+      action: "application:submitted",
+      userId: currentUser?._id,
+      applicationId,
+      details: { signature: signature.toLowerCase().trim() },
+    });
+
     // Send confirmation email
-    await ctx.scheduler.runAfter(0, "emails:sendApplicationSubmitted", {
+    await ctx.scheduler.runAfter(0, api.emails.sendApplicationSubmitted, {
       applicationId,
     });
 
     // Trigger AI summary generation
-    await ctx.scheduler.runAfter(0, "ai:generateSummary", {
+    await ctx.scheduler.runAfter(0, api.ai.generateSummary, {
       applicationId,
     });
 
     return { success: true };
+  },
+});
+
+export const withdraw = mutation({
+  args: {
+    applicationId: v.id("applications"),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, { applicationId, reason }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    // Rate limiting check
+    const rateLimit = await checkRateLimit(ctx, "application:withdraw", identity.subject);
+    if (!rateLimit.allowed) {
+      throw new Error(`Rate limit exceeded. Try again in ${rateLimit.retryAfter} seconds.`);
+    }
+
+    const application = await ctx.db.get(applicationId);
+    if (!application) throw new Error("Application not found");
+
+    // Verify user owns this application
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .first();
+
+    if (!user || application.userId !== user._id) {
+      throw new Error("Not authorized to withdraw this application");
+    }
+
+    // Check if application is in a withdrawable state
+    if (application.status === "withdrawn") {
+      throw new Error("Application already withdrawn");
+    }
+
+    if (application.status === "selected" || application.status === "not_selected") {
+      throw new Error("Cannot withdraw after selection decision");
+    }
+
+    // Check deadline (can only reapply if withdrawn before deadline)
+    const DEADLINE = new Date("2026-04-15T23:59:59-04:00").getTime();
+    const canReapply = Date.now() <= DEADLINE;
+
+    // Update application status
+    await ctx.db.patch(applicationId, {
+      status: "withdrawn",
+      withdrawnAt: Date.now(),
+      withdrawnReason: reason,
+      updatedAt: Date.now(),
+    });
+
+    // Log the withdrawal using the audit log function
+    await logAction(ctx, {
+      action: "application:withdrawn",
+      userId: user._id,
+      applicationId,
+      details: { reason, canReapply },
+    });
+
+    // Send confirmation email
+    await ctx.scheduler.runAfter(0, api.emails.sendWithdrawalConfirmation, {
+      applicationId,
+      reason,
+    });
+
+    return { success: true, canReapply };
   },
 });
 

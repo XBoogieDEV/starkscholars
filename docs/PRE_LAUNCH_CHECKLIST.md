@@ -1,5 +1,5 @@
 # Pre-Launch Deliverables Checklist
-**Project:** William R. Stark Financial Assistance Platform  
+**Project:** Stark Scholars Platform  
 **Target Launch Date:** TBD  
 **Last Updated:** 2026-02-01
 
