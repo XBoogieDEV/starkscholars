@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stark Scholars | William R. Stark Financial Assistance Program</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        header { background: white; border-bottom: 1px solid #e5e7eb; padding: 1rem 0; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 1.25rem; color: #111; text-decoration: none; }
+        .logo-icon { width: 32px; height: 32px; background: #d97706; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        nav { display: flex; gap: 1.5rem; }
+        nav a { color: #4b5563; text-decoration: none; font-size: 0.875rem; }
+        nav a:hover { color: #111; }
+        .header-buttons { display: flex; gap: 1rem; }
+        .btn { padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; font-weight: 500; }
+        .btn-primary { background: #d97706; color: white; }
+        .btn-secondary { color: #4b5563; }
+        .hero { background: linear-gradient(to bottom right, #fffbeb, #fff7ed); padding: 5rem 0; text-align: center; }
+        .hero-tag { color: #d97706; font-weight: 500; font-size: 0.875rem; margin-bottom: 1rem; }
+        .hero h1 { font-size: 3rem; font-weight: 700; color: #111; margin-bottom: 0.5rem; }
+        .hero h2 { font-size: 1.5rem; color: #d97706; margin-bottom: 1rem; }
+        .hero p { font-size: 1.125rem; color: #4b5563; max-width: 600px; margin: 0 auto 2rem; }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; margin-bottom: 3rem; }
+        .btn-large { padding: 1rem 2rem; font-size: 1rem; }
+        .stats { display: flex; gap: 3rem; justify-content: center; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 2.25rem; font-weight: 700; color: #d97706; }
+        .stat-label { color: #6b7280; font-size: 0.875rem; }
+        section { padding: 4rem 0; }
+        section.alt { background: #f9fafb; }
+        h2 { font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 3rem; color: #111; }
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card-icon { width: 48px; height: 48px; background: #fef3c7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem; }
+        .card h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #111; }
+        .card p { color: #6b7280; font-size: 0.875rem; }
+        .cta { background: #d97706; color: white; text-align: center; }
+        .cta h2 { color: white; }
+        .cta p { color: #fef3c7; font-size: 1.125rem; margin-bottom: 2rem; }
+        .btn-white { background: white; color: #d97706; }
+        footer { background: #111827; color: #9ca3af; padding: 3rem 0 1rem; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        footer h3 { color: white; font-weight: 600; margin-bottom: 1rem; }
+        footer a { color: #9ca3af; text-decoration: none; display: block; margin-bottom: 0.5rem; }
+        footer a:hover { color: #d97706; }
+        .footer-bottom { border-top: 1px solid #374151; padding-top: 1rem; text-align: center; font-size: 0.875rem; }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .hero h2 { font-size: 1.25rem; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            nav { display: none; }
+            .stats { flex-direction: column; gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <div class="logo-icon">S</div>
+                    Stark Scholars
+                </a>
+                <nav>
+                    <a href="#about">About</a>
+                    <a href="#eligibility">Eligibility</a>
+                    <a href="#apply">How to Apply</a>
+                </nav>
+                <div class="header-buttons">
+                    <a href="/login" class="btn btn-secondary">Sign In</a>
+                    <a href="/register" class="btn btn-primary">Apply Now</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <p class="hero-tag">Class of 2023 President's Club</p>
+            <h1>Stark Scholars</h1>
+            <h2>William R. Stark Financial Assistance Program</h2>
+            <p>Empowering Michigan students to achieve their educational dreams and make a positive impact in their communities.</p>
+            <div class="hero-buttons">
+                <a href="/register" class="btn btn-primary btn-large">Start Your Application</a>
+                <a href="#about" class="btn btn-secondary btn-large" style="background: white; color: #374151;">Learn More</a>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">\$500</div>
+                    <div class="stat-label">Scholarship Awards</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Recipients Selected</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">April 15</div>
+                    <div class="stat-label">Application Deadline</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about">
+        <div class="container">
+            <h2>About the Program</h2>
+            <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+                <p style="font-size: 1.125rem; color: #4b5563; margin-bottom: 1.5rem;">
+                    The William R. Stark Financial Assistance Program was established by the Class of 2023 President's Club 
+                    to honor the legacy of William R. Stark and support Michigan students pursuing higher education.
+                </p>
+                <p style="color: #6b7280;">
+                    We seek students who demonstrate academic dedication, community involvement, and a clear vision 
+                    for how their education will benefit others.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="eligibility" class="alt">
+        <div class="container">
+            <h2>Eligibility Requirements</h2>
+            <div class="grid grid-3">
+                <div class="card">
+                    <div class="card-icon">📍</div>
+                    <h3>Michigan Resident</h3>
+                    <p>Must be a current resident of the State of Michigan</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🎓</div>
+                    <h3>Full-Time Enrollment</h3>
+                    <p>Enrolled or planning to enroll as a full-time student</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⭐</div>
+                    <h3>Minimum 3.0 GPA</h3>
+                    <p>Must have maintained a cumulative GPA of 3.0 or higher</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">✓</div>
+                    <h3>First-Time Applicant</h3>
+                    <p>Priority given to first-time scholarship applicants</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📝</div>
+                    <h3>Two Recommendations</h3>
+                    <p>Letters from educators or community leaders</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📄</div>
+                    <h3>Essay Required</h3>
+                    <p>450-550 word essay on community impact</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="apply" class="cta">
+        <div class="container">
+            <h2>Ready to Apply?</h2>
+            <p>Take the first step toward your educational future. Applications are due April 15, 2026.</p>
+            <a href="/register" class="btn btn-white btn-large">Create Your Account</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h3>Stark Scholars</h3>
+                    <p>William R. Stark Financial Assistance Program<br>Supporting Michigan students since 2023.</p>
+                </div>
+                <div>
+                    <h3>Quick Links</h3>
+                    <a href="/login">Sign In</a>
+                    <a href="/register">Apply Now</a>
+                    <a href="/terms">Terms of Service</a>
+                    <a href="/privacy">Privacy Policy</a>
+                </div>
+                <div>
+                    <h3>Contact</h3>
+                    <p>Questions? Email us at:</p>
+                    <a href="mailto:blackgoldmine@sbcglobal.net">blackgoldmine@sbcglobal.net</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Stark Scholars Platform. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
