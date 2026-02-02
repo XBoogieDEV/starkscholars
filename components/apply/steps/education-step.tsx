@@ -84,7 +84,7 @@ export function EducationStep({ application, onComplete }: EducationStepProps) {
       }
 
       // Validate GPA (3.0 minimum)
-      const gpa = parseFloat(formData.gpa);
+      const gpa = parseFloat(String(formData.gpa));
       if (isNaN(gpa) || gpa < 0 || gpa > 4.0) {
         toast({
           title: "Invalid GPA",

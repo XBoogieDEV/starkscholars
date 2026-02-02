@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -126,7 +126,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
     }
   };
 
-  const handleSendReminder = async (recommendationId: string, name: string) => {
+  const handleSendReminder = async (recommendationId: Id<"recommendations">, name: string) => {
     try {
       await sendReminder({ recommendationId });
       toast({
