@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation, internalMutation } from "./_generated/server";
 import { QueryCtx, MutationCtx } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 // Log levels
 export type LogLevel = "info" | "warning" | "error" | "security";
@@ -52,8 +53,8 @@ export async function logAction(
   ctx: MutationCtx,
   params: {
     action: keyof typeof AUDIT_ACTIONS;
-    userId?: string;
-    applicationId?: string;
+    userId?: Id<"users"> | string;
+    applicationId?: Id<"applications"> | string;
     details?: Record<string, unknown>;
     level?: LogLevel;
     ipAddress?: string;
@@ -61,8 +62,8 @@ export async function logAction(
   }
 ) {
   await ctx.db.insert("activityLog", {
-    userId: params.userId,
-    applicationId: params.applicationId,
+    userId: params.userId as Id<"users"> | undefined,
+    applicationId: params.applicationId as Id<"applications"> | undefined,
     action: params.action,
     details: params.details ? JSON.stringify(params.details) : undefined,
     ipAddress: params.ipAddress,
@@ -75,8 +76,8 @@ export async function logAction(
 export async function logStepUpdate(
   ctx: MutationCtx,
   params: {
-    userId: string;
-    applicationId: string;
+    userId: Id<"users"> | string;
+    applicationId: Id<"applications"> | string;
     step: number;
     stepName: string;
     details?: Record<string, unknown>;
@@ -100,7 +101,7 @@ export const getRecentActivity = query({
   handler: async (ctx, { limit = 50 }) => {
     return await ctx.db
       .query("activityLog")
-      .withIndex("by_created", q => q.desc())
+      .order("desc")
       .take(limit);
   }
 });
@@ -138,7 +139,7 @@ export const getSecurityEvents = query({
   handler: async (ctx, { limit = 50 }) => {
     const allLogs = await ctx.db
       .query("activityLog")
-      .withIndex("by_created", q => q.desc())
+      .order("desc")
       .take(limit * 2);
     
     return allLogs.filter(log => 

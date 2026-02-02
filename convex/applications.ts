@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { checkRateLimit } from "./utils";
-import { logAction } from "./auditLog";
+import { logAction, logStepUpdate } from "./auditLog";
 
 // ============================================
 // QUERIES
@@ -519,7 +519,7 @@ export const submit = mutation({
     });
 
     // Trigger AI summary generation
-    await ctx.scheduler.runAfter(0, api.ai.generateSummary, {
+    await ctx.scheduler.runAfter(0, internal.ai.generateSummary, {
       applicationId,
     });
 

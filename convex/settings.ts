@@ -20,11 +20,12 @@ export const set = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
     
-    if (!identity.email) throw new Error("User email not available");
+    const email = identity.email;
+    if (!email) throw new Error("User email not available");
     
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", identity.email))
+      .withIndex("by_email", (q) => q.eq("email", email))
       .first();
     
     if (!user || user.role !== "admin") {

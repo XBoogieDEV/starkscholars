@@ -1,6 +1,7 @@
 // Utility functions for Convex
 import { query, mutation, QueryCtx, MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 /**
  * Generate a secure random token for recommendation access
@@ -68,7 +69,7 @@ interface RateLimitResult {
 export async function checkRateLimit(
   ctx: MutationCtx | QueryCtx,
   key: RateLimitKey,
-  identifier: string
+  identifier: Id<"users"> | string
 ): Promise<RateLimitResult> {
   const config = RATE_LIMITS[key];
   const now = Date.now();
@@ -77,7 +78,7 @@ export async function checkRateLimit(
   // Get recent attempts from activity log
   const recentAttempts = await ctx.db
     .query("activityLog")
-    .withIndex("by_user", q => q.eq("userId", identifier))
+    .withIndex("by_user", q => q.eq("userId", identifier as Id<"users">))
     .filter(q => q.gte(q.field("createdAt"), windowStart))
     .filter(q => q.eq(q.field("action"), `rate_limit:${key}`))
     .collect();
@@ -88,13 +89,17 @@ export async function checkRateLimit(
     return { allowed: false, retryAfter, remaining: 0 };
   }
   
-  // Log this attempt
-  await ctx.db.insert("activityLog", {
-    userId: identifier as any, // Use identifier as userId for rate limit tracking
-    action: `rate_limit:${key}`,
-    details: JSON.stringify({ timestamp: now, key }),
-    createdAt: now,
-  });
+  // Log this attempt - note: this function can be called from both queries and mutations
+  // but inserting requires a mutation context. This is a limitation of the current design.
+  // For now, we skip logging in query contexts.
+  if ('db' in ctx && 'insert' in ctx.db) {
+    await (ctx.db as any).insert("activityLog", {
+      userId: identifier as Id<"users">,
+      action: `rate_limit:${key}`,
+      details: JSON.stringify({ timestamp: now, key }),
+      createdAt: now,
+    });
+  }
   
   return { 
     allowed: true, 
@@ -108,7 +113,7 @@ export async function checkRateLimit(
 export async function peekRateLimit(
   ctx: MutationCtx | QueryCtx,
   key: RateLimitKey,
-  identifier: string
+  identifier: Id<"users"> | string
 ): Promise<RateLimitResult> {
   const config = RATE_LIMITS[key];
   const now = Date.now();
@@ -116,7 +121,7 @@ export async function peekRateLimit(
   
   const recentAttempts = await ctx.db
     .query("activityLog")
-    .withIndex("by_user", q => q.eq("userId", identifier))
+    .withIndex("by_user", q => q.eq("userId", identifier as Id<"users">))
     .filter(q => q.gte(q.field("createdAt"), windowStart))
     .filter(q => q.eq(q.field("action"), `rate_limit:${key}`))
     .collect();

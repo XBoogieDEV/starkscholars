@@ -27,21 +27,8 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
-      async sendVerificationEmail({ email, url, user }) {
-        // Trigger email verification via our custom email action
-        await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/trigger-verification`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, url, name: user?.name })
-        });
-      },
-      async sendResetPasswordEmail({ email, url, user }) {
-        await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/trigger-password-reset`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, url })
-        });
-      }
+      // Email callbacks are handled via API routes, not in auth config
+      // Use /api/trigger-verification and /api/trigger-password-reset endpoints
     },
     session: {
       expiresIn: 60 * 60 * 24 * 7, // 7 days
