@@ -19,24 +19,24 @@ export const set = mutation({
   handler: async (ctx, { key, value }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
-    
+
     const email = identity.email;
     if (!email) throw new Error("User email not available");
-    
+
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
-    
+
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized");
     }
-    
+
     const existing = await ctx.db
       .query("settings")
       .withIndex("by_key", (q) => q.eq("key", key))
       .first();
-    
+
     if (existing) {
       await ctx.db.patch(existing._id, {
         value,
@@ -64,7 +64,7 @@ export const getDeadline = query({
       .query("settings")
       .withIndex("by_key", (q) => q.eq("key", "application_deadline"))
       .first();
-    
+
     // Default deadline: April 15, 2026 at 11:59 PM EST
     return setting ? parseInt(setting.value) : DEADLINE_TIMESTAMP;
   },
@@ -77,7 +77,7 @@ export const isDeadlinePassed = query({
       .query("settings")
       .withIndex("by_key", (q) => q.eq("key", "application_deadline"))
       .first();
-    
+
     const deadline = setting ? parseInt(setting.value) : DEADLINE_TIMESTAMP;
     return Date.now() > deadline;
   },

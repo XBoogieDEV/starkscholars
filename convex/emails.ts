@@ -261,13 +261,13 @@ import { api } from "./_generated/api";
 // ============================================
 
 export const sendWelcomeEmail = action({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("user") },
   handler: async (ctx, { userId }) => {
     const user = await ctx.runQuery(api.users.getById, { id: userId });
     if (!user) throw new Error("User not found");
-    
+
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
-    
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #d97706;">Welcome to Stark Scholars!</h2>
@@ -308,19 +308,19 @@ export const sendWelcomeEmail = action({
         </p>
       </div>
     `;
-    
+
     await sendEmail({
       to: user.email,
       subject: "Welcome to Stark Scholars",
       html,
     });
-    
+
     return { success: true };
   }
 });
 
 export const sendEmailVerification = action({
-  args: { 
+  args: {
     email: v.string(),
     name: v.optional(v.string()),
     url: v.string() // Verification URL from Better Auth
@@ -360,19 +360,19 @@ export const sendEmailVerification = action({
         </p>
       </div>
     `;
-    
+
     await sendEmail({
       to: email,
       subject: "Verify Your Email - Stark Scholars",
       html,
     });
-    
+
     return { success: true };
   }
 });
 
 export const sendPasswordResetEmail = action({
-  args: { 
+  args: {
     email: v.string(),
     url: v.string()  // Reset URL from Better Auth
   },
@@ -412,13 +412,13 @@ export const sendPasswordResetEmail = action({
         </p>
       </div>
     `;
-    
+
     await sendEmail({
       to: email,
       subject: "Reset Your Password - Stark Scholars",
       html
     });
-    
+
     return { success: true };
   }
 });

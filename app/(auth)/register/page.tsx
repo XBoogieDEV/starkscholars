@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -12,18 +13,24 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+import { signUp } from "@/lib/auth-client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);
   const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
   });
-  
+
   // Debounced email check for duplicate prevention
   const debouncedEmail = useDebounce(formData.email, 500);
   const emailCheck = useQuery(
@@ -57,21 +64,42 @@ export default function RegisterPage() {
         setIsLoading(false);
         return;
       }
-      
-      // Check for duplicate email
+
+      // Check for duplicate email (client-side pre-check)
       if (emailCheck?.exists) {
         setError("An account with this email already exists. Please sign in instead.");
         setIsLoading(false);
         return;
       }
 
-      // TODO: Implement actual registration with Better Auth
-      // For now, just simulate a delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+      const { error } = await signUp.email({
+        email: formData.email,
+        password: formData.password,
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        image: undefined, // Optional
+      });
+
+      if (error) {
+        setError(error.message || "Failed to create account");
+        setIsLoading(false);
+        return;
+      }
+
+      // Success
       setIsRegistered(true);
+      toast({
+        title: "Account Created",
+        description: "Welcome to Stark Scholars! Redirecting...",
+      });
+
+      // Short delay then redirect or allow them to click link if email verification is strict
+      // Assuming email verification is required but we might auto-login or redirect to a 'verify email' page
+      // data.redirect should be handled if returned, but usually for email/pass we might just be logged in 
+      // OR explicitly need to verify.
+
     } catch (err) {
-      setError("Failed to create account");
+      console.error(err);
+      setError("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -88,10 +116,10 @@ export default function RegisterPage() {
                 Account Created!
               </h2>
               <p className="text-gray-600 mb-6">
-                Please check your email to verify your account.
+                Your account has been successfully created.
               </p>
-              <Button asChild className="bg-amber-600 hover:bg-amber-700">
-                <Link href="/login">Go to Sign In</Link>
+              <Button onClick={() => router.push('/apply/dashboard')} className="bg-amber-600 hover:bg-amber-700 w-full">
+                Go to Dashboard
               </Button>
             </CardContent>
           </Card>
@@ -104,9 +132,11 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-amber-800">
-            Stark Scholars
-          </h1>
+          <Link href="/">
+            <h1 className="text-2xl font-bold text-amber-800 cursor-pointer">
+              Stark Scholars
+            </h1>
+          </Link>
           <p className="text-gray-600">Financial Assistance Program</p>
         </div>
 
@@ -125,6 +155,33 @@ export default function RegisterPage() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    placeholder="Jane"
+                    value={formData.firstName}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, firstName: e.target.value }))
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Doe"
+                    value={formData.lastName}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, lastName: e.target.value }))
+                    }
+                    required
+                  />
+                </div>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

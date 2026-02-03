@@ -1,0 +1,55 @@
+
+> my-app@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 6.8s
+  Running TypeScript ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/23) ...
+  Generating static pages using 15 workers (5/23) 
+  Generating static pages using 15 workers (11/23) 
+  Generating static pages using 15 workers (17/23) 
+Γ£ô Generating static pages using 15 workers (23/23) in 621.5ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî ╞Æ /
+Γö£ ╞Æ /_not-found
+Γö£ ╞Æ /admin
+Γö£ ╞Æ /admin/analytics
+Γö£ ╞Æ /admin/applications
+Γö£ ╞Æ /admin/applications/[id]
+Γö£ ╞Æ /admin/committee
+Γö£ ╞Æ /admin/settings
+Γö£ ╞Æ /api/auth/[...all]
+Γö£ ╞Æ /api/trigger-password-reset
+Γö£ ╞Æ /api/trigger-verification
+Γö£ ╞Æ /apply/confirmation
+Γö£ ╞Æ /apply/dashboard
+Γö£ ╞Æ /apply/status
+Γö£ ╞Æ /apply/step/[step]
+Γö£ ╞Æ /committee
+Γö£ ╞Æ /committee/candidates
+Γö£ ╞Æ /committee/candidates/[id]
+Γö£ ╞Æ /committee/my-evaluations
+Γö£ ╞Æ /committee/results
+Γö£ ╞Æ /cookie-policy
+Γö£ ╞Æ /forgot-password
+Γö£ ╞Æ /login
+Γö£ ╞Æ /privacy
+Γö£ ╞Æ /recommend/[token]
+Γö£ ╞Æ /register
+Γö£ ╞Æ /reset-password
+Γö£ ╞Æ /terms
+Γöö ╞Æ /unauthorized
+
+
+╞Æ Proxy (Middleware)
+
+╞Æ  (Dynamic)  server-rendered on demand
+

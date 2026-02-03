@@ -56,7 +56,7 @@ export const getByApplication = query({
 });
 
 export const getByEvaluator = query({
-  args: { evaluatorId: v.id("users") },
+  args: { evaluatorId: v.id("user") },
   handler: async (ctx, { evaluatorId }) => {
     return await ctx.db
       .query("evaluations")
@@ -72,7 +72,7 @@ export const getMyEvaluation = query({
     if (!identity || !identity.email) return null;
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
 
@@ -80,7 +80,7 @@ export const getMyEvaluation = query({
 
     return await ctx.db
       .query("evaluations")
-      .withIndex("by_application_evaluator", (q) => 
+      .withIndex("by_application_evaluator", (q) =>
         q.eq("applicationId", applicationId).eq("evaluatorId", user._id)
       )
       .first();
@@ -91,14 +91,14 @@ export const getAllEvaluationsWithDetails = query({
   args: {},
   handler: async (ctx) => {
     const evaluations = await ctx.db.query("evaluations").collect();
-    
+
     // Get all applications and users for mapping
     const applications = await ctx.db.query("applications").collect();
-    const users = await ctx.db.query("users").collect();
-    
+    const users = await ctx.db.query("user").collect();
+
     const applicationMap = new Map(applications.map(a => [a._id, a]));
     const userMap = new Map(users.map(u => [u._id, u]));
-    
+
     return evaluations.map(evaluation => ({
       ...evaluation,
       application: applicationMap.get(evaluation.applicationId),
@@ -114,7 +114,7 @@ export const getEvaluationStats = query({
     if (!identity || !identity.email) return null;
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
 
@@ -149,7 +149,7 @@ export const getCandidatesForEvaluation = query({
     if (!identity || !identity.email) return [];
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
 
@@ -203,7 +203,7 @@ export const getCandidateDetails = query({
     if (!identity || !identity.email) return null;
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
 
@@ -216,7 +216,7 @@ export const getCandidateDetails = query({
     // Get user's evaluation
     const myEvaluation = await ctx.db
       .query("evaluations")
-      .withIndex("by_application_evaluator", (q) => 
+      .withIndex("by_application_evaluator", (q) =>
         q.eq("applicationId", applicationId).eq("evaluatorId", user._id)
       )
       .first();
@@ -228,13 +228,13 @@ export const getCandidateDetails = query({
         .query("evaluations")
         .withIndex("by_application", (q) => q.eq("applicationId", applicationId))
         .collect();
-      
+
       // Get evaluator details for each evaluation
       const evaluatorIds = allEvaluations.map(e => e.evaluatorId);
       const evaluators = await Promise.all(
         evaluatorIds.map(id => ctx.db.get(id))
       );
-      
+
       otherEvaluations = allEvaluations
         .filter(e => e.evaluatorId !== user._id)
         .map(e => ({
@@ -274,17 +274,17 @@ export const getRankings = query({
 
     // Get all committee members and admins
     const users = await ctx.db
-      .query("users")
+      .query("user")
       .collect();
-    
+
     const committeeMembers = users.filter(u => u.role === "committee" || u.role === "admin");
 
     // Calculate rankings
     const rankings = applications.map(app => {
       const appEvaluations = evaluations.filter(e => e.applicationId === app._id);
       const ratings = appEvaluations.map(e => ratingPoints[e.rating as Rating]);
-      const averageRating = ratings.length > 0 
-        ? ratings.reduce((a, b) => a + b, 0) / ratings.length 
+      const averageRating = ratings.length > 0
+        ? ratings.reduce((a, b) => a + b, 0) / ratings.length
         : 0;
 
       return {
@@ -314,7 +314,7 @@ export const getMyEvaluationsWithDetails = query({
     if (!identity || !identity.email) return [];
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
 
@@ -361,7 +361,7 @@ export const submit = mutation({
     if (!identity || !identity.email) {
       throw new Error("Not authenticated");
     }
-    
+
     // Rate limiting check
     const rateLimit = await checkRateLimit(ctx, "evaluation:submit", identity.subject);
     if (!rateLimit.allowed) {
@@ -369,7 +369,7 @@ export const submit = mutation({
     }
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
 
@@ -391,7 +391,7 @@ export const submit = mutation({
     // Check if evaluation already exists
     const existingEvaluation = await ctx.db
       .query("evaluations")
-      .withIndex("by_application_evaluator", (q) => 
+      .withIndex("by_application_evaluator", (q) =>
         q.eq("applicationId", applicationId).eq("evaluatorId", user._id)
       )
       .first();
@@ -458,7 +458,7 @@ export const update = mutation({
     }
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
 

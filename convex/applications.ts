@@ -9,7 +9,7 @@ import { logAction, logStepUpdate } from "./auditLog";
 // ============================================
 
 export const getByUser = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("user") },
   handler: async (ctx, { userId }) => {
     return await ctx.db
       .query("applications")
@@ -89,7 +89,7 @@ export const getValidationStatus = query({
       // Overall status
       completionPercentage: Math.round((metRequirements / totalRequirements) * 100),
       canSubmit: metRequirements === totalRequirements,
-      
+
       // Individual validations
       allStepsCompleted,
       gpaMet,
@@ -107,7 +107,7 @@ export const getValidationStatus = query({
       personalComplete,
       addressComplete,
       educationComplete,
-      
+
       // Requirements detail
       requirements: [
         { id: "steps", label: "All 7 steps completed", met: allStepsCompleted },
@@ -128,14 +128,14 @@ export const getMyApplication = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
-    
+
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
-    
+
     if (!user) return null;
-    
+
     return await ctx.db
       .query("applications")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
@@ -148,15 +148,15 @@ export const getMyApplication = query({
 // ============================================
 
 export const create = mutation({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("user") },
   handler: async (ctx, { userId }) => {
     const existing = await ctx.db
       .query("applications")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
-    
+
     if (existing) return existing._id;
-    
+
     const applicationId = await ctx.db.insert("applications", {
       userId,
       status: "draft",
@@ -172,7 +172,7 @@ export const create = mutation({
       userId,
       applicationId,
     });
-    
+
     return applicationId;
   },
 });
@@ -190,7 +190,7 @@ export const updateStep1 = mutation({
     const { applicationId, profilePhotoId, ...data } = args;
     const application = await ctx.db.get(applicationId);
     if (!application) throw new Error("Application not found");
-    
+
     // Validate profile photo if provided
     if (profilePhotoId) {
       await ctx.runMutation(api.storage.validateAndSaveUpload, {
@@ -199,11 +199,11 @@ export const updateStep1 = mutation({
         applicationId: applicationId
       });
     }
-    
-    const completedSteps = application.completedSteps.includes(1) 
-      ? application.completedSteps 
+
+    const completedSteps = application.completedSteps.includes(1)
+      ? application.completedSteps
       : [...application.completedSteps, 1];
-    
+
     await ctx.db.patch(applicationId, {
       ...data,
       ...(profilePhotoId && { profilePhotoId }),
@@ -222,7 +222,7 @@ export const updateStep1 = mutation({
         details: { profilePhotoUpdated: !!profilePhotoId },
       });
     }
-    
+
     return applicationId;
   },
 });
@@ -239,11 +239,11 @@ export const updateStep2 = mutation({
     const { applicationId, ...data } = args;
     const application = await ctx.db.get(applicationId);
     if (!application) throw new Error("Application not found");
-    
-    const completedSteps = application.completedSteps.includes(2) 
-      ? application.completedSteps 
+
+    const completedSteps = application.completedSteps.includes(2)
+      ? application.completedSteps
       : [...application.completedSteps, 2];
-    
+
     await ctx.db.patch(applicationId, {
       ...data,
       completedSteps,
@@ -261,7 +261,7 @@ export const updateStep2 = mutation({
         details: { city: data.city },
       });
     }
-    
+
     return applicationId;
   },
 });
@@ -286,11 +286,11 @@ export const updateStep3 = mutation({
     const { applicationId, ...data } = args;
     const application = await ctx.db.get(applicationId);
     if (!application) throw new Error("Application not found");
-    
-    const completedSteps = application.completedSteps.includes(3) 
-      ? application.completedSteps 
+
+    const completedSteps = application.completedSteps.includes(3)
+      ? application.completedSteps
       : [...application.completedSteps, 3];
-    
+
     await ctx.db.patch(applicationId, {
       ...data,
       completedSteps,
@@ -308,7 +308,7 @@ export const updateStep3 = mutation({
         details: { gpa: data.gpa, collegeName: data.collegeName },
       });
     }
-    
+
     return applicationId;
   },
 });
@@ -325,11 +325,11 @@ export const updateStep4 = mutation({
     const { applicationId, ...data } = args;
     const application = await ctx.db.get(applicationId);
     if (!application) throw new Error("Application not found");
-    
-    const completedSteps = application.completedSteps.includes(4) 
-      ? application.completedSteps 
+
+    const completedSteps = application.completedSteps.includes(4)
+      ? application.completedSteps
       : [...application.completedSteps, 4];
-    
+
     await ctx.db.patch(applicationId, {
       ...data,
       completedSteps,
@@ -344,13 +344,13 @@ export const updateStep4 = mutation({
         applicationId,
         step: 4,
         stepName: "Eligibility",
-        details: { 
+        details: {
           isMichiganResident: data.isMichiganResident,
           isFullTimeStudent: data.isFullTimeStudent,
         },
       });
     }
-    
+
     return applicationId;
   },
 });
@@ -367,7 +367,7 @@ export const updateStep5 = mutation({
     const { applicationId, transcriptFileId, essayFileId, ...data } = args;
     const application = await ctx.db.get(applicationId);
     if (!application) throw new Error("Application not found");
-    
+
     // Validate transcript file if provided
     if (transcriptFileId) {
       await ctx.runMutation(api.storage.validateAndSaveUpload, {
@@ -376,7 +376,7 @@ export const updateStep5 = mutation({
         applicationId: applicationId
       });
     }
-    
+
     // Validate essay file if provided
     if (essayFileId) {
       await ctx.runMutation(api.storage.validateAndSaveUpload, {
@@ -385,11 +385,11 @@ export const updateStep5 = mutation({
         applicationId: applicationId
       });
     }
-    
-    const completedSteps = application.completedSteps.includes(5) 
-      ? application.completedSteps 
+
+    const completedSteps = application.completedSteps.includes(5)
+      ? application.completedSteps
       : [...application.completedSteps, 5];
-    
+
     await ctx.db.patch(applicationId, {
       ...data,
       ...(transcriptFileId && { transcriptFileId }),
@@ -406,14 +406,14 @@ export const updateStep5 = mutation({
         applicationId,
         step: 5,
         stepName: "Documents & Essay",
-        details: { 
+        details: {
           transcriptUploaded: !!transcriptFileId,
           essayUploaded: !!essayFileId,
           wordCount: data.essayWordCount,
         },
       });
     }
-    
+
     return applicationId;
   },
 });
@@ -445,7 +445,7 @@ export const submit = mutation({
 
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
-    
+
     // Rate limiting check
     const rateLimit = await checkRateLimit(ctx, "application:submit", identity.subject);
     if (!rateLimit.allowed) {
@@ -502,10 +502,10 @@ export const submit = mutation({
 
     // Log submission
     const currentUser = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
-      
+
     await logAction(ctx, {
       action: "application:submitted",
       userId: currentUser?._id,
@@ -547,7 +547,7 @@ export const withdraw = mutation({
 
     // Verify user owns this application
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
 

@@ -1,0 +1,25 @@
+
+> my-app@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 6.7s
+  Running TypeScript ...
+Failed to compile.
+
+./app/(committee)/committee/results/page.tsx:211:33
+Type error: Property 'name' does not exist on type '{ _id: Id<"session">; _creationTime: number; userAgent?: string | undefined; ipAddress?: string | undefined; userId: Id<"user">; token: string; createdAt: number; updatedAt: number; expiresAt: number; } | ... 8 more ... | { ...; }'.
+  Property 'name' does not exist on type '{ _id: Id<"session">; _creationTime: number; userAgent?: string | undefined; ipAddress?: string | undefined; userId: Id<"user">; token: string; createdAt: number; updatedAt: number; expiresAt: number; }'.
+
+  209 |                     <TableHead key={member._id} className="text-center">
+  210 |                       <span className="text-xs">
+> 211 |                         {member.name?.split(" ")[0] || "Member"}
+      |                                 ^
+  212 |                       </span>
+  213 |                     </TableHead>
+  214 |                   ))}
+Next.js build worker exited with code: 1 and signal: null

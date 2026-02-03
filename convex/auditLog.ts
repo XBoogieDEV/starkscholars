@@ -15,34 +15,34 @@ export const AUDIT_ACTIONS = {
   "auth:verify_email": "Email verified",
   "auth:password_reset": "Password reset",
   "auth:failed_login": "Failed login attempt",
-  
+
   // Application actions
   "application:created": "Application created",
   "application:updated": "Application updated",
   "application:submitted": "Application submitted",
   "application:withdrawn": "Application withdrawn",
   "application:status_changed": "Application status changed",
-  
+
   // Document actions
   "document:uploaded": "Document uploaded",
   "document:deleted": "Document deleted",
-  
+
   // Recommendation actions
   "recommendation:requested": "Recommendation requested",
   "recommendation:reminder_sent": "Recommendation reminder sent",
   "recommendation:submitted": "Recommendation submitted",
   "recommendation:viewed": "Recommendation viewed",
-  
+
   // Evaluation actions
   "evaluation:submitted": "Evaluation submitted",
   "evaluation:updated": "Evaluation updated",
-  
+
   // Admin actions
   "admin:user_created": "User created by admin",
   "admin:user_deleted": "User deleted by admin",
   "admin:selection_finalized": "Selection finalized",
   "admin:export": "Data exported",
-  
+
   // Security
   "security:unauthorized_access": "Unauthorized access attempt",
   "security:rate_limit_exceeded": "Rate limit exceeded",
@@ -53,7 +53,7 @@ export async function logAction(
   ctx: MutationCtx,
   params: {
     action: keyof typeof AUDIT_ACTIONS;
-    userId?: Id<"users"> | string;
+    userId?: Id<"user"> | string;
     applicationId?: Id<"applications"> | string;
     details?: Record<string, unknown>;
     level?: LogLevel;
@@ -62,7 +62,7 @@ export async function logAction(
   }
 ) {
   await ctx.db.insert("activityLog", {
-    userId: params.userId as Id<"users"> | undefined,
+    userId: params.userId as Id<"user"> | undefined,
     applicationId: params.applicationId as Id<"applications"> | undefined,
     action: params.action,
     details: params.details ? JSON.stringify(params.details) : undefined,
@@ -76,7 +76,7 @@ export async function logAction(
 export async function logStepUpdate(
   ctx: MutationCtx,
   params: {
-    userId: Id<"users"> | string;
+    userId: Id<"user"> | string;
     applicationId: Id<"applications"> | string;
     step: number;
     stepName: string;
@@ -107,7 +107,7 @@ export const getRecentActivity = query({
 });
 
 export const getActivityByApplication = query({
-  args: { 
+  args: {
     applicationId: v.id("applications"),
     limit: v.optional(v.number())
   },
@@ -122,7 +122,7 @@ export const getActivityByApplication = query({
 
 export const getActivityByUser = query({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     limit: v.optional(v.number())
   },
   handler: async (ctx, { userId, limit = 50 }) => {
@@ -141,8 +141,8 @@ export const getSecurityEvents = query({
       .query("activityLog")
       .order("desc")
       .take(limit * 2);
-    
-    return allLogs.filter(log => 
+
+    return allLogs.filter(log =>
       log.action?.startsWith("security:") ||
       log.action?.startsWith("auth:failed") ||
       log.action?.startsWith("admin:")
@@ -154,7 +154,7 @@ export const getSecurityEvents = query({
 export const logSystemEvent = internalMutation({
   args: {
     action: v.string(),
-    userId: v.optional(v.id("users")),
+    userId: v.optional(v.id("user")),
     applicationId: v.optional(v.id("applications")),
     details: v.optional(v.string()),
   },

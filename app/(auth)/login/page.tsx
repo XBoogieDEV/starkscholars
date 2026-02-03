@@ -2,18 +2,22 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, AlertCircle } from "lucide-react";
+import { signIn } from "@/lib/auth-client";
+import { useToast } from "@/hooks/use-toast";
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/apply/dashboard";
-  
+  const { toast } = useToast();
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -27,15 +31,29 @@ function LoginForm() {
     setError("");
 
     try {
-      // TODO: Implement actual login with Better Auth
-      // For now, just simulate a delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Placeholder - redirect to dashboard
-      window.location.href = redirect;
+      const { error } = await signIn.email({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (error) {
+        setError(error.message || "Invalid email or password");
+        setIsLoading(false);
+        return;
+      }
+
+      // Success
+      toast({
+        title: "Welcome back!",
+        description: "Signing you in...",
+      });
+
+      // Redirect
+      router.push(redirect);
+
     } catch (err) {
-      setError("Invalid email or password");
-    } finally {
+      console.error(err);
+      setError("An unexpected error occurred");
       setIsLoading(false);
     }
   };
@@ -130,9 +148,11 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-amber-800">
-            Stark Scholars
-          </h1>
+          <Link href="/">
+            <h1 className="text-2xl font-bold text-amber-800 cursor-pointer">
+              Stark Scholars
+            </h1>
+          </Link>
           <p className="text-gray-600">Financial Assistance Program</p>
         </div>
 

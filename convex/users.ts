@@ -7,14 +7,14 @@ export const getByEmail = query({
   args: { email: v.string() },
   handler: async (ctx, { email }) => {
     return await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
   },
 });
 
 export const getById = query({
-  args: { id: v.id("users") },
+  args: { id: v.id("user") },
   handler: async (ctx, { id }) => {
     return await ctx.db.get(id);
   },
@@ -25,12 +25,12 @@ export const getCurrentUser = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
-    
+
     const email = identity.email;
     if (!email) return null;
-    
+
     return await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
   },
@@ -40,10 +40,10 @@ export const checkEmailExists = query({
   args: { email: v.string() },
   handler: async (ctx, { email }) => {
     const existing = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", email.toLowerCase().trim()))
       .first();
-    
+
     return { exists: !!existing };
   },
 });
@@ -57,44 +57,46 @@ export const create = mutation({
   handler: async (ctx, { email, name, role }) => {
     // Normalize email
     const normalizedEmail = email.toLowerCase().trim();
-    
+
     // Check for existing account with this email
     const existing = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", normalizedEmail))
       .first();
-    
+
     if (existing) {
       throw new Error("An account with this email already exists. Please sign in instead.");
     }
-    
-    const userId = await ctx.db.insert("users", {
+
+    const userId = await ctx.db.insert("user", {
       email: normalizedEmail,
-      name,
+      name: name || "Applicant",
       role,
+      emailVerified: false,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
     });
-    
+
     // Log account creation
     await logAction(ctx, {
       action: "auth:register",
       userId,
       details: { email: normalizedEmail, role },
     });
-    
+
     // Send welcome email after user creation (only for applicants)
     if (role === "applicant") {
       await ctx.scheduler.runAfter(0, api.emails.sendWelcomeEmail, {
         userId
       });
     }
-    
+
     return userId;
   },
 });
 
 export const updateLastLogin = mutation({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("user") },
   handler: async (ctx, { userId }) => {
     await ctx.db.patch(userId, {
       lastLoginAt: Date.now(),

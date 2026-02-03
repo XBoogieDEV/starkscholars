@@ -13,14 +13,14 @@ export const getDashboardMetrics = query({
     if (!identity) {
       throw new Error("Not authenticated");
     }
-    
+
     const email = identity.email;
     if (!email) {
       throw new Error("Email not available");
     }
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
 
@@ -32,7 +32,7 @@ export const getDashboardMetrics = query({
     const applications = await ctx.db.query("applications").collect();
 
     // Get all users
-    const users = await ctx.db.query("users").collect();
+    const users = await ctx.db.query("user").collect();
 
     // Get all recommendations
     const recommendations = await ctx.db.query("recommendations").collect();
@@ -97,14 +97,14 @@ export const getAllApplications = query({
     if (!identity) {
       throw new Error("Not authenticated");
     }
-    
+
     const email = identity.email;
     if (!email) {
       throw new Error("Email not available");
     }
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
 
@@ -180,14 +180,14 @@ export const getApplicationDetails = query({
     if (!identity) {
       throw new Error("Not authenticated");
     }
-    
+
     const email = identity.email;
     if (!email) {
       throw new Error("Email not available");
     }
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
 
@@ -259,14 +259,14 @@ export const updateApplicationStatus = mutation({
     if (!identity) {
       throw new Error("Not authenticated");
     }
-    
+
     const email = identity.email;
     if (!email) {
       throw new Error("Email not available");
     }
 
     const user = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
 
@@ -325,11 +325,11 @@ export const getApplicationsForExport = internalQuery({
   args: { status: v.optional(v.string()) },
   handler: async (ctx, args): Promise<ApplicationWithDetails[]> => {
     let apps = await ctx.db.query("applications").collect();
-    
+
     if (args.status && args.status !== "all") {
       apps = apps.filter(a => a.status === args.status);
     }
-    
+
     // Get user data and recommendations for each application
     const applicationsWithDetails: ApplicationWithDetails[] = await Promise.all(
       apps.map(async (app) => {
@@ -338,7 +338,7 @@ export const getApplicationsForExport = internalQuery({
           .query("recommendations")
           .withIndex("by_application", q => q.eq("applicationId", app._id))
           .collect();
-        
+
         return {
           ...app,
           email: user?.email || "",
@@ -346,7 +346,7 @@ export const getApplicationsForExport = internalQuery({
         };
       })
     );
-    
+
     return applicationsWithDetails;
   },
 });
@@ -374,14 +374,14 @@ export const exportApplicationsToCSV = action({
     const applications: ApplicationWithDetails[] = await ctx.runQuery(internal.admin.getApplicationsForExport, {
       status: args.status
     });
-    
+
     // CSV Headers
     const headers = [
       "ID", "First Name", "Last Name", "Email", "City", "State", "ZIP",
       "High School", "GPA", "ACT", "SAT", "College", "Year", "Major",
       "Status", "Submitted At", "Recommendations Received", "AI Summary"
     ];
-    
+
     // CSV Rows
     const rows: string[][] = applications.map((app: ApplicationWithDetails) => [
       app._id,
@@ -403,11 +403,11 @@ export const exportApplicationsToCSV = action({
       app.recommendationCount?.toString() || "0",
       (app.aiSummary || "").replace(/"/g, '""').replace(/\n/g, " ")
     ]);
-    
+
     // Create CSV content with proper escaping
     const csvContent: string = [
       headers.join(","),
-      ...rows.map((row: string[]) => 
+      ...rows.map((row: string[]) =>
         row.map((cell: string) => {
           // Escape quotes and wrap in quotes if contains comma, quote, or newline
           const escaped = String(cell).replace(/"/g, '""');
@@ -418,7 +418,7 @@ export const exportApplicationsToCSV = action({
         }).join(",")
       )
     ].join("\n");
-    
+
     return {
       csv: csvContent,
       filename: `scholarship-applications-${new Date().toISOString().split('T')[0]}.csv`
