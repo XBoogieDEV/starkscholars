@@ -73,7 +73,7 @@ export const getMyEvaluation = query({
 
     const user = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user) return null;
@@ -115,7 +115,7 @@ export const getEvaluationStats = query({
 
     const user = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user) return null;
@@ -150,7 +150,7 @@ export const getCandidatesForEvaluation = query({
 
     const user = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user) return [];
@@ -204,7 +204,7 @@ export const getCandidateDetails = query({
 
     const user = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user) return null;
@@ -315,7 +315,7 @@ export const getMyEvaluationsWithDetails = query({
 
     const user = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user) return [];
@@ -370,7 +370,7 @@ export const submit = mutation({
 
     const user = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user) {
@@ -459,7 +459,7 @@ export const update = mutation({
 
     const user = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user) {

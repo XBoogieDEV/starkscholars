@@ -131,7 +131,7 @@ export const getMyApplication = query({
 
     const user = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user) return null;
@@ -503,7 +503,7 @@ export const submit = mutation({
     // Log submission
     const currentUser = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     await logAction(ctx, {
@@ -548,7 +548,7 @@ export const withdraw = mutation({
     // Verify user owns this application
     const user = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user || application.userId !== user._id) {

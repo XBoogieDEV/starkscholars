@@ -8,7 +8,7 @@ export const getByEmail = query({
   handler: async (ctx, { email }) => {
     return await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", email))
+      .withIndex("email", (q) => q.eq("email", email))
       .first();
   },
 });
@@ -31,7 +31,7 @@ export const getCurrentUser = query({
 
     return await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", email))
+      .withIndex("email", (q) => q.eq("email", email))
       .first();
   },
 });
@@ -41,7 +41,7 @@ export const checkEmailExists = query({
   handler: async (ctx, { email }) => {
     const existing = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", email.toLowerCase().trim()))
+      .withIndex("email", (q) => q.eq("email", email.toLowerCase().trim()))
       .first();
 
     return { exists: !!existing };
@@ -61,7 +61,7 @@ export const create = mutation({
     // Check for existing account with this email
     const existing = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", normalizedEmail))
+      .withIndex("email", (q) => q.eq("email", normalizedEmail))
       .first();
 
     if (existing) {

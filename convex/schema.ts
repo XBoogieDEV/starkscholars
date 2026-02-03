@@ -31,7 +31,7 @@ export default defineSchema({
     lastLoginAt: v.optional(v.number()),
   })
     .index("email", ["email"])
-    .index("by_email", ["email"])
+
     .index("by_role", ["role"]),
 
   session: defineTable({

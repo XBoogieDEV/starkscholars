@@ -25,7 +25,7 @@ export const set = mutation({
 
     const user = await ctx.db
       .query("user")
-      .withIndex("by_email", (q) => q.eq("email", email))
+      .withIndex("email", (q) => q.eq("email", email))
       .first();
 
     if (!user || user.role !== "admin") {
