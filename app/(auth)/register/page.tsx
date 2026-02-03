@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { signUp } from "@/lib/auth-client";
+import { signUp, authClient } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function RegisterPage() {
@@ -21,7 +21,7 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isRegistered, setIsRegistered] = useState(false);
+  /* Removed unused state */
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -76,7 +76,8 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
         name: `${formData.firstName} ${formData.lastName}`.trim(),
-        image: undefined, // Optional
+        image: undefined,
+        callbackURL: "/apply/dashboard", // Explicitly set callback for auto-redirect
       });
 
       if (error) {
@@ -85,17 +86,21 @@ export default function RegisterPage() {
         return;
       }
 
-      // Success
-      setIsRegistered(true);
+      // Explicitly sign in if session wasn't created (fallback) or jus redirect
+      // If we are here, we are registered.
+      // We will perform a transparent sign-in just in case, though signUp should handle it.
+      await authClient.signIn.email({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      // Success - Redirect
       toast({
         title: "Account Created",
         description: "Welcome to Stark Scholars! Redirecting...",
       });
 
-      // Short delay then redirect or allow them to click link if email verification is strict
-      // Assuming email verification is required but we might auto-login or redirect to a 'verify email' page
-      // data.redirect should be handled if returned, but usually for email/pass we might just be logged in 
-      // OR explicitly need to verify.
+      router.push("/apply/dashboard");
 
     } catch (err) {
       console.error(err);
@@ -105,28 +110,7 @@ export default function RegisterPage() {
     }
   };
 
-  if (isRegistered) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-md">
-          <Card>
-            <CardContent className="p-8 text-center">
-              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Account Created!
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Your account has been successfully created.
-              </p>
-              <Button onClick={() => router.push('/apply/dashboard')} className="bg-amber-600 hover:bg-amber-700 w-full">
-                Go to Dashboard
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  /* Removed success view logic as we redirect immediately */
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
