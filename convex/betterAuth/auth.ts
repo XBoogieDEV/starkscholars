@@ -34,6 +34,11 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
       expiresIn: 60 * 60 * 24 * 7, // 7 days
       updateAge: 60 * 60 * 24, // 1 day
     },
+    trustedOrigins: [
+      "http://localhost:3000",
+      "https://starkscholars.com",
+      "https://feature-branch.starkscholars.com" // Optional: for previews
+    ],
     plugins: [convex({ authConfig })],
   } satisfies BetterAuthOptions;
 };
