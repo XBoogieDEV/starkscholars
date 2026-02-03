@@ -8,7 +8,7 @@ export const getByEmail = query({
   handler: async (ctx, { email }) => {
     return await ctx.db
       .query("user")
-      .withIndex("email", (q) => q.eq("email", email))
+      .withIndex("email", (q) => q.eq("email", email.toLowerCase().trim()))
       .first();
   },
 });

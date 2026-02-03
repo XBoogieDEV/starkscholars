@@ -60,15 +60,17 @@ async function validateSession(
 
   try {
     // Call the Convex action to validate the session token
-    const response = await fetch(`${CONVEX_SITE_URL}/api/action`, {
+    const response = await fetch(`${CONVEX_SITE_URL}/api/http`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         path: "betterAuth/adapter:getSessionAndUser",
         args: { sessionToken: token },
       }),
+      headers: {
+        "Content-Type": "application/json",
+        // Pass the origin to appease trustedOrigins check on backend
+        "Origin": process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com",
+      },
     });
 
     if (!response.ok) {
@@ -111,13 +113,14 @@ async function getUserRole(email: string): Promise<UserRole | null> {
     // Call the Convex query to get user by email
     const response = await fetch(`${CONVEX_SITE_URL}/api/query`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         path: "users/getByEmail",
         args: { email },
       }),
+      headers: {
+        "Content-Type": "application/json",
+        "Origin": process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com",
+      },
     });
 
     if (!response.ok) {
