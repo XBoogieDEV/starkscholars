@@ -25,9 +25,15 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center gap-3">
-              {/* Logo placeholder - Replace with /images/SS-LOGO1.png */}
-              <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center shadow-lg">
-                <GraduationCap className="w-6 h-6 text-white" />
+              {/* Logo */}
+              <div className="relative w-10 h-10">
+                <Image
+                  src="/images/SS-LOGO1.png"
+                  alt="Stark Scholars Logo"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
               <div>
                 <span className="text-xl font-bold text-gray-900">Stark Scholars</span>
@@ -95,16 +101,16 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            {/* Hero Image - Replace with Gemini_Generated_Image_52aoxr52aoxr52ao.png */}
+            {/* Hero Image - simage1.jpeg */}
             <div className="relative hidden lg:block">
-              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-gray-100">
-                <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                  <div className="text-center">
-                    <GraduationCap className="w-20 h-20 mx-auto mb-4" />
-                    <p>Hero Image Placeholder</p>
-                    <p className="text-sm">Replace with: Gemini_Generated_Image_52aoxr52aoxr52ao.png</p>
-                  </div>
-                </div>
+              <div className="relative aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl">
+                <Image
+                  src="/images/simage1.jpeg"
+                  alt="Students achieving academic success"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
             </div>
           </div>
@@ -143,15 +149,14 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
             </div>
-            {/* About Image - Replace with classroom_participation.png */}
-            <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl bg-gray-100">
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                <div className="text-center">
-                  <Users className="w-16 h-16 mx-auto mb-4" />
-                  <p>About Image Placeholder</p>
-                  <p className="text-sm">Replace with: classroom_participation.png</p>
-                </div>
-              </div>
+            {/* About Image - simage2.jpeg */}
+            <div className="relative aspect-[16/9] rounded-2xl overflow-hidden shadow-xl">
+              <Image
+                src="/images/simage2.jpeg"
+                alt="Students in classroom"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
         </div>
@@ -192,7 +197,9 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Application Process</h2>
             <p className="text-lg text-gray-600">Follow these steps to complete your application</p>
           </div>
-          <div className="grid md:grid-cols-4 gap-8">
+          
+          {/* Steps */}
+          <div className="grid md:grid-cols-4 gap-8 mb-12">
             {[
               { step: "1", title: "Create Account", desc: "Register on our platform" },
               { step: "2", title: "Complete Application", desc: "Fill out all 7 sections" },
@@ -208,14 +215,24 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-          {/* Process Image - Replace with science_lab.png */}
-          <div className="mt-12 relative aspect-video max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-xl bg-gray-100">
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-              <div className="text-center">
-                <BookOpen className="w-16 h-16 mx-auto mb-4" />
-                <p>Process Image Placeholder</p>
-                <p className="text-sm">Replace with: science_lab.png</p>
-              </div>
+
+          {/* Process Image Grid - simage3.jpeg and simage4.jpeg */}
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className="relative aspect-[16/9] rounded-2xl overflow-hidden shadow-xl">
+              <Image
+                src="/images/simage3.jpeg"
+                alt="Student studying"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="relative aspect-[16/9] rounded-2xl overflow-hidden shadow-xl">
+              <Image
+                src="/images/simage4.jpeg"
+                alt="Academic achievement"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
         </div>
@@ -225,15 +242,14 @@ export default function LandingPage() {
       <section className="py-20 bg-amber-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Student Image - Replace with African-American Graduation 2026.png */}
-            <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl bg-gray-100 order-2 lg:order-1">
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                <div className="text-center">
-                  <GraduationCap className="w-16 h-16 mx-auto mb-4" />
-                  <p>Graduation Image Placeholder</p>
-                  <p className="text-sm">Replace with: African-American Graduation 2026.png</p>
-                </div>
-              </div>
+            {/* Student Image - simage5.jpeg */}
+            <div className="relative aspect-[16/9] rounded-2xl overflow-hidden shadow-xl order-2 lg:order-1">
+              <Image
+                src="/images/simage5.jpeg"
+                alt="Graduation celebration"
+                fill
+                className="object-cover"
+              />
             </div>
             <div className="order-1 lg:order-2">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
@@ -248,6 +264,24 @@ export default function LandingPage() {
               </blockquote>
               <p className="mt-4 text-amber-600 font-medium">— William R. Stark Scholarship Committee</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Section - simag6.jpeg */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Student Success Stories</h2>
+            <p className="text-gray-600">See the impact of the William R. Stark Scholarship</p>
+          </div>
+          <div className="relative aspect-[21/9] rounded-2xl overflow-hidden shadow-2xl max-w-5xl mx-auto">
+            <Image
+              src="/images/simag6.jpeg"
+              alt="Student success story"
+              fill
+              className="object-cover"
+            />
           </div>
         </div>
       </section>
@@ -276,8 +310,13 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-6 h-6 text-white" />
+                <div className="relative w-10 h-10">
+                  <Image
+                    src="/images/SS-LOGO1.png"
+                    alt="Stark Scholars Logo"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
                 <span className="text-xl font-bold text-white">Stark Scholars</span>
               </div>
