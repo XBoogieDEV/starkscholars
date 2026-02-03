@@ -2,6 +2,20 @@ import { ConvexClientProvider } from "@/components/convex-provider";
 import { CookieConsent } from "@/components/cookie-consent";
 import { getToken } from "@/lib/auth-server";
 import { cn } from "@/lib/utils";
+import "./globals.css";
+import { Playfair_Display, Inter } from "next/font/google";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export default async function RootLayout({
   children,
@@ -9,10 +23,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const token = await getToken();
-  
+
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={cn("min-h-screen bg-background font-sans antialiased")}>
+      <body className={cn("min-h-screen bg-background font-sans antialiased", playfair.variable, inter.variable)}>
         {/* Skip to main content link for accessibility */}
         <a
           href="#main-content"
