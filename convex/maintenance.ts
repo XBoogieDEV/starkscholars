@@ -1,8 +1,12 @@
-import { internalMutation } from "./_generated/server";
+import { mutation } from "./_generated/server";
+import { v } from "convex/values";
 
-export const wipeAllData = internalMutation({
-    args: {},
-    handler: async (ctx) => {
+export const wipeAllData = mutation({
+    args: { confirm: v.string() },
+    handler: async (ctx, { confirm }) => {
+        if (confirm !== "CONFIRM_WIPE") {
+            throw new Error("Safety check failed. Pass 'CONFIRM_WIPE' to execute.");
+        }
         // List of tables to clear
         const tables = [
             "user",
