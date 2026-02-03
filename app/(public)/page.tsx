@@ -118,7 +118,7 @@ export default function LandingPage() {
             >
               <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 bg-primary/10 text-primary-foreground px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-primary/20 transition-colors cursor-default">
                 <Award className="w-3.5 h-3.5 text-primary" />
-                Class of 2026 President&apos;s Club
+                Class of 2023 President&apos;s Club
               </motion.div>
 
               <motion.h1 variants={fadeInUp} className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-foreground leading-[1.1]">
