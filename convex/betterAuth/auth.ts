@@ -21,7 +21,7 @@ export const authComponent = createClient<DataModel, typeof schema>(
 export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
   return {
     appName: "Stark Scholars Platform",
-    baseURL: process.env.SITE_URL || process.env.NEXT_PUBLIC_APP_URL,
+    baseURL: process.env.BETTER_AUTH_URL || process.env.SITE_URL || process.env.NEXT_PUBLIC_APP_URL,
     secret: process.env.BETTER_AUTH_SECRET,
     database: authComponent.adapter(ctx),
     emailAndPassword: {
