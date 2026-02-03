@@ -40,6 +40,18 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
       "https://feature-branch.starkscholars.com" // Optional: for previews
     ],
     plugins: [convex({ authConfig })],
+    user: {
+      additionalFields: {
+        role: {
+          type: "string",
+          defaultValue: "applicant",
+          required: true,
+        },
+      },
+      changeEmail: {
+        enabled: true,
+      },
+    },
   } satisfies BetterAuthOptions;
 };
 
