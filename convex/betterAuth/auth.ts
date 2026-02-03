@@ -26,7 +26,7 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
     database: authComponent.adapter(ctx),
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: true,
+      requireEmailVerification: false, // Changed to false for immediate access
       // Email callbacks are handled via API routes, not in auth config
       // Use /api/trigger-verification and /api/trigger-password-reset endpoints
     },
