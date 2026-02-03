@@ -40,9 +40,9 @@ function getSessionToken(request: NextRequest): string | null {
   if (token) return token;
 
   // Also try common cookie names used by Better Auth
-  const altToken = request.cookies.get("session")?.value || 
-                   request.cookies.get("better-auth.session")?.value;
-  
+  const altToken = request.cookies.get("session")?.value ||
+    request.cookies.get("better-auth.session")?.value;
+
   return altToken || null;
 }
 
@@ -191,6 +191,11 @@ export async function middleware(request: NextRequest) {
 
   // Handle API routes
   if (isApiRoute(pathname)) {
+    // Exclude Better Auth routes from auth requirement
+    if (pathname.startsWith("/api/auth")) {
+      return NextResponse.next();
+    }
+
     // API routes require authentication
     if (!sessionToken) {
       return NextResponse.json(
