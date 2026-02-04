@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { AppHeader } from "@/components/apply/app-header";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -55,16 +55,23 @@ export default function ApplyLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const { isLoading: isAuthLoading, isAuthenticated } = useConvexAuth();
   const user = useQuery(api.users.getCurrentUser);
   const application = useQuery(api.applications.getMyApplication);
 
   useEffect(() => {
-    if (user === null) {
+    // CRITICAL: Only redirect to login if:
+    // 1. Auth is fully loaded (not still fetching JWT)
+    // 2. User is not authenticated OR user query returned null
+    // This prevents the race condition where query returns null while JWT is being fetched
+    if (!isAuthLoading && (!isAuthenticated || user === null)) {
+      console.log("[DASHBOARD] Auth loaded, not authenticated or no user, redirecting to login");
       router.push("/login?redirect=/apply");
     }
-  }, [user, router]);
+  }, [isAuthLoading, isAuthenticated, user, router]);
 
-  if (user === undefined || application === undefined) {
+  // Show loading while auth is initializing OR queries are loading
+  if (isAuthLoading || user === undefined || application === undefined) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-pulse text-lg">Loading...</div>
