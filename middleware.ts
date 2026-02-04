@@ -131,8 +131,8 @@ async function getUserRole(email: string): Promise<UserRole | null> {
     const result = await response.json();
     const user = result?.value;
 
-    if (user && typeof user === "object" && "role" in user) {
-      return user.role as UserRole;
+    if (user && typeof user === "object") {
+      return ((user as any).role as UserRole) || "applicant";
     }
 
     return null;
