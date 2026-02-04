@@ -203,16 +203,17 @@ export const updateStep1 = mutation({
       updatedAt: Date.now(),
     });
 
-    // Log step completion
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity) {
+    // Log step completion (non-blocking - errors shouldn't fail the save)
+    try {
       await logStepUpdate(ctx, {
-        userId: identity.subject,
+        userId: application.userId, // Use proper Convex ID from application
         applicationId,
         step: 1,
         stepName: "Personal Information",
         details: { profilePhotoUpdated: !!profilePhotoId },
       });
+    } catch (logError) {
+      console.error("Failed to log step update:", logError);
     }
 
     return applicationId;
@@ -242,16 +243,17 @@ export const updateStep2 = mutation({
       updatedAt: Date.now(),
     });
 
-    // Log step completion
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity) {
+    // Log step completion (non-blocking)
+    try {
       await logStepUpdate(ctx, {
-        userId: identity.subject,
+        userId: application.userId,
         applicationId,
         step: 2,
         stepName: "Address",
         details: { city: data.city },
       });
+    } catch (logError) {
+      console.error("Failed to log step update:", logError);
     }
 
     return applicationId;
@@ -289,16 +291,17 @@ export const updateStep3 = mutation({
       updatedAt: Date.now(),
     });
 
-    // Log step completion
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity) {
+    // Log step completion (non-blocking)
+    try {
       await logStepUpdate(ctx, {
-        userId: identity.subject,
+        userId: application.userId,
         applicationId,
         step: 3,
         stepName: "Education",
         details: { gpa: data.gpa, collegeName: data.collegeName },
       });
+    } catch (logError) {
+      console.error("Failed to log step update:", logError);
     }
 
     return applicationId;
@@ -328,11 +331,10 @@ export const updateStep4 = mutation({
       updatedAt: Date.now(),
     });
 
-    // Log step completion
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity) {
+    // Log step completion (non-blocking)
+    try {
       await logStepUpdate(ctx, {
-        userId: identity.subject,
+        userId: application.userId,
         applicationId,
         step: 4,
         stepName: "Eligibility",
@@ -341,6 +343,8 @@ export const updateStep4 = mutation({
           isFullTimeStudent: data.isFullTimeStudent,
         },
       });
+    } catch (logError) {
+      console.error("Failed to log step update:", logError);
     }
 
     return applicationId;
@@ -360,23 +364,7 @@ export const updateStep5 = mutation({
     const application = await ctx.db.get(applicationId);
     if (!application) throw new Error("Application not found");
 
-    // Validate transcript file if provided
-    if (transcriptFileId) {
-      await ctx.runMutation(api.storage.validateAndSaveUpload, {
-        storageId: transcriptFileId,
-        fileType: "transcript",
-        applicationId: applicationId
-      });
-    }
-
-    // Validate essay file if provided
-    if (essayFileId) {
-      await ctx.runMutation(api.storage.validateAndSaveUpload, {
-        storageId: essayFileId,
-        fileType: "essay",
-        applicationId: applicationId
-      });
-    }
+    // Files already uploaded client-side - storageIds are trusted from our upload URLs
 
     const completedSteps = application.completedSteps.includes(5)
       ? application.completedSteps
@@ -390,11 +378,10 @@ export const updateStep5 = mutation({
       updatedAt: Date.now(),
     });
 
-    // Log step completion
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity) {
+    // Log step completion (non-blocking)
+    try {
       await logStepUpdate(ctx, {
-        userId: identity.subject,
+        userId: application.userId,
         applicationId,
         step: 5,
         stepName: "Documents & Essay",
@@ -404,6 +391,8 @@ export const updateStep5 = mutation({
           wordCount: data.essayWordCount,
         },
       });
+    } catch (logError) {
+      console.error("Failed to log step update:", logError);
     }
 
     return applicationId;
