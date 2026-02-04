@@ -16,6 +16,7 @@ import type * as auditLog from "../auditLog.js";
 import type * as emails from "../emails.js";
 import type * as evaluations from "../evaluations.js";
 import type * as http from "../http.js";
+import type * as maintenance from "../maintenance.js";
 import type * as recommendations from "../recommendations.js";
 import type * as settings from "../settings.js";
 import type * as storage from "../storage.js";
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   emails: typeof emails;
   evaluations: typeof evaluations;
   http: typeof http;
+  maintenance: typeof maintenance;
   recommendations: typeof recommendations;
   settings: typeof settings;
   storage: typeof storage;

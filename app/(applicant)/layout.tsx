@@ -1,9 +1,12 @@
 export const dynamic = "force-dynamic";
 
-export default function ApplicantLayout({
+import { requireAuth } from "@/lib/auth-guard";
+
+export default async function ApplicantLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  await requireAuth(["applicant"]);
+  return <>{children}</>;
 }
