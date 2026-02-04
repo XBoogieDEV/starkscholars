@@ -105,17 +105,14 @@ export default function StepPage() {
     }
   }, [stepNumber, router]);
 
-  // Auto-create application for new users
   useEffect(() => {
     async function createApp() {
       if (application === null && user && !isCreatingApp) {
-        console.log("[STEP-PAGE] No application found, creating one for user:", user._id);
         setIsCreatingApp(true);
         try {
           await createApplication({ userId: user._id });
-          console.log("[STEP-PAGE] Application created successfully");
-        } catch (error) {
-          console.error("[STEP-PAGE] Failed to create application:", error);
+        } catch {
+          // Application creation failed - layout will show loading
         } finally {
           setIsCreatingApp(false);
         }
@@ -339,10 +336,10 @@ export default function StepPage() {
             onClick={() => handleNavClick(s.id)}
             disabled={isPassed && s.id !== stepNumber}
             className={`w-8 h-8 rounded-full text-xs font-medium transition-colors touch-manipulation ${s.id === stepNumber
-                ? "bg-amber-600 text-white"
-                : s.id < stepNumber
-                  ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-500"
+              ? "bg-amber-600 text-white"
+              : s.id < stepNumber
+                ? "bg-green-100 text-green-700"
+                : "bg-gray-100 text-gray-500"
               }`}
           >
             {s.id < stepNumber ? (

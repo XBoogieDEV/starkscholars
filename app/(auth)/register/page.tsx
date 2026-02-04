@@ -64,13 +64,15 @@ export default function RegisterPage() {
         return;
       }
 
-      // NOTE: Removed blocking client-side pre-check (was causing false positives due to cached/stale data)
-      // Better Auth will handle duplicate detection server-side with accurate data
-      // The emailCheck query is kept for informational UI purposes only (not blocking)
-      console.log("[REGISTER] Proceeding with registration (server will validate)...");
+      // Block submission if duplicate email detected
+      if (emailCheck?.exists) {
+        setError("An account with this email already exists. Please sign in instead.");
+        setIsLoading(false);
+        return;
+      }
 
-      console.log("[REGISTER] Calling signUp.email...");
-      const { error, data } = await signUp.email({
+
+      const { error } = await signUp.email({
         email: formData.email,
         password: formData.password,
         name: `${formData.firstName} ${formData.lastName}`.trim(),
@@ -78,24 +80,16 @@ export default function RegisterPage() {
         callbackURL: "/apply/step/1", // Redirect new users to start application
       });
 
-      console.log("[REGISTER] signUp.email returned:", { error, data });
+
 
       if (error) {
-        console.error("[REGISTER] signUp error:", error);
         setError(error.message || "Failed to create account");
         setIsLoading(false);
         return;
       }
 
-      // Registration successful! 
-      console.log("[REGISTER] Registration successful!");
-
-      // CRITICAL: Force session sync before redirect
-      // The crossDomainClient needs to store the session in localStorage
-      // and the provider needs to pick it up before we navigate
-      console.log("[REGISTER] Syncing session...");
-      const session = await authClient.getSession();
-      console.log("[REGISTER] Session synced:", session.data ? "yes" : "no");
+      // Registration successful - sync session before redirect
+      await authClient.getSession();
 
       // Give crossDomainClient time to store tokens in localStorage
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -106,12 +100,10 @@ export default function RegisterPage() {
         description: "Welcome to Stark Scholars! Redirecting...",
       });
 
-      console.log("[REGISTER] Redirecting to /apply/step/1");
       // Add timestamp to force cache bust on fresh registration
       window.location.href = `/apply/step/1?t=${Date.now()}`;
 
     } catch (err) {
-      console.error("[Registration Error]", err);
       // Extract meaningful error message
       const errorMessage = err instanceof Error
         ? err.message
@@ -121,7 +113,6 @@ export default function RegisterPage() {
 
       // If Better Auth says "user exists", show friendly message and redirect to login
       if (errorMessage.includes("already exists") || errorMessage.includes("User exists")) {
-        console.log("[REGISTER] Better Auth: user already exists, redirecting to login...");
         setError("An account with this email already exists. Redirecting to login...");
         setTimeout(() => window.location.href = "/login", 2000);
         return;
@@ -270,7 +261,7 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 className="w-full bg-amber-600 hover:bg-amber-700"
-                disabled={isLoading}
+                disabled={isLoading || emailCheck?.exists}
               >
                 {isLoading ? (
                   <>
