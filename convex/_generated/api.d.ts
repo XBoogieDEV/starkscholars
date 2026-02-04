@@ -13,6 +13,7 @@ import type * as ai from "../ai.js";
 import type * as analytics from "../analytics.js";
 import type * as applications from "../applications.js";
 import type * as auditLog from "../auditLog.js";
+import type * as crons from "../crons.js";
 import type * as debug_component from "../debug_component.js";
 import type * as debug_user from "../debug_user.js";
 import type * as emails from "../emails.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   applications: typeof applications;
   auditLog: typeof auditLog;
+  crons: typeof crons;
   debug_component: typeof debug_component;
   debug_user: typeof debug_user;
   emails: typeof emails;

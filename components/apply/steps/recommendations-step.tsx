@@ -45,7 +45,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
   const recommendations = useQuery(api.recommendations.getByApplication, {
     applicationId: application._id,
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState<RecommenderForm>({
@@ -72,6 +72,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
           description: "Please fill in all required fields.",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 
@@ -83,6 +84,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
           description: "Please enter a valid email address.",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 
@@ -93,6 +95,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
           description: "You can only request 2 recommendations.",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation, internalQuery, internalMutation } from "./_generated/server";
+import { query, mutation, internalQuery, internalMutation, internalAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { generateSecureToken, checkRateLimit } from "./utils";
 import { logAction } from "./auditLog";
@@ -93,7 +93,7 @@ export const create = mutation({
       action: "recommendation:requested",
       userId: identity.subject,
       applicationId: args.applicationId,
-      details: { 
+      details: {
         recommenderEmail: args.recommenderEmail,
         recommenderName: args.recommenderName,
       },
@@ -138,7 +138,7 @@ export const submitRecommendation = mutation({
     await logAction(ctx, {
       action: "recommendation:submitted",
       applicationId: rec.applicationId,
-      details: { 
+      details: {
         recommenderName: args.recommenderName,
         hasFile: !!args.letterFileId,
       },
@@ -200,7 +200,7 @@ export const sendReminder = mutation({
       action: "recommendation:reminder_sent",
       userId: identity.subject,
       applicationId: rec.applicationId,
-      details: { 
+      details: {
         recommenderEmail: rec.recommenderEmail,
         reminderNumber: rec.emailRemindersSent + 1,
       },
@@ -260,6 +260,113 @@ export const updateStatusInternal = internalMutation({
   handler: async (ctx, { recommendationId, status }) => {
     await ctx.db.patch(recommendationId, {
       status,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// ============================================
+// AUTOMATED CRON REMINDERS
+// ============================================
+
+/**
+ * Automated reminder system called by cron job.
+ * Sends reminders at 7 and 14 days after initial email.
+ * Maximum 2 automated reminders per recommendation.
+ */
+export const sendAutoReminders = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
+    // Get all pending recommendations (not submitted)
+    const pendingRecs = await ctx.runQuery(internal.recommendations.getPendingForReminders);
+
+    let remindersSent = 0;
+
+    for (const rec of pendingRecs) {
+      // Skip if already submitted or token expired
+      if (rec.status === "submitted" || rec.tokenExpiresAt < now) {
+        continue;
+      }
+
+      // Skip if already sent max automated reminders
+      if (rec.emailRemindersSent >= 2) {
+        continue;
+      }
+
+      // Calculate time since email was sent
+      const timeSinceEmail = now - (rec.emailSentAt || rec.createdAt);
+      const timeSinceLastReminder = rec.lastReminderAt ? now - rec.lastReminderAt : null;
+
+      // Determine if reminder is due
+      let shouldSendReminder = false;
+
+      if (rec.emailRemindersSent === 0) {
+        // First reminder: 7 days after initial email
+        shouldSendReminder = timeSinceEmail >= sevenDaysMs;
+      } else if (rec.emailRemindersSent === 1 && timeSinceLastReminder) {
+        // Second reminder: 7 days after first reminder
+        shouldSendReminder = timeSinceLastReminder >= sevenDaysMs;
+      }
+
+      if (shouldSendReminder) {
+        try {
+          // Send the reminder email
+          await ctx.runAction(api.emails.sendRecommendationReminder, {
+            recommendationId: rec._id,
+          });
+
+          // Update the recommendation record
+          await ctx.runMutation(internal.recommendations.updateReminderSent, {
+            recommendationId: rec._id,
+          });
+
+          remindersSent++;
+          console.log(`[Cron] Sent auto-reminder to ${rec.recommenderEmail} for application ${rec.applicationId}`);
+        } catch (error) {
+          console.error(`[Cron] Failed to send reminder to ${rec.recommenderEmail}:`, error);
+        }
+      }
+    }
+
+    console.log(`[Cron] Automated reminder job complete. Sent ${remindersSent} reminders.`);
+    return { remindersSent };
+  },
+});
+
+/**
+ * Internal query to get recommendations eligible for automated reminders.
+ */
+export const getPendingForReminders = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    // Get all non-submitted recommendations
+    return await ctx.db
+      .query("recommendations")
+      .filter((q) =>
+        q.and(
+          q.neq(q.field("status"), "submitted"),
+          q.lt(q.field("emailRemindersSent"), 2)
+        )
+      )
+      .collect();
+  },
+});
+
+/**
+ * Internal mutation to update reminder count after automated send.
+ */
+export const updateReminderSent = internalMutation({
+  args: { recommendationId: v.id("recommendations") },
+  handler: async (ctx, { recommendationId }) => {
+    const rec = await ctx.db.get(recommendationId);
+    if (!rec) return;
+
+    await ctx.db.patch(recommendationId, {
+      emailRemindersSent: rec.emailRemindersSent + 1,
+      lastReminderAt: Date.now(),
       updatedAt: Date.now(),
     });
   },
