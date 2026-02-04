@@ -23,11 +23,7 @@ export default defineSchema({
     phoneNumberVerified: v.optional(v.boolean()),
 
     // Custom fields
-    role: v.optional(v.union(
-      v.literal("applicant"),
-      v.literal("admin"),
-      v.literal("committee")
-    )),
+    role: v.optional(v.string()), // Relaxed from v.union for debugging
     lastLoginAt: v.optional(v.number()),
   })
     .index("email", ["email"])
