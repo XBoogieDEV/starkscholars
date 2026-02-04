@@ -4,8 +4,9 @@ import { v } from "convex/values";
 export const wipeAllData = mutation({
     args: {},
     handler: async (ctx) => {
-        // List of tables to clear
+        // List of tables to clear (Main App + Better Auth Component)
         const tables = [
+            // Main App tables
             "user",
             "session",
             "account",
@@ -16,6 +17,10 @@ export const wipeAllData = mutation({
             "committeeMembers",
             "activityLog",
             "settings",
+            // Better Auth Component tables (may exist in shared namespace)
+            "jwks",
+            "rateLimit",
+            "twoFactor",
         ];
 
         const results: Record<string, number> = {};

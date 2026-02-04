@@ -103,8 +103,14 @@ export default function RegisterPage() {
       router.push("/apply/dashboard");
 
     } catch (err) {
-      console.error(err);
-      setError("An unexpected error occurred");
+      console.error("[Registration Error]", err);
+      // Extract meaningful error message
+      const errorMessage = err instanceof Error
+        ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : "An unexpected error occurred";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -145,7 +151,7 @@ export default function RegisterPage() {
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
-                    placeholder="Jane"
+                    placeholder="William"
                     value={formData.firstName}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, firstName: e.target.value }))
@@ -157,7 +163,7 @@ export default function RegisterPage() {
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
-                    placeholder="Doe"
+                    placeholder="Cooper"
                     value={formData.lastName}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, lastName: e.target.value }))
