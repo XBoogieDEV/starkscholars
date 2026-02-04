@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -59,19 +59,37 @@ export default function ApplyLayout({
   const user = useQuery(api.users.getCurrentUser);
   const application = useQuery(api.applications.getMyApplication);
 
+  // Track how long we've been waiting for user sync (for grace period)
+  const [syncWaitTime, setSyncWaitTime] = useState(0);
+  const SYNC_GRACE_PERIOD_MS = 5000; // Wait up to 5 seconds for user sync
+
   useEffect(() => {
-    // CRITICAL: Only redirect to login if:
-    // 1. Auth is fully loaded (not still fetching JWT)
-    // 2. User is not authenticated OR user query returned null
-    // This prevents the race condition where query returns null while JWT is being fetched
-    if (!isAuthLoading && (!isAuthenticated || user === null)) {
-      console.log("[DASHBOARD] Auth loaded, not authenticated or no user, redirecting to login");
+    // If authenticated but user is null, it might be syncing - wait with grace period
+    if (!isAuthLoading && isAuthenticated && user === null) {
+      console.log("[DASHBOARD] Authenticated but user is null, waiting for sync...", syncWaitTime);
+
+      if (syncWaitTime < SYNC_GRACE_PERIOD_MS) {
+        const timeout = setTimeout(() => {
+          setSyncWaitTime(prev => prev + 500);
+        }, 500);
+        return () => clearTimeout(timeout);
+      } else {
+        // Grace period expired, user truly doesn't exist
+        console.log("[DASHBOARD] Sync grace period expired, redirecting to login");
+        router.push("/login?redirect=/apply");
+      }
+    }
+
+    // Not authenticated at all - redirect immediately
+    if (!isAuthLoading && !isAuthenticated) {
+      console.log("[DASHBOARD] Not authenticated, redirecting to login");
       router.push("/login?redirect=/apply");
     }
-  }, [isAuthLoading, isAuthenticated, user, router]);
+  }, [isAuthLoading, isAuthenticated, user, router, syncWaitTime]);
 
-  // Show loading while auth is initializing OR queries are loading
-  if (isAuthLoading || user === undefined || application === undefined) {
+  // Show loading while auth is initializing OR queries are loading OR waiting for sync
+  if (isAuthLoading || user === undefined || application === undefined ||
+    (isAuthenticated && user === null && syncWaitTime < SYNC_GRACE_PERIOD_MS)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-pulse text-lg">Loading...</div>
