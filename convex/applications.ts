@@ -73,9 +73,9 @@ export const getValidationStatus = query({
     const filesMet = profilePhotoUploaded && transcriptUploaded && essayUploaded;
     if (filesMet) metRequirements++;
 
-    // 7. Essay word count valid (450-550)
+    // 7. Essay word count valid (250-500)
     const wordCount = application.essayWordCount || 0;
-    const essayValid = wordCount >= 450 && wordCount <= 550;
+    const essayValid = wordCount >= 250 && wordCount <= 500;
     if (essayValid) metRequirements++;
 
     // 8. Eligibility info complete (name, address, education)
@@ -117,7 +117,7 @@ export const getValidationStatus = query({
         { id: "recommendations", label: "At least 2 recommendations received", met: recommendationsMet, value: `${submittedRecommendations.length}/2` },
         { id: "photo", label: "Profile photo uploaded", met: profilePhotoUploaded },
         { id: "transcript", label: "Transcript uploaded", met: transcriptUploaded },
-        { id: "essay", label: "Essay complete (450-550 words)", met: essayValid, value: `${wordCount} words` },
+        { id: "essay", label: "Essay complete (250-500 words)", met: essayValid, value: `${wordCount} words` },
       ],
     };
   },
@@ -442,7 +442,7 @@ export const submit = mutation({
       { check: !!application.streetAddress && application.state === "MI", error: "Address incomplete" },
       { check: !!application.highSchoolName && !!application.gpa && (application.gpa || 0) >= 3.0, error: "Education requirements not met" },
       { check: application.isFullTimeStudent === true && application.isMichiganResident === true, error: "Eligibility requirements not met" },
-      { check: !!application.essayText && (application.essayWordCount || 0) >= 450 && (application.essayWordCount || 0) <= 550, error: "Essay requirements not met" },
+      { check: !!application.essayText && (application.essayWordCount || 0) >= 250 && (application.essayWordCount || 0) <= 500, error: "Essay must be between 250-500 words" },
       { check: !!application.transcriptFileId, error: "Transcript not uploaded" },
     ];
 

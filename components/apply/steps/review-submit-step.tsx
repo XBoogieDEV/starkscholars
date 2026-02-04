@@ -73,7 +73,7 @@ interface CertificationState {
 
 export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepProps) {
   const { toast } = useToast();
-  
+
   // Fetch recommendations and validation status
   const recommendations = useQuery(api.recommendations.getByApplication, {
     applicationId: application._id,
@@ -81,9 +81,9 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
   const validationStatus = useQuery(api.applications.getValidationStatus, {
     applicationId: application._id,
   });
-  
+
   const submitApplication = useMutation(api.applications.submit);
-  
+
   // Local state
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -171,12 +171,12 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
       },
       {
         id: "essay",
-        label: "Essay word count valid (450-550 words)",
+        label: "Essay word count valid (250-500 words)",
         met: validationStatus.essayValid,
         value: `${validationStatus.wordCount || 0} words`,
         link: "/apply/step/5",
         icon: <FileText className="h-4 w-4" />,
-        description: "Essay must be between 450-550 words",
+        description: "Essay must be between 250-500 words",
       },
       {
         id: "recommendations",
@@ -217,7 +217,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
   // Get specific validation errors for display
   const getValidationErrors = (): string[] => {
     const errors: string[] = [];
-    
+
     if (!allRequirementsMet) {
       requirements.forEach((req) => {
         if (!req.met) {
@@ -225,24 +225,24 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
         }
       });
     }
-    
+
     if (!allCertificationsChecked) {
       if (!certifications.accurate) errors.push("Certification: Information accuracy");
       if (!certifications.publish) errors.push("Certification: Publishing consent");
       if (!certifications.disqualify) errors.push("Certification: Disqualification acknowledgment");
     }
-    
+
     if (signature && !signatureValid) {
       errors.push("Signature does not match your full legal name");
     }
-    
+
     return errors;
   };
 
   // Handle submit button click
   const handleSubmitClick = () => {
     setTouched({ signature: true, certifications: true });
-    
+
     if (!canSubmit) {
       const errors = getValidationErrors();
       if (errors.length > 0) {
@@ -255,7 +255,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
       }
       return;
     }
-    
+
     setShowConfirmDialog(true);
   };
 
@@ -357,19 +357,18 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               </p>
             </div>
             <div className="text-right">
-              <span className={`text-2xl font-bold ${
-                completionPercentage === 100 ? "text-green-600" : "text-amber-600"
-              }`}>
+              <span className={`text-2xl font-bold ${completionPercentage === 100 ? "text-green-600" : "text-amber-600"
+                }`}>
                 {completionPercentage}%
               </span>
             </div>
           </div>
-          
-          <Progress 
-            value={completionPercentage} 
+
+          <Progress
+            value={completionPercentage}
             className="h-3"
           />
-          
+
           {/* Status message */}
           <div className="mt-4 flex items-center gap-2">
             {allRequirementsMet ? (
@@ -413,11 +412,10 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               {requirements.map((req) => (
                 <div
                   key={req.id}
-                  className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                    req.met
-                      ? "bg-green-50 border-green-200"
-                      : "bg-red-50 border-red-200"
-                  }`}
+                  className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${req.met
+                    ? "bg-green-50 border-green-200"
+                    : "bg-red-50 border-red-200"
+                    }`}
                 >
                   <div className="flex items-center gap-3 flex-1">
                     {req.met ? (
@@ -499,7 +497,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
                 {application.city}, {application.state} {application.zipCode}
               </p>
               <p className="mt-1">
-                <Badge 
+                <Badge
                   variant={application.isMichiganResident ? "default" : "destructive"}
                   className={application.isMichiganResident ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
                 >
@@ -537,7 +535,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
                 {application.major && ` | Major: ${application.major}`}
               </p>
               <p className="mt-1">
-                <Badge 
+                <Badge
                   variant={application.isFullTimeStudent ? "default" : "destructive"}
                   className={application.isFullTimeStudent ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
                 >
@@ -574,12 +572,12 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
                 <strong>Essay:</strong>
                 {application.essayWordCount ? (
                   <Badge className={
-                    (application.essayWordCount >= 450 && application.essayWordCount <= 550)
+                    (application.essayWordCount >= 250 && application.essayWordCount <= 500)
                       ? "bg-green-100 text-green-800"
                       : "bg-yellow-100 text-yellow-800"
                   }>
                     {application.essayWordCount} words
-                    {(application.essayWordCount >= 450 && application.essayWordCount <= 550) ? " ✓" : " (450-550 required)"}
+                    {(application.essayWordCount >= 250 && application.essayWordCount <= 500) ? " ✓" : " (250-500 required)"}
                   </Badge>
                 ) : (
                   <Badge variant="destructive">Missing ✗</Badge>
@@ -602,9 +600,9 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
                     <Badge className="bg-green-100 text-green-800">Received ✓</Badge>
                   ) : (
                     <Badge variant="outline" className="text-amber-600">
-                      {rec.status === "pending" ? "Pending" : 
-                       rec.status === "email_sent" ? "Email sent" : 
-                       rec.status === "viewed" ? "Viewed" : rec.status}
+                      {rec.status === "pending" ? "Pending" :
+                        rec.status === "email_sent" ? "Email sent" :
+                          rec.status === "viewed" ? "Viewed" : rec.status}
                     </Badge>
                   )}
                 </p>
@@ -638,10 +636,9 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
           {/* Certifications */}
           <div className="space-y-4">
             <h4 className="font-medium text-gray-900">Required Certifications</h4>
-            
-            <div className={`flex items-start gap-3 p-3 rounded-lg border ${
-              certifications.accurate ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
-            }`}>
+
+            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.accurate ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+              }`}>
               <Checkbox
                 id="cert-accurate"
                 checked={certifications.accurate}
@@ -661,9 +658,8 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               </div>
             </div>
 
-            <div className={`flex items-start gap-3 p-3 rounded-lg border ${
-              certifications.publish ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
-            }`}>
+            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.publish ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+              }`}>
               <Checkbox
                 id="cert-publish"
                 checked={certifications.publish}
@@ -684,9 +680,8 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               </div>
             </div>
 
-            <div className={`flex items-start gap-3 p-3 rounded-lg border ${
-              certifications.disqualify ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
-            }`}>
+            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.disqualify ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+              }`}>
               <Checkbox
                 id="cert-disqualify"
                 checked={certifications.disqualify}
@@ -722,13 +717,12 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               onChange={(e) => setSignature(e.target.value)}
               onBlur={() => setTouched((prev) => ({ ...prev, signature: true }))}
               placeholder={`${application.firstName} ${application.lastName}`}
-              className={`max-w-md ${
-                touched.signature && signature && !signatureValid
-                  ? "border-red-500 focus-visible:ring-red-500"
-                  : signatureValid
+              className={`max-w-md ${touched.signature && signature && !signatureValid
+                ? "border-red-500 focus-visible:ring-red-500"
+                : signatureValid
                   ? "border-green-500 focus-visible:ring-green-500"
                   : ""
-              }`}
+                }`}
               disabled={!allRequirementsMet}
             />
             {touched.signature && signature && !signatureValid && (
@@ -752,13 +746,13 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
                 <p className="text-amber-800 text-sm flex items-start gap-2">
                   <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                   <span>
-                    Please complete all application requirements before submitting. 
+                    Please complete all application requirements before submitting.
                     Check the requirements checklist above for details.
                   </span>
                 </p>
               </div>
             )}
-            
+
             <Button
               onClick={handleSubmitClick}
               className="w-full bg-amber-600 hover:bg-amber-700"
@@ -768,7 +762,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               <Send className="mr-2 h-4 w-4" />
               {allRequirementsMet ? "Submit Application" : "Complete Requirements to Submit"}
             </Button>
-            
+
             <p className="text-center text-sm text-gray-500 mt-3">
               By submitting, you confirm all information is accurate and complete.
             </p>

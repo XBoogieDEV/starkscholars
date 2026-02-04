@@ -17,8 +17,8 @@ interface DocumentsStepProps {
   onComplete: () => void;
 }
 
-const ESSAY_MIN_WORDS = 450;
-const ESSAY_MAX_WORDS = 550;
+const ESSAY_MIN_WORDS = 250;
+const ESSAY_MAX_WORDS = 500;
 
 const ALLOWED_FILE_TYPES = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
 const ALLOWED_EXTENSIONS = [".pdf", ".jpg", ".jpeg", ".png"];
@@ -30,7 +30,7 @@ const countWords = (text: string): number => {
 const isValidFileType = (file: File): boolean => {
   // Check MIME type
   if (ALLOWED_FILE_TYPES.includes(file.type)) return true;
-  
+
   // Check extension as fallback
   const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
   return ALLOWED_EXTENSIONS.includes(ext);
@@ -40,7 +40,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
   const { toast } = useToast();
   const updateStep5 = useMutation(api.applications.updateStep5);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<{
     transcript?: "uploading" | "success" | "error";
@@ -50,11 +50,12 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
   const [files, setFiles] = useState<{
     transcript?: File;
   }>({});
-  
+
   const transcriptRef = useRef<HTMLInputElement>(null);
 
   const wordCount = countWords(essayText);
-  const isEssayValid = wordCount >= ESSAY_MIN_WORDS && wordCount <= ESSAY_MAX_WORDS;
+  const isEssayMinMet = wordCount >= ESSAY_MIN_WORDS;
+  const isOverLimit = wordCount > ESSAY_MAX_WORDS;
 
   const handleFileChange = (type: "transcript", file: File | null) => {
     if (file) {
@@ -78,7 +79,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
         });
         return;
       }
-      
+
       setFiles((prev) => ({ ...prev, [type]: file }));
     }
   };
@@ -86,7 +87,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
   const uploadFileToStorage = async (file: File, type: "transcript" | "essay"): Promise<string> => {
     // Step 1: Request upload URL from Convex
     const uploadUrl = await generateUploadUrl({ type });
-    
+
     // Step 2: Upload file directly to Convex storage
     const response = await fetch(uploadUrl, {
       method: "POST",
@@ -95,19 +96,19 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
       },
       body: file,
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Upload failed: ${errorText}`);
     }
-    
+
     // Step 3: Get storageId from response
     const result = await response.json();
-    
+
     if (!result.storageId) {
       throw new Error("No storageId returned from upload");
     }
-    
+
     return result.storageId;
   };
 
@@ -117,14 +118,23 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
     setUploadStatus({});
 
     try {
-      // Validate essay
-      if (!isEssayValid) {
+      // Validate minimum essay words
+      if (!isEssayMinMet) {
         toast({
-          title: "Essay word count",
-          description: `Your essay must be between ${ESSAY_MIN_WORDS} and ${ESSAY_MAX_WORDS} words. Current: ${wordCount} words.`,
+          title: "Essay too short",
+          description: `Your essay must be at least ${ESSAY_MIN_WORDS} words. Current: ${wordCount} words.`,
           variant: "destructive",
         });
         return;
+      }
+
+      // Warn if over limit (but don't block)
+      if (isOverLimit) {
+        toast({
+          title: "Essay over limit",
+          description: `Your essay exceeds ${ESSAY_MAX_WORDS} words. Consider trimming it before final submission.`,
+          variant: "default",
+        });
       }
 
       let transcriptFileId: string | undefined;
@@ -170,7 +180,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
 
   const getWordCountColor = () => {
     if (wordCount < ESSAY_MIN_WORDS) return "text-red-500";
-    if (wordCount > ESSAY_MAX_WORDS) return "text-red-500";
+    if (wordCount > ESSAY_MAX_WORDS) return "text-amber-600";
     return "text-green-600";
   };
 
@@ -202,7 +212,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
             onChange={(e) => handleFileChange("transcript", e.target.files?.[0] || null)}
             className="hidden"
           />
-          
+
           {files.transcript ? (
             <div className="flex items-center justify-center gap-2">
               <File className="h-5 w-5 text-amber-600" />
@@ -251,7 +261,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
       {/* Essay Section */}
       <div className="space-y-4 pt-4 border-t">
         <h3 className="text-lg font-semibold text-gray-900">Essay</h3>
-        
+
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
           <p className="font-medium text-amber-900">Essay Topic:</p>
           <p className="text-amber-800 italic">
@@ -260,7 +270,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
         </div>
 
         <p className="text-sm text-gray-600">
-          Write a {ESSAY_MIN_WORDS}-{ESSAY_MAX_WORDS} word essay on the topic above. 
+          Write a {ESSAY_MIN_WORDS}-{ESSAY_MAX_WORDS} word essay on the topic above.
           Be specific about your community and how your field of study relates to community impact.
         </p>
 
@@ -272,7 +282,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
             className="min-h-[300px]"
             disabled={isLoading}
           />
-          
+
           {/* Word Count */}
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
@@ -280,15 +290,15 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
                 {wordCount} / {ESSAY_MAX_WORDS} words
               </span>
               <span className="text-gray-500">
-                {wordCount < ESSAY_MIN_WORDS 
-                  ? `${ESSAY_MIN_WORDS - wordCount} more needed` 
-                  : wordCount > ESSAY_MAX_WORDS 
-                  ? `${wordCount - ESSAY_MAX_WORDS} over limit`
-                  : "Valid range"}
+                {wordCount < ESSAY_MIN_WORDS
+                  ? `${ESSAY_MIN_WORDS - wordCount} more needed`
+                  : wordCount > ESSAY_MAX_WORDS
+                    ? `${wordCount - ESSAY_MAX_WORDS} over limit`
+                    : "Valid range"}
               </span>
             </div>
-            <Progress 
-              value={getProgressValue()} 
+            <Progress
+              value={getProgressValue()}
               className={`h-2 ${wordCount > ESSAY_MAX_WORDS ? "bg-red-200" : ""}`}
             />
           </div>
@@ -310,7 +320,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
         <Button
           type="submit"
           className="bg-amber-600 hover:bg-amber-700"
-          disabled={isLoading || !isEssayValid}
+          disabled={isLoading || !isEssayMinMet}
         >
           {isLoading ? (
             <>
