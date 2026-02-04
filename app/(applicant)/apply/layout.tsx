@@ -63,6 +63,15 @@ export default function ApplyLayout({
   const [syncWaitTime, setSyncWaitTime] = useState(0);
   const SYNC_GRACE_PERIOD_MS = 5000; // Wait up to 5 seconds for user sync
 
+  // DIAGNOSTIC: Log state on every render to see what's happening
+  console.log("[APPLY-LAYOUT] State:", {
+    isAuthLoading,
+    isAuthenticated,
+    user: user === undefined ? "undefined" : user === null ? "null" : "exists",
+    application: application === undefined ? "undefined" : application === null ? "null" : "exists",
+    syncWaitTime,
+  });
+
   useEffect(() => {
     // If authenticated but user is null, it might be syncing - wait with grace period
     if (!isAuthLoading && isAuthenticated && user === null) {
