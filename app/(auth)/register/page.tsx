@@ -77,6 +77,7 @@ export default function RegisterPage() {
         password: formData.password,
         name: `${formData.firstName} ${formData.lastName}`.trim(),
         image: undefined,
+        role: "applicant",
         callbackURL: "/apply/dashboard", // Explicitly set callback for auto-redirect
       });
 

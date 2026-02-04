@@ -37,6 +37,7 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
     trustedOrigins: [
       "http://localhost:3000",
       "https://starkscholars.com",
+      "https://www.starkscholars.com",
       "https://feature-branch.starkscholars.com" // Optional: for previews
     ],
     plugins: [convex({ authConfig })],
@@ -45,7 +46,7 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
         role: {
           type: "string",
           defaultValue: "applicant",
-          required: true,
+          required: false, // Changed to false to prevent client-side validation failures
         },
       },
       changeEmail: {
