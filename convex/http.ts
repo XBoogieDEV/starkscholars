@@ -5,8 +5,9 @@ import { authComponent, createAuth } from "./betterAuth/auth";
 const http = httpRouter();
 
 // CORS preflight handler for all auth routes
+// IMPORTANT: When using credentials (cookies), origin CANNOT be '*'
 const corsHeaders = {
-    "Access-Control-Allow-Origin": "*", // Will be restricted by trustedOrigins in Better Auth
+    "Access-Control-Allow-Origin": "https://starkscholars.com",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
     "Access-Control-Allow-Credentials": "true",
