@@ -42,9 +42,16 @@ export default function RegisterPage() {
     setIsLoading(true);
     setError("");
 
+    // DEBUG: Log the exact values of emailCheck
+    console.log("[REGISTER DEBUG] Form email:", formData.email);
+    console.log("[REGISTER DEBUG] Debounced email:", debouncedEmail);
+    console.log("[REGISTER DEBUG] emailCheck full object:", JSON.stringify(emailCheck));
+    console.log("[REGISTER DEBUG] emailCheck?.exists:", emailCheck?.exists);
+
     // Capture the "exists" state NOW before registration creates the user
     // (emailCheck is a live query that will update after user creation)
     const emailAlreadyExisted = emailCheck?.exists ?? false;
+    console.log("[REGISTER DEBUG] emailAlreadyExisted (captured):", emailAlreadyExisted);
 
     try {
       // Validate passwords match
@@ -70,6 +77,7 @@ export default function RegisterPage() {
 
       // Check for duplicate email (client-side pre-check using captured value)
       if (emailAlreadyExisted) {
+        console.log("[REGISTER DEBUG] Blocking due to emailAlreadyExisted=true");
         setError("An account with this email already exists. Please sign in instead.");
         setIsLoading(false);
         return;
