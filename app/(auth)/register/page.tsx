@@ -75,7 +75,7 @@ export default function RegisterPage() {
         password: formData.password,
         name: `${formData.firstName} ${formData.lastName}`.trim(),
         image: undefined,
-        callbackURL: "/apply/dashboard", // Explicitly set callback for auto-redirect
+        callbackURL: "/apply/step/1", // Redirect new users to start application
       });
 
       console.log("[REGISTER] signUp.email returned:", { error, data });
@@ -106,8 +106,9 @@ export default function RegisterPage() {
         description: "Welcome to Stark Scholars! Redirecting...",
       });
 
-      console.log("[REGISTER] Redirecting to /apply/dashboard");
-      window.location.href = "/apply/dashboard";
+      console.log("[REGISTER] Redirecting to /apply/step/1");
+      // Add timestamp to force cache bust on fresh registration
+      window.location.href = `/apply/step/1?t=${Date.now()}`;
 
     } catch (err) {
       console.error("[Registration Error]", err);
