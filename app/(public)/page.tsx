@@ -401,8 +401,8 @@ export default function LandingPage() {
                 { date: "Feb 1, 2026", title: "Applications Open", desc: "Online portal opens for new registrations." },
                 { date: "Apr 15, 2026", title: "Application Deadline", desc: "Final day to submit all required documents." },
                 { date: "Apr 16 - May 15", title: "Review Period", desc: "Committee reviews all eligible applications." },
-                { date: "May 20 - 30", title: "Final Interviews", desc: "Selected finalists are invited for interviews." },
-                { date: "Jun 15, 2026", title: "Awards Ceremony", desc: "Winners announced at the annual gala." }
+                { date: "May 20 - 30", title: "Final Determinations", desc: "Recipients for awards are finalized." },
+                { date: "May 23, 2026", title: "Awards Ceremony", desc: "Winners announced at the annual gala." }
               ].map((item, idx) => (
                 <motion.div
                   key={idx}
