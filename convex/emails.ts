@@ -269,49 +269,115 @@ export const sendWelcomeEmail = action({
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
 
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #d97706;">Welcome to Stark Scholars!</h2>
-        
-        <p>Hello ${user.name || "Scholar"},</p>
-        
-        <p>
-          Thank you for creating an account. You're now one step closer to applying for 
-          the William R. Stark Financial Assistance Program.
-        </p>
-        
-        <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin-top: 0; color: #92400e;">Next Steps</h3>
-          <ol style="margin-bottom: 0;">
-            <li>Complete your application (7 steps)</li>
-            <li>Request 2 recommendation letters</li>
-            <li>Submit before the deadline: <strong>April 15, 2026</strong></li>
-          </ol>
-        </div>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <a 
-            href="${appUrl}/apply/dashboard" 
-            style="background: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;"
-          >
-            Start Your Application
-          </a>
-        </div>
-        
-        <p>
-          If you have any questions, please contact us at 
-          <a href="mailto:blackgoldmine@sbcglobal.net">blackgoldmine@sbcglobal.net</a>.
-        </p>
-        
-        <p>
-          <em>Best regards,</em><br>
-          <strong>William R. Stark Financial Assistance Committee</strong>
-        </p>
-      </div>
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; background-color: #f8f5f0; line-height: 1.6;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8f5f0;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                
+                <!-- Header Banner -->
+                <tr>
+                  <td style="background: linear-gradient(135deg, #92400e 0%, #b45309 50%, #d97706 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; font-weight: normal; letter-spacing: 1px;">
+                      ★ STARK SCHOLARS ★
+                    </h1>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0; text-transform: uppercase; letter-spacing: 2px;">
+                      William R. Stark Financial Assistance Program
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Welcome Message -->
+                <tr>
+                  <td style="padding: 40px 40px 20px 40px;">
+                    <h2 style="color: #92400e; font-size: 24px; margin: 0 0 20px 0; font-weight: normal;">
+                      Welcome, ${user.name || "Future Scholar"}!
+                    </h2>
+                    <p style="color: #374151; font-size: 16px; margin: 0 0 20px 0;">
+                      Thank you for joining the William R. Stark Class of 2023 President's Club scholarship program. 
+                      We're honored that you're considering us on your educational journey.
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Next Steps Box -->
+                <tr>
+                  <td style="padding: 0 40px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #fef3c7; border-radius: 8px; border-left: 4px solid #d97706;">
+                      <tr>
+                        <td style="padding: 24px;">
+                          <h3 style="color: #92400e; font-size: 18px; margin: 0 0 16px 0; font-weight: bold;">
+                            📋 Next Steps
+                          </h3>
+                          <table role="presentation" cellspacing="0" cellpadding="0">
+                            <tr>
+                              <td style="padding: 4px 0; color: #78350f;">
+                                <span style="display: inline-block; width: 24px; text-align: center; font-weight: bold;">1.</span>
+                                Complete your application (7 steps)
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 4px 0; color: #78350f;">
+                                <span style="display: inline-block; width: 24px; text-align: center; font-weight: bold;">2.</span>
+                                Request 2 recommendation letters
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 4px 0; color: #78350f;">
+                                <span style="display: inline-block; width: 24px; text-align: center; font-weight: bold;">3.</span>
+                                Submit before <strong>April 15, 2026</strong>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- CTA Button -->
+                <tr>
+                  <td align="center" style="padding: 40px;">
+                    <a href="${appUrl}/apply/dashboard" 
+                       style="display: inline-block; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);">
+                      Start Your Application →
+                    </a>
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color: #1f2937; padding: 30px 40px; text-align: center;">
+                    <p style="color: #d1d5db; font-size: 14px; margin: 0 0 12px 0;">
+                      Questions? Contact us at 
+                      <a href="mailto:blackgoldmine@sbcglobal.net" style="color: #fcd34d; text-decoration: none;">
+                        blackgoldmine@sbcglobal.net
+                      </a>
+                    </p>
+                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                      © 2026 William R. Stark Financial Assistance Committee<br>
+                      <em>Fraternally, GIG Kenny R. Askew 33°, Chairman</em>
+                    </p>
+                  </td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
     `;
 
     await sendEmail({
       to: user.email,
-      subject: "Welcome to Stark Scholars",
+      subject: "Welcome to Stark Scholars - Your Journey Begins!",
       html,
     });
 
