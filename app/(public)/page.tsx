@@ -240,8 +240,8 @@ export default function LandingPage() {
                 <span className="text-sm font-bold uppercase tracking-widest text-primary mb-2 block">Our Mission</span>
                 <h3 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">Honoring a Legacy of Excellence</h3>
                 <p className="text-lg text-secondary-foreground/80 leading-relaxed">
-                  Established by the Class of 2026 President&apos;s Club, the William R. Stark Scholarship
-                  honors a legacy of service. We exist to empower the next generation of Michigan leaders
+                  Established by the Class of 2023 President&apos;s Club, the William R. Stark Scholarship
+                  honors a legacy of service. We exist to empower the next generation of global youth leaders
                   who demonstrate academic dedication and a heart for community service.
                 </p>
               </div>
