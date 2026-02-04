@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { signUp } from "@/lib/auth-client";
+import { signUp, authClient } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function RegisterPage() {
@@ -94,7 +94,17 @@ export default function RegisterPage() {
       }
 
       // Registration successful! 
-      console.log("[REGISTER] Registration successful, redirecting...");
+      console.log("[REGISTER] Registration successful!");
+
+      // CRITICAL: Force session sync before redirect
+      // The crossDomainClient needs to store the session in localStorage
+      // and the provider needs to pick it up before we navigate
+      console.log("[REGISTER] Syncing session...");
+      const session = await authClient.getSession();
+      console.log("[REGISTER] Session synced:", session.data ? "yes" : "no");
+
+      // Give crossDomainClient time to store tokens in localStorage
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Success - Redirect
       toast({
@@ -102,8 +112,6 @@ export default function RegisterPage() {
         description: "Welcome to Stark Scholars! Redirecting...",
       });
 
-      // Use window.location as fallback since router.push may not work
-      // due to session not being detected yet
       console.log("[REGISTER] Redirecting to /apply/dashboard");
       window.location.href = "/apply/dashboard";
 
