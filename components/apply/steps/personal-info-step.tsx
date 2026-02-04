@@ -238,9 +238,11 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
             <input
               ref={photoRef}
               type="file"
-              accept=".jpg,.jpeg,.png"
+              accept="image/jpeg,image/jpg,image/png,.jpg,.jpeg,.png"
+              capture="user"
               onChange={(e) => handlePhotoChange(e.target.files?.[0] || null)}
               className="hidden"
+              aria-label="Profile photo upload"
             />
 
             {profilePhoto ? (
