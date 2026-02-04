@@ -68,6 +68,22 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
           },
         },
       },
+      session: {
+        create: {
+          after: async (session) => {
+            if ("scheduler" in ctx) {
+              // @ts-expect-error - api type not generated yet
+              await ctx.scheduler.runAfter(0, api.users.syncSession, {
+                token: session.token,
+                expiresAt: session.expiresAt,
+                baUserId: session.userId, // Better Auth User ID (external)
+                ipAddress: session.ipAddress || null,
+                userAgent: session.userAgent || null,
+              });
+            }
+          },
+        },
+      },
     },
   } satisfies BetterAuthOptions;
 };

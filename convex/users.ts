@@ -72,6 +72,7 @@ export const syncUser = internalMutation({
     externalId: v.string(), // The Better Auth User ID
   },
   handler: async (ctx, { email, name, role, image, externalId }) => {
+    console.log("[syncUser] Syncing user:", email, "BA ID:", externalId);
     const normalizedEmail = email.toLowerCase().trim();
 
     // Check if user exists
@@ -104,6 +105,55 @@ export const syncUser = internalMutation({
   },
 });
 
+// Internal mutation called by Better Auth hook to sync sessions
+export const syncSession = internalMutation({
+  args: {
+    token: v.string(),
+    expiresAt: v.number(),
+    baUserId: v.string(), // Better Auth User ID (external)
+    ipAddress: v.optional(v.union(v.null(), v.string())),
+    userAgent: v.optional(v.union(v.null(), v.string())),
+  },
+  handler: async (ctx, { token, expiresAt, baUserId, ipAddress, userAgent }) => {
+    console.log("[syncSession] Syncing session for BA User ID:", baUserId);
+
+    // Find the Main App user by their external ID
+    const user = await ctx.db
+      .query("user")
+      .withIndex("by_userId", (q) => q.eq("userId", baUserId))
+      .first();
+
+    if (!user) {
+      console.error("[syncSession] User not found for BA ID:", baUserId);
+      return null;
+    }
+
+    // Check if session already exists (idempotency)
+    const existingSession = await ctx.db
+      .query("session")
+      .withIndex("token", (q) => q.eq("token", token))
+      .first();
+
+    if (existingSession) {
+      console.log("[syncSession] Session already exists for token:", token.substring(0, 8) + "...");
+      return existingSession._id;
+    }
+
+    // Insert session into Main App DB
+    const sessionId = await ctx.db.insert("session", {
+      token,
+      expiresAt,
+      userId: user._id, // Main App User ID (Doc ID)
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      ipAddress: ipAddress || null,
+      userAgent: userAgent || null,
+    });
+
+    console.log("[syncSession] Session synced successfully:", sessionId);
+    return sessionId;
+  },
+});
 export const create = mutation({
   args: {
     email: v.string(),
