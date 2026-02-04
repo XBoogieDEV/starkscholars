@@ -15,13 +15,30 @@ async function check(path: string) {
     }
 }
 
-async function run() {
-    await check("/api/auth/session");
-    // Component Namespaced Paths
-    await check("/betterAuth/api/auth/session");
-    await check("/betterAuth/session");
-    await check("/.well-known/better-auth/session"); // Standard Better Auth discovery
-    await check("/betterAuth/.well-known/better-auth/session");
+
+async function checkQuery(path: string) {
+    console.log("Testing Query " + CONVEX_SITE_URL + "/api/query -> " + path);
+    try {
+        const res = await fetch(`${CONVEX_SITE_URL}/api/query`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                path: path,
+                args: { sessionToken: "dummy_token_to_verify_endpoint_exists" }
+            })
+        });
+        console.log(`[${res.status}] ${path}`);
+        if (res.ok) console.log(await res.text());
+        else console.log(await res.text());
+    } catch (e) {
+        console.error(e);
+    }
 }
+
+async function run() {
+    // Check the Main App Proxy Path: authQueries:verifySession
+    await checkQuery("authQueries:verifySession");
+}
+
 
 run();

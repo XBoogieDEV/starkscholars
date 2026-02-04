@@ -30,11 +30,11 @@ export async function requireAuth(allowedRoles: UserRole[]) {
 
     try {
         // 1. Validate Session via Custom Convex Query (Reliable)
-        // We use the System API to call 'betterAuth/sessions:validate'
+        // We use the System API to call 'verify:session' (Main App Proxy)
         const sessionResponse = await fetch(`${CONVEX_SITE_URL}/api/query`, {
             method: "POST",
             body: JSON.stringify({
-                path: "betterAuth/sessions:validate",
+                path: "authQueries:verifySession",
                 args: { sessionToken: token },
             }),
             headers: {

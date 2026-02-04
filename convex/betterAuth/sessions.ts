@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query } from "./_generated/server";
-import { Id } from "../_generated/dataModel";
+import { Id } from "./_generated/dataModel";
 
 export const validate = query({
     args: { sessionToken: v.string() },
