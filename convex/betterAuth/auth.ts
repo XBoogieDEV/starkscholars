@@ -38,6 +38,15 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
       "https://www.starkscholars.com",
       "https://feature-branch.starkscholars.com" // Optional: for previews
     ],
+    // Cross-origin cookie configuration for Convex Site URL
+    advanced: {
+      defaultCookieAttributes: {
+        sameSite: "none", // Required for cross-site requests (starkscholars.com -> convex.site)
+        secure: true, // Required when sameSite is "none"
+        httpOnly: true,
+        path: "/",
+      },
+    },
     plugins: [convex({ authConfig })],
     user: {
       additionalFields: {

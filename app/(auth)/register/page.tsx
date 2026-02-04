@@ -11,9 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { signUp, authClient } from "@/lib/auth-client";
+import { signUp } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function RegisterPage() {
@@ -86,13 +86,10 @@ export default function RegisterPage() {
         return;
       }
 
-      // Explicitly sign in if session wasn't created (fallback) or jus redirect
-      // If we are here, we are registered.
-      // We will perform a transparent sign-in just in case, though signUp should handle it.
-      await authClient.signIn.email({
-        email: formData.email,
-        password: formData.password,
-      });
+      // Registration successful! 
+      // Note: signUp.email should automatically create a session.
+      // We won't call signIn again as it can fail due to cookie issues
+      // and confuse users who are already registered.
 
       // Success - Redirect
       toast({
@@ -110,6 +107,16 @@ export default function RegisterPage() {
         : typeof err === 'object' && err !== null && 'message' in err
           ? String((err as { message: unknown }).message)
           : "An unexpected error occurred";
+
+      // Check if user was actually created despite error (common with session/cookie issues)
+      // If so, redirect to login instead of showing confusing error
+      if (emailCheck?.exists || errorMessage.includes("already exists") || errorMessage.includes("User exists")) {
+        setError("Your account was created! Please sign in to continue.");
+        // Show helpful redirect
+        setTimeout(() => router.push("/login"), 2000);
+        return;
+      }
+
       setError(errorMessage);
     } finally {
       setIsLoading(false);

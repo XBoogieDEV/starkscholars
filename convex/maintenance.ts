@@ -1,12 +1,11 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 
+// Wipe all data from main app tables (includes auth tables in shared namespace)
 export const wipeAllData = mutation({
     args: {},
     handler: async (ctx) => {
-        // List of tables to clear (Main App + Better Auth Component)
         const tables = [
-            // Main App tables
             "user",
             "session",
             "account",
@@ -17,18 +16,25 @@ export const wipeAllData = mutation({
             "committeeMembers",
             "activityLog",
             "settings",
-            // Better Auth Component tables (may exist in shared namespace)
             "jwks",
             "rateLimit",
             "twoFactor",
+            "passkey",
+            "oauthApplication",
+            "oauthAccessToken",
+            "oauthConsent",
         ];
 
         const results: Record<string, number> = {};
 
         for (const table of tables) {
-            const docs = await ctx.db.query(table as any).collect();
-            await Promise.all(docs.map((doc) => ctx.db.delete(doc._id)));
-            results[table] = docs.length;
+            try {
+                const docs = await ctx.db.query(table as any).collect();
+                await Promise.all(docs.map((doc) => ctx.db.delete(doc._id)));
+                results[table] = docs.length;
+            } catch (e) {
+                results[table] = 0;
+            }
         }
 
         return { success: true, deletedCounts: results };

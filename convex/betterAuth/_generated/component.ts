@@ -2008,6 +2008,23 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         Name
       >;
     };
+    debug: {
+      clearAllComponentData: FunctionReference<
+        "mutation",
+        "internal",
+        {},
+        any,
+        Name
+      >;
+      clearComponentUsers: FunctionReference<
+        "mutation",
+        "internal",
+        {},
+        any,
+        Name
+      >;
+      listComponentUsers: FunctionReference<"query", "internal", {}, any, Name>;
+    };
     sessions: {
       validate: FunctionReference<
         "query",

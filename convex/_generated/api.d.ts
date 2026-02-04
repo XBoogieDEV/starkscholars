@@ -13,6 +13,7 @@ import type * as ai from "../ai.js";
 import type * as analytics from "../analytics.js";
 import type * as applications from "../applications.js";
 import type * as auditLog from "../auditLog.js";
+import type * as debug_component from "../debug_component.js";
 import type * as debug_user from "../debug_user.js";
 import type * as emails from "../emails.js";
 import type * as evaluations from "../evaluations.js";
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   applications: typeof applications;
   auditLog: typeof auditLog;
+  debug_component: typeof debug_component;
   debug_user: typeof debug_user;
   emails: typeof emails;
   evaluations: typeof evaluations;
@@ -2055,6 +2057,11 @@ export declare const components: {
         },
         any
       >;
+    };
+    debug: {
+      clearAllComponentData: FunctionReference<"mutation", "internal", {}, any>;
+      clearComponentUsers: FunctionReference<"mutation", "internal", {}, any>;
+      listComponentUsers: FunctionReference<"query", "internal", {}, any>;
     };
     sessions: {
       validate: FunctionReference<
