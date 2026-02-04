@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 // Environment variables
 const CONVEX_SITE_URL = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
 const BETTER_AUTH_COOKIE_NAME = process.env.BETTER_AUTH_COOKIE_NAME || "better-auth.session_token";
 
 // Role type matching schema
@@ -30,55 +29,28 @@ export async function requireAuth(allowedRoles: UserRole[]) {
     }
 
     try {
-        // 1. Validate Session
-        const sessionResponse = await fetch(`${CONVEX_SITE_URL}/api/http`, {
-            method: "POST",
-            body: JSON.stringify({
-                path: "betterAuth/adapter:getSessionAndUser",
-                args: { sessionToken: token },
-            }),
+        // 1. Validate Session via Standard Better Auth Endpoint
+        // This validates the cookie signature and expiration automatically
+        const sessionResponse = await fetch(`${CONVEX_SITE_URL}/api/auth/session`, {
+            method: "GET",
             headers: {
-                "Content-Type": "application/json",
-                "Origin": APP_URL,
+                "Cookie": `${BETTER_AUTH_COOKIE_NAME}=${token}`,
             },
+            cache: "no-store",
         });
 
         if (!sessionResponse.ok) {
-            console.error("Session validation error", await sessionResponse.text());
-            redirect("/login?error=session_error");
+            // If 401/403/etc, session is invalid
+            redirect("/login");
         }
 
-        const sessionResult = await sessionResponse.json();
-        const sessionData = sessionResult?.value;
+        const sessionData = await sessionResponse.json();
 
         if (!sessionData?.session || !sessionData?.user) {
             redirect("/login");
         }
 
-        if (sessionData.session.expiresAt < Date.now()) {
-            redirect("/login?error=expired");
-        }
-
-        // 2. Get User Role
-        const userRoleResponse = await fetch(`${CONVEX_SITE_URL}/api/query`, {
-            method: "POST",
-            body: JSON.stringify({
-                path: "users/getByEmail",
-                args: { email: sessionData.user.email },
-            }),
-            headers: {
-                "Content-Type": "application/json",
-                "Origin": APP_URL,
-            },
-        });
-
-        if (!userRoleResponse.ok) {
-            console.error("Role checks error", await userRoleResponse.text());
-            redirect("/login?error=role_error");
-        }
-
-        const userRoleResult = await userRoleResponse.json();
-        const user = userRoleResult?.value;
+        const user = sessionData.user;
 
         // Default to 'applicant' if role is missing but user exists (Robustness)
         let userRole: UserRole = "applicant";
@@ -87,7 +59,7 @@ export async function requireAuth(allowedRoles: UserRole[]) {
             userRole = user.role as UserRole;
         }
 
-        // 3. Check Authorization
+        // 2. Check Authorization
         if (!allowedRoles.includes(userRole)) {
             redirect("/unauthorized"); // Or "/"
         }
