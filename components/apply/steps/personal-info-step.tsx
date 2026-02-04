@@ -24,7 +24,7 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 const isValidImageType = (file: File): boolean => {
   // Check MIME type
   if (ALLOWED_IMAGE_TYPES.includes(file.type)) return true;
-  
+
   // Check extension as fallback
   const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
   return ALLOWED_IMAGE_EXTENSIONS.includes(ext);
@@ -34,7 +34,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
   const { toast } = useToast();
   const updateStep1 = useMutation(api.applications.updateStep1);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [photoUploadStatus, setPhotoUploadStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
   const [formData, setFormData] = useState({
@@ -45,7 +45,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
   });
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  
+
   const photoRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (field: string, value: string) => {
@@ -89,7 +89,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
   const uploadPhotoToStorage = async (file: File): Promise<string> => {
     // Step 1: Request upload URL from Convex
     const uploadUrl = await generateUploadUrl({ type: "profile_photo" });
-    
+
     // Step 2: Upload file directly to Convex storage
     const response = await fetch(uploadUrl, {
       method: "POST",
@@ -98,23 +98,24 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
       },
       body: file,
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Upload failed: ${errorText}`);
     }
-    
+
     // Step 3: Get storageId from response
     const result = await response.json();
-    
+
     if (!result.storageId) {
       throw new Error("No storageId returned from upload");
     }
-    
+
     return result.storageId;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("[STEP1] handleSubmit triggered");
     e.preventDefault();
     setIsLoading(true);
     setPhotoUploadStatus("idle");
@@ -145,15 +146,20 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
 
       // Upload profile photo if provided
       if (profilePhoto) {
+        console.log("[STEP1] Uploading photo...");
         setPhotoUploadStatus("uploading");
         try {
           profilePhotoId = await uploadPhotoToStorage(profilePhoto);
+          console.log("[STEP1] Photo uploaded:", profilePhotoId);
           setPhotoUploadStatus("success");
         } catch (error) {
+          console.error("[STEP1] Photo upload failed:", error);
           setPhotoUploadStatus("error");
           throw new Error("Failed to upload profile photo. Please try again.");
         }
       }
+
+      console.log("[STEP1] Calling updateStep1 mutation...");
 
       await updateStep1({
         applicationId: application._id,
@@ -164,6 +170,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
         profilePhotoId: profilePhotoId as Id<"_storage"> | undefined,
       });
 
+      console.log("[STEP1] Mutation complete, calling onComplete");
       toast({
         title: "Saved!",
         description: "Your personal information has been saved.",
@@ -197,7 +204,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
         <p className="text-sm text-gray-600">
           Upload a professional headshot. Accepted formats: JPG, PNG (max 5MB)
         </p>
-        
+
         <div className="flex items-center gap-6">
           {/* Photo Preview or Placeholder */}
           <div className="relative">
@@ -235,7 +242,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
               onChange={(e) => handlePhotoChange(e.target.files?.[0] || null)}
               className="hidden"
             />
-            
+
             {profilePhoto ? (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">{profilePhoto.name}</span>
