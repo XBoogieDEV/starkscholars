@@ -13,7 +13,7 @@ import { signIn } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
 
 function LoginForm() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/apply/dashboard";
   const { toast } = useToast();
@@ -31,28 +31,34 @@ function LoginForm() {
     setError("");
 
     try {
-      const { error } = await signIn.email({
+      console.log("[LOGIN] Calling signIn.email...");
+      const { error, data } = await signIn.email({
         email: formData.email,
         password: formData.password,
       });
 
+      console.log("[LOGIN] signIn.email returned:", { error, data });
+
       if (error) {
+        console.error("[LOGIN] signIn error:", error);
         setError(error.message || "Invalid email or password");
         setIsLoading(false);
         return;
       }
 
       // Success
+      console.log("[LOGIN] Login successful, redirecting to:", redirect);
       toast({
         title: "Welcome back!",
         description: "Signing you in...",
       });
 
-      // Redirect
-      router.push(redirect);
+      // Use window.location for consistent redirect behavior
+      console.log("[LOGIN] Executing redirect...");
+      window.location.href = redirect;
 
     } catch (err) {
-      console.error(err);
+      console.error("[LOGIN] Error:", err);
       setError("An unexpected error occurred");
       setIsLoading(false);
     }
