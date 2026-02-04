@@ -2056,5 +2056,13 @@ export declare const components: {
         any
       >;
     };
+    sessions: {
+      validate: FunctionReference<
+        "query",
+        "internal",
+        { sessionToken: string },
+        any
+      >;
+    };
   };
 };

@@ -2008,4 +2008,13 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         Name
       >;
     };
+    sessions: {
+      validate: FunctionReference<
+        "query",
+        "internal",
+        { sessionToken: string },
+        any,
+        Name
+      >;
+    };
   };

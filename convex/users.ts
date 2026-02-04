@@ -3,6 +3,10 @@ import { internalMutation, query, mutation } from "./_generated/server";
 import { api } from "./_generated/api";
 import { logAction } from "./auditLog";
 
+
+// ... existing code ...
+
+
 export const getByEmail = query({
   args: { email: v.string() },
   handler: async (ctx, { email }) => {
@@ -146,7 +150,27 @@ export const updateLastLogin = mutation({
 });
 
 export const verifySession = query({
-  handler: async () => {
-    return "Pong";
+  args: { sessionToken: v.string() },
+  handler: async (ctx, { sessionToken }) => {
+    const session = await ctx.db
+      .query("session")
+      .withIndex("token", (q) => q.eq("token", sessionToken))
+      .first();
+
+    if (!session) {
+      return null;
+    }
+
+    if (session.expiresAt < Date.now()) {
+      return null;
+    }
+
+    const user = await ctx.db.get(session.userId);
+
+    if (!user) {
+      return null;
+    }
+
+    return { session, user };
   },
 });
