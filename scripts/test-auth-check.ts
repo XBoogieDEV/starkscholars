@@ -36,8 +36,8 @@ async function checkQuery(path: string) {
 }
 
 async function run() {
-    // Check the Main App Proxy Path: authQueries:verifySession
-    await checkQuery("authQueries:verifySession");
+    // Check the Main App Proxy Path: users:verifySession
+    await checkQuery("users:verifySession");
 }
 
 

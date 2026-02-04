@@ -10,7 +10,6 @@
 
 import type * as adapter from "../adapter.js";
 import type * as auth from "../auth.js";
-import type * as sessions from "../sessions.js";
 
 import type {
   ApiFromModules,
@@ -22,7 +21,6 @@ import { anyApi, componentsGeneric } from "convex/server";
 const fullApi: ApiFromModules<{
   adapter: typeof adapter;
   auth: typeof auth;
-  sessions: typeof sessions;
 }> = anyApi as any;
 
 /**

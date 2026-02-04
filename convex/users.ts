@@ -144,3 +144,9 @@ export const updateLastLogin = mutation({
     });
   },
 });
+
+export const verifySession = query({
+  handler: async () => {
+    return "Pong";
+  },
+});

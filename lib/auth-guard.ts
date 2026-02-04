@@ -34,7 +34,7 @@ export async function requireAuth(allowedRoles: UserRole[]) {
         const sessionResponse = await fetch(`${CONVEX_SITE_URL}/api/query`, {
             method: "POST",
             body: JSON.stringify({
-                path: "authQueries:verifySession",
+                path: "users:verifySession",
                 args: { sessionToken: token },
             }),
             headers: {
