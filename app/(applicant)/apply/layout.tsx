@@ -77,7 +77,7 @@ export default function ApplyLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <DeadlineBanner />
-      <AppHeader user={user} />
+      <AppHeader user={{ ...user, role: user.role ?? "applicant" }} />
       <main className="container mx-auto px-4 py-8">
         {children}
       </main>
