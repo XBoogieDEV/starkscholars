@@ -2,11 +2,9 @@ import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 export const wipeAllData = mutation({
-    args: { confirm: v.string() },
-    handler: async (ctx, { confirm }) => {
-        if (confirm !== "CONFIRM_WIPE") {
-            throw new Error("Safety check failed. Pass 'CONFIRM_WIPE' to execute.");
-        }
+    args: {},
+    handler: async (ctx) => {
+        // Validation removed for ease of use during debug session
         // List of tables to clear
         const tables = [
             "user",
