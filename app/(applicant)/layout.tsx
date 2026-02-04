@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { requireAuth } from "@/lib/auth-guard";
+// NOTE: Server-side auth guard removed to allow async user sync to complete
+// Client-side auth guard in apply/layout.tsx handles authentication with grace period
 
-export default async function ApplicantLayout({
+export default function ApplicantLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireAuth(["applicant"]);
   return <>{children}</>;
 }
