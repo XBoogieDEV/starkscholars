@@ -57,8 +57,12 @@ function LoginForm() {
       window.location.href = redirect;
 
     } catch (err) {
-      console.error("[LOGIN] Error:", err);
-      setError("An unexpected error occurred");
+      console.error("[LOGIN] Catch error:", err);
+      console.error("[LOGIN] Error type:", typeof err);
+      console.error("[LOGIN] Error name:", err instanceof Error ? err.name : "unknown");
+      console.error("[LOGIN] Error message:", err instanceof Error ? err.message : String(err));
+      console.error("[LOGIN] baseURL:", process.env.NEXT_PUBLIC_CONVEX_SITE_URL);
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setIsLoading(false);
     }
   };
