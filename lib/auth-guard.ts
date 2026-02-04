@@ -29,32 +29,40 @@ export async function requireAuth(allowedRoles: UserRole[]) {
     }
 
     try {
-        // 1. Validate Session via Standard Better Auth Endpoint
-        // This validates the cookie signature and expiration automatically
-        const sessionResponse = await fetch(`${CONVEX_SITE_URL}/api/auth/session`, {
-            method: "GET",
+        // 1. Validate Session via Custom Convex Query (Reliable)
+        // We use the System API to call 'betterAuth/sessions:validate'
+        const sessionResponse = await fetch(`${CONVEX_SITE_URL}/api/query`, {
+            method: "POST",
+            body: JSON.stringify({
+                path: "betterAuth/sessions:validate",
+                args: { sessionToken: token },
+            }),
             headers: {
-                "Cookie": `${BETTER_AUTH_COOKIE_NAME}=${token}`,
+                "Content-Type": "application/json",
             },
             cache: "no-store",
         });
 
         if (!sessionResponse.ok) {
-            // If 401/403/etc, session is invalid
+            console.error("Session Query Error", await sessionResponse.text());
+            redirect("/login?error=server_error");
+        }
+
+        const sessionResult = await sessionResponse.json();
+
+        // Convex Query returns wrapped result: { value: { session, user } | null }
+        if (!sessionResult || sessionResult.value === null) {
             redirect("/login");
         }
 
-        const sessionData = await sessionResponse.json();
-
-        if (!sessionData?.session || !sessionData?.user) {
-            redirect("/login");
-        }
-
-        const user = sessionData.user;
+        const { user } = sessionResult.value;
 
         // Default to 'applicant' if role is missing but user exists (Robustness)
         let userRole: UserRole = "applicant";
 
+        // Note: The 'user' here comes from Better Auth Schema
+        // It should have 'role' if we defined it in the schema overrides
+        // If getting role fails here, we could fallback to Main DB lookup, but let's try this first.
         if (user && typeof user === "object" && "role" in user) {
             userRole = user.role as UserRole;
         }
@@ -64,7 +72,7 @@ export async function requireAuth(allowedRoles: UserRole[]) {
             redirect("/unauthorized"); // Or "/"
         }
 
-        return { user, session: sessionData.session };
+        return { user, session: sessionResult.value.session };
 
     } catch (error) {
         console.error("Auth Guard Error:", error);

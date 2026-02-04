@@ -5,62 +5,69 @@ export default defineSchema({
   // ============================================
   // USERS & AUTH
   // ============================================
+  // ============================================
+  // USERS & AUTH
+  // ============================================
   user: defineTable({
-    // Better Auth managed fields
-    email: v.string(),
+    // Better Auth managed fields (Synced with library schema)
     name: v.string(),
+    email: v.string(),
     emailVerified: v.boolean(),
-    image: v.optional(v.string()),
+    image: v.optional(v.union(v.null(), v.string())),
     createdAt: v.number(),
     updatedAt: v.number(),
 
-    // Optional Better Auth fields
-    twoFactorEnabled: v.optional(v.boolean()),
-    isAnonymous: v.optional(v.boolean()),
-    username: v.optional(v.string()),
-    displayUsername: v.optional(v.string()),
-    phoneNumber: v.optional(v.string()),
-    phoneNumberVerified: v.optional(v.boolean()),
+    // Optional Better Auth fields (Nullable for compatibility)
+    twoFactorEnabled: v.optional(v.union(v.null(), v.boolean())),
+    isAnonymous: v.optional(v.union(v.null(), v.boolean())),
+    username: v.optional(v.union(v.null(), v.string())),
+    displayUsername: v.optional(v.union(v.null(), v.string())),
+    phoneNumber: v.optional(v.union(v.null(), v.string())),
+    phoneNumberVerified: v.optional(v.union(v.null(), v.boolean())),
+    userId: v.optional(v.union(v.null(), v.string())),
 
     // Custom fields
     role: v.optional(v.string()), // Relaxed from v.union for debugging
     lastLoginAt: v.optional(v.number()),
   })
     .index("email", ["email"])
-
-    .index("by_role", ["role"]),
+    .index("email_name", ["email", "name"])
+    .index("displayUsername", ["displayUsername"]) // Added based on better-auth defaults
+    .index("by_role", ["role"])
+    .index("by_userId", ["userId"]),
 
   session: defineTable({
-    userId: v.id("user"),
-    token: v.string(),
     expiresAt: v.number(),
+    token: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
-    ipAddress: v.optional(v.string()),
-    userAgent: v.optional(v.string()),
+    ipAddress: v.optional(v.union(v.null(), v.string())),
+    userAgent: v.optional(v.union(v.null(), v.string())),
+    userId: v.id("user"), // Note: Better Auth schema uses v.string(), but we map to v.id("user") for relations
   })
-    .index("token", ["token"])
-    .index("userId", ["userId"])
     .index("expiresAt", ["expiresAt"])
-    .index("expiresAt_userId", ["expiresAt", "userId"]),
+    .index("expiresAt_userId", ["expiresAt", "userId"])
+    .index("token", ["token"])
+    .index("userId", ["userId"]),
 
   account: defineTable({
-    userId: v.id("user"),
     accountId: v.string(),
     providerId: v.string(),
-    accessToken: v.optional(v.string()),
-    refreshToken: v.optional(v.string()),
-    accessTokenExpiresAt: v.optional(v.number()),
-    refreshTokenExpiresAt: v.optional(v.number()),
-    scope: v.optional(v.string()),
-    idToken: v.optional(v.string()),
-    password: v.optional(v.string()),
+    userId: v.id("user"), // Note: Better Auth schema uses v.string(), but we map to v.id("user")
+    accessToken: v.optional(v.union(v.null(), v.string())),
+    refreshToken: v.optional(v.union(v.null(), v.string())),
+    idToken: v.optional(v.union(v.null(), v.string())),
+    accessTokenExpiresAt: v.optional(v.union(v.null(), v.number())),
+    refreshTokenExpiresAt: v.optional(v.union(v.null(), v.number())),
+    scope: v.optional(v.union(v.null(), v.string())),
+    password: v.optional(v.union(v.null(), v.string())),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index("userId", ["userId"])
     .index("accountId", ["accountId"])
-    .index("providerId", ["providerId"]),
+    .index("accountId_providerId", ["accountId", "providerId"])
+    .index("providerId_userId", ["providerId", "userId"])
+    .index("userId", ["userId"]),
 
   verification: defineTable({
     identifier: v.string(),
@@ -69,7 +76,87 @@ export default defineSchema({
     createdAt: v.optional(v.number()),
     updatedAt: v.optional(v.number()),
   })
+    .index("expiresAt", ["expiresAt"])
     .index("identifier", ["identifier"]),
+
+  // ============================================
+  // BETTER AUTH INFRASTRUCTURE (Missing Tables)
+  // ============================================
+  jwks: defineTable({
+    publicKey: v.string(),
+    privateKey: v.string(),
+    createdAt: v.number(),
+  }),
+
+  rateLimit: defineTable({
+    key: v.optional(v.union(v.null(), v.string())),
+    count: v.optional(v.union(v.null(), v.number())),
+    lastRequest: v.optional(v.union(v.null(), v.number())),
+  }).index("key", ["key"]),
+
+  twoFactor: defineTable({
+    secret: v.string(),
+    backupCodes: v.string(),
+    userId: v.string(),
+  }).index("userId", ["userId"]),
+
+  passkey: defineTable({
+    name: v.optional(v.union(v.null(), v.string())),
+    publicKey: v.string(),
+    userId: v.string(),
+    credentialID: v.string(),
+    counter: v.number(),
+    deviceType: v.string(),
+    backedUp: v.boolean(),
+    transports: v.optional(v.union(v.null(), v.string())),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+    aaguid: v.optional(v.union(v.null(), v.string())),
+  })
+    .index("credentialID", ["credentialID"])
+    .index("userId", ["userId"]),
+
+  oauthApplication: defineTable({
+    name: v.optional(v.union(v.null(), v.string())),
+    icon: v.optional(v.union(v.null(), v.string())),
+    metadata: v.optional(v.union(v.null(), v.string())),
+    clientId: v.optional(v.union(v.null(), v.string())),
+    clientSecret: v.optional(v.union(v.null(), v.string())),
+    redirectURLs: v.optional(v.union(v.null(), v.string())),
+    type: v.optional(v.union(v.null(), v.string())),
+    disabled: v.optional(v.union(v.null(), v.boolean())),
+    userId: v.optional(v.union(v.null(), v.string())),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+    updatedAt: v.optional(v.union(v.null(), v.number())),
+  })
+    .index("clientId", ["clientId"])
+    .index("userId", ["userId"]),
+
+  oauthAccessToken: defineTable({
+    accessToken: v.optional(v.union(v.null(), v.string())),
+    refreshToken: v.optional(v.union(v.null(), v.string())),
+    accessTokenExpiresAt: v.optional(v.union(v.null(), v.number())),
+    refreshTokenExpiresAt: v.optional(v.union(v.null(), v.number())),
+    clientId: v.optional(v.union(v.null(), v.string())),
+    userId: v.optional(v.union(v.null(), v.string())),
+    scopes: v.optional(v.union(v.null(), v.string())),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+    updatedAt: v.optional(v.union(v.null(), v.number())),
+  })
+    .index("accessToken", ["accessToken"])
+    .index("refreshToken", ["refreshToken"])
+    .index("clientId", ["clientId"])
+    .index("userId", ["userId"]),
+
+  oauthConsent: defineTable({
+    clientId: v.optional(v.union(v.null(), v.string())),
+    userId: v.optional(v.union(v.null(), v.string())),
+    scopes: v.optional(v.union(v.null(), v.string())),
+    createdAt: v.optional(v.union(v.null(), v.number())),
+    updatedAt: v.optional(v.union(v.null(), v.number())),
+    consentGiven: v.optional(v.union(v.null(), v.boolean())),
+  })
+    .index("clientId_userId", ["clientId", "userId"])
+    .index("userId", ["userId"]),
 
   // ============================================
   // APPLICATIONS

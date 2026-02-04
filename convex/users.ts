@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { internalMutation, query, mutation } from "./_generated/server";
 import { api } from "./_generated/api";
 import { logAction } from "./auditLog";
 
@@ -26,6 +26,16 @@ export const getCurrentUser = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
+    // improved lookup: try by 'userId' (Better Auth ID) first
+    // inherited from convex/schema.ts update
+    const userBySubject = await ctx.db
+      .query("user")
+      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+      .first();
+
+    if (userBySubject) return userBySubject;
+
+    // Fallback: lookup by email (legacy or pre-sync)
     const email = identity.email;
     if (!email) return null;
 
@@ -48,6 +58,48 @@ export const checkEmailExists = query({
   },
 });
 
+// Internal mutation called by Better Auth hook
+export const syncUser = internalMutation({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+    role: v.optional(v.string()),
+    image: v.optional(v.string()),
+    externalId: v.string(), // The Better Auth User ID
+  },
+  handler: async (ctx, { email, name, role, image, externalId }) => {
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if user exists
+    const existing = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", normalizedEmail))
+      .first();
+
+    if (existing) {
+      // Update external ID if missing
+      if (existing.userId !== externalId) {
+        await ctx.db.patch(existing._id, { userId: externalId });
+      }
+      return existing._id;
+    }
+
+    // Create new user in Main DB
+    const userId = await ctx.db.insert("user", {
+      email: normalizedEmail,
+      name: name || "Applicant",
+      role: role || "applicant",
+      emailVerified: false,
+      image,
+      userId: externalId, // Link to Better Auth ID
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return userId;
+  },
+});
+
 export const create = mutation({
   args: {
     email: v.string(),
@@ -55,20 +107,18 @@ export const create = mutation({
     role: v.union(v.literal("applicant"), v.literal("admin"), v.literal("committee")),
   },
   handler: async (ctx, { email, name, role }) => {
-    // Normalize email
+    // Legacy create - kept for compatibility but should use syncUser flow
     const normalizedEmail = email.toLowerCase().trim();
-
-    // Check for existing account with this email
     const existing = await ctx.db
       .query("user")
       .withIndex("email", (q) => q.eq("email", normalizedEmail))
       .first();
 
     if (existing) {
-      throw new Error("An account with this email already exists. Please sign in instead.");
+      throw new Error("An account with this email already exists.");
     }
 
-    const userId = await ctx.db.insert("user", {
+    return await ctx.db.insert("user", {
       email: normalizedEmail,
       name: name || "Applicant",
       role,
@@ -76,22 +126,6 @@ export const create = mutation({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
-
-    // Log account creation
-    await logAction(ctx, {
-      action: "auth:register",
-      userId,
-      details: { email: normalizedEmail, role },
-    });
-
-    // Send welcome email after user creation (only for applicants)
-    if (role === "applicant") {
-      await ctx.scheduler.runAfter(0, api.emails.sendWelcomeEmail, {
-        userId
-      });
-    }
-
-    return userId;
   },
 });
 

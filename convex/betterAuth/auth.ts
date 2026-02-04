@@ -3,7 +3,7 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import type { GenericCtx } from "@convex-dev/better-auth/utils";
 import type { BetterAuthOptions } from "better-auth";
 import { betterAuth } from "better-auth";
-import { components } from "../_generated/api";
+import { components, api } from "../_generated/api"; // Added api import
 import type { DataModel } from "../_generated/dataModel";
 import authConfig from "../auth.config";
 import schema from "./schema";
@@ -27,8 +27,6 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false, // Changed to false for immediate access
-      // Email callbacks are handled via API routes, not in auth config
-      // Use /api/trigger-verification and /api/trigger-password-reset endpoints
     },
     session: {
       expiresIn: 60 * 60 * 24 * 7, // 7 days
@@ -46,11 +44,29 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
         role: {
           type: "string",
           defaultValue: "applicant",
-          required: false, // Changed to false to prevent client-side validation failures
+          required: false,
         },
       },
       changeEmail: {
         enabled: true,
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            if ("scheduler" in ctx) {
+              // @ts-expect-error - api type not generated yet
+              await ctx.scheduler.runAfter(0, api.users.syncUser, {
+                email: user.email,
+                name: user.name,
+                role: user.role || "applicant",
+                image: user.image || undefined,
+                externalId: user.id, // Better Auth User ID
+              });
+            }
+          },
+        },
       },
     },
   } satisfies BetterAuthOptions;
