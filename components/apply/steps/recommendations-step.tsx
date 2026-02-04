@@ -380,21 +380,42 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
       )}
 
       {/* Continue Button */}
-      <div className="pt-4 border-t">
-        <Button
-          onClick={onComplete}
-          className="bg-amber-600 hover:bg-amber-700"
-          disabled={!allSubmitted}
-        >
-          {allSubmitted ? (
-            <>
-              Save & Continue
+      <div className="pt-4 border-t space-y-3">
+        {allSubmitted ? (
+          <Button
+            onClick={onComplete}
+            className="w-full bg-amber-600 hover:bg-amber-700"
+          >
+            Save & Continue
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        ) : recommendations && recommendations.length >= 2 ? (
+          <>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+              <p className="text-sm text-blue-800">
+                <Clock className="inline mr-2 h-4 w-4" />
+                Waiting for <strong>{recommendations.filter((r: any) => r.status !== "submitted").length} recommendation(s)</strong> to be submitted by your recommenders.
+              </p>
+              <p className="text-xs text-blue-600 mt-2">
+                You can continue with the rest of your application while waiting.
+              </p>
+            </div>
+            <Button
+              onClick={onComplete}
+              variant="outline"
+              className="w-full"
+            >
+              Continue to Next Step
               <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            `Waiting for ${2 - (recommendations?.length || 0)} recommendation(s)`
-          )}
-        </Button>
+            </Button>
+          </>
+        ) : (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
+            <p className="text-sm text-amber-800">
+              Please add {2 - (recommendations?.length || 0)} more recommender(s) to proceed.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
