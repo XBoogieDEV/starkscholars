@@ -191,15 +191,7 @@ export const updateStep1 = mutation({
     const application = await ctx.db.get(applicationId);
     if (!application) throw new Error("Application not found");
 
-    // Validate profile photo if provided
-    if (profilePhotoId) {
-      await ctx.runMutation(api.storage.validateAndSaveUpload, {
-        storageId: profilePhotoId,
-        fileType: "photo",
-        applicationId: applicationId
-      });
-    }
-
+    // Photo already uploaded client-side - we trust the storageId from our upload URL
     const completedSteps = application.completedSteps.includes(1)
       ? application.completedSteps
       : [...application.completedSteps, 1];
