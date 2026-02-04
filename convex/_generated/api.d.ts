@@ -13,6 +13,7 @@ import type * as ai from "../ai.js";
 import type * as analytics from "../analytics.js";
 import type * as applications from "../applications.js";
 import type * as auditLog from "../auditLog.js";
+import type * as debug from "../debug.js";
 import type * as emails from "../emails.js";
 import type * as evaluations from "../evaluations.js";
 import type * as http from "../http.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   applications: typeof applications;
   auditLog: typeof auditLog;
+  debug: typeof debug;
   emails: typeof emails;
   evaluations: typeof evaluations;
   http: typeof http;
