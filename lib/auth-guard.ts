@@ -21,6 +21,7 @@ export async function requireAuth(allowedRoles: UserRole[]) {
 
     const cookieStore = await cookies();
     const token = cookieStore.get(BETTER_AUTH_COOKIE_NAME)?.value ||
+        cookieStore.get("__Secure-better-auth.session_token")?.value ||
         cookieStore.get("session")?.value ||
         cookieStore.get("better-auth.session")?.value;
 
