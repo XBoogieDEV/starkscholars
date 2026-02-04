@@ -52,11 +52,11 @@ function SuccessAnimation({ onComplete }: { onComplete?: () => void }) {
       <motion.div
         initial={shouldReduceMotion ? {} : { scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 200, 
+        transition={{
+          type: "spring",
+          stiffness: 200,
           damping: 15,
-          delay: shouldReduceMotion ? 0 : 0.1 
+          delay: shouldReduceMotion ? 0 : 0.1
         }}
       >
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
@@ -90,9 +90,12 @@ export default function StepPage() {
   const shouldReduceMotion = useReducedMotion();
   const [showSuccess, setShowSuccess] = useState(false);
   const [direction, setDirection] = useState(0); // -1 for back, 1 for forward
+  const [isCreatingApp, setIsCreatingApp] = useState(false);
 
   const application = useQuery(api.applications.getMyApplication);
+  const user = useQuery(api.users.getCurrentUser);
   const updateCurrentStep = useMutation(api.applications.updateCurrentStep);
+  const createApplication = useMutation(api.applications.create);
   const isDeadlinePassed = useQuery(api.settings.isDeadlinePassed);
 
   // Validate step number
@@ -101,6 +104,25 @@ export default function StepPage() {
       router.push("/apply/dashboard");
     }
   }, [stepNumber, router]);
+
+  // Auto-create application for new users
+  useEffect(() => {
+    async function createApp() {
+      if (application === null && user && !isCreatingApp) {
+        console.log("[STEP-PAGE] No application found, creating one for user:", user._id);
+        setIsCreatingApp(true);
+        try {
+          await createApplication({ userId: user._id });
+          console.log("[STEP-PAGE] Application created successfully");
+        } catch (error) {
+          console.error("[STEP-PAGE] Failed to create application:", error);
+        } finally {
+          setIsCreatingApp(false);
+        }
+      }
+    }
+    createApp();
+  }, [application, user, createApplication, isCreatingApp]);
 
   // Update current step when visiting
   useEffect(() => {
@@ -112,7 +134,9 @@ export default function StepPage() {
     }
   }, [application, stepNumber, updateCurrentStep]);
 
-  if (!application || isNaN(stepNumber) || stepNumber < 1 || stepNumber > 7) {
+  // Show loading while queries are loading OR creating application
+  if (application === undefined || user === undefined || isCreatingApp ||
+    !application || isNaN(stepNumber) || stepNumber < 1 || stepNumber > 7) {
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="animate-pulse text-lg">Loading...</div>
@@ -217,9 +241,8 @@ export default function StepPage() {
               initial={shouldReduceMotion ? {} : { scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{ delay: s.id * 0.05, duration: 0.3 }}
-              className={`h-2 flex-1 rounded-full origin-left ${
-                s.id <= stepNumber ? "bg-amber-600" : "bg-gray-200"
-              }`}
+              className={`h-2 flex-1 rounded-full origin-left ${s.id <= stepNumber ? "bg-amber-600" : "bg-gray-200"
+                }`}
             />
           ))}
         </div>
@@ -315,13 +338,12 @@ export default function StepPage() {
             key={s.id}
             onClick={() => handleNavClick(s.id)}
             disabled={isPassed && s.id !== stepNumber}
-            className={`w-8 h-8 rounded-full text-xs font-medium transition-colors touch-manipulation ${
-              s.id === stepNumber
+            className={`w-8 h-8 rounded-full text-xs font-medium transition-colors touch-manipulation ${s.id === stepNumber
                 ? "bg-amber-600 text-white"
                 : s.id < stepNumber
-                ? "bg-green-100 text-green-700"
-                : "bg-gray-100 text-gray-500"
-            }`}
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-500"
+              }`}
           >
             {s.id < stepNumber ? (
               <CheckCircle2 className="w-4 h-4 mx-auto" />
