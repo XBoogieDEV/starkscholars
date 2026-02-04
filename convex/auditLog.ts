@@ -49,6 +49,8 @@ export const AUDIT_ACTIONS = {
 } as const;
 
 // Helper function to log actions
+// NOTE: userId must be a valid Convex Id<"user">, not an auth subject string.
+// If passed an auth subject, logging is silently skipped to prevent server errors.
 export async function logAction(
   ctx: MutationCtx,
   params: {
@@ -61,15 +63,30 @@ export async function logAction(
     userAgent?: string;
   }
 ) {
-  await ctx.db.insert("activityLog", {
-    userId: params.userId as Id<"user"> | undefined,
-    applicationId: params.applicationId as Id<"applications"> | undefined,
-    action: params.action,
-    details: params.details ? JSON.stringify(params.details) : undefined,
-    ipAddress: params.ipAddress,
-    userAgent: params.userAgent,
-    createdAt: Date.now(),
-  });
+  // Skip logging if userId looks like an auth subject (long string without Convex ID format)
+  // Convex IDs are typically shorter and have a specific format
+  // Auth subjects (like Clerk IDs) are typically longer JWT-like strings
+  const userId = params.userId;
+  if (userId && typeof userId === 'string' && (userId.length > 50 || userId.includes('|'))) {
+    // This looks like an auth subject, not a Convex ID - skip logging
+    console.log(`[logAction] Skipping log for action ${params.action} - userId appears to be auth subject, not Convex ID`);
+    return;
+  }
+
+  try {
+    await ctx.db.insert("activityLog", {
+      userId: params.userId as Id<"user"> | undefined,
+      applicationId: params.applicationId as Id<"applications"> | undefined,
+      action: params.action,
+      details: params.details ? JSON.stringify(params.details) : undefined,
+      ipAddress: params.ipAddress,
+      userAgent: params.userAgent,
+      createdAt: Date.now(),
+    });
+  } catch (error) {
+    // Log failures shouldn't crash the main operation
+    console.error(`[logAction] Failed to log action ${params.action}:`, error);
+  }
 }
 
 // Helper to log step updates with specific details
