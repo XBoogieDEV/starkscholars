@@ -101,6 +101,10 @@ export const syncUser = internalMutation({
       updatedAt: Date.now(),
     });
 
+    // Send welcome email to new user
+    console.log("[syncUser] Scheduling welcome email for new user:", userId);
+    await ctx.scheduler.runAfter(0, api.emails.sendWelcomeEmail, { userId });
+
     return userId;
   },
 });
