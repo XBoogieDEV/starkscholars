@@ -20,6 +20,7 @@ export default defineSchema({
     phoneNumber: v.optional(v.string()),
     phoneNumberVerified: v.optional(v.boolean()),
     userId: v.optional(v.string()),
+    role: v.optional(v.string()), // Added to match auth.config and allow field
   })
     .index("email", ["email"])
     .index("name", ["name"])
