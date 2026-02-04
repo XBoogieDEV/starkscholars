@@ -72,7 +72,8 @@ export default function RegisterPage() {
         return;
       }
 
-      const { error } = await signUp.email({
+      console.log("[REGISTER] Calling signUp.email...");
+      const { error, data } = await signUp.email({
         email: formData.email,
         password: formData.password,
         name: `${formData.firstName} ${formData.lastName}`.trim(),
@@ -80,16 +81,17 @@ export default function RegisterPage() {
         callbackURL: "/apply/dashboard", // Explicitly set callback for auto-redirect
       });
 
+      console.log("[REGISTER] signUp.email returned:", { error, data });
+
       if (error) {
+        console.error("[REGISTER] signUp error:", error);
         setError(error.message || "Failed to create account");
         setIsLoading(false);
         return;
       }
 
       // Registration successful! 
-      // Note: signUp.email should automatically create a session.
-      // We won't call signIn again as it can fail due to cookie issues
-      // and confuse users who are already registered.
+      console.log("[REGISTER] Registration successful, redirecting...");
 
       // Success - Redirect
       toast({
@@ -97,7 +99,10 @@ export default function RegisterPage() {
         description: "Welcome to Stark Scholars! Redirecting...",
       });
 
-      router.push("/apply/dashboard");
+      // Use window.location as fallback since router.push may not work
+      // due to session not being detected yet
+      console.log("[REGISTER] Redirecting to /apply/dashboard");
+      window.location.href = "/apply/dashboard";
 
     } catch (err) {
       console.error("[Registration Error]", err);
