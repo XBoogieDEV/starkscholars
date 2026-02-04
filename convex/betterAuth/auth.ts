@@ -1,5 +1,5 @@
 import { createClient } from "@convex-dev/better-auth";
-import { convex } from "@convex-dev/better-auth/plugins";
+import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import type { GenericCtx } from "@convex-dev/better-auth/utils";
 import type { BetterAuthOptions } from "better-auth";
 import { betterAuth } from "better-auth";
@@ -16,6 +16,9 @@ export const authComponent = createClient<DataModel, typeof schema>(
     verbose: false,
   },
 );
+
+// Site URL for cross-domain auth (Next.js app origin)
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
 
 // Better Auth Options
 export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
@@ -47,7 +50,11 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
         path: "/",
       },
     },
-    plugins: [convex({ authConfig })],
+    // crossDomain handles localStorage-based tokens for cross-site auth
+    plugins: [
+      convex({ authConfig }),
+      crossDomain({ siteUrl: SITE_URL }),
+    ],
     user: {
       additionalFields: {
         role: {
