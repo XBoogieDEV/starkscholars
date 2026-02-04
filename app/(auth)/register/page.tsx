@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+// Removed unused useRouter - using window.location for redirects
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ import { signUp } from "@/lib/auth-client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -43,6 +42,10 @@ export default function RegisterPage() {
     setIsLoading(true);
     setError("");
 
+    // Capture the "exists" state NOW before registration creates the user
+    // (emailCheck is a live query that will update after user creation)
+    const emailAlreadyExisted = emailCheck?.exists ?? false;
+
     try {
       // Validate passwords match
       if (formData.password !== formData.confirmPassword) {
@@ -65,8 +68,8 @@ export default function RegisterPage() {
         return;
       }
 
-      // Check for duplicate email (client-side pre-check)
-      if (emailCheck?.exists) {
+      // Check for duplicate email (client-side pre-check using captured value)
+      if (emailAlreadyExisted) {
         setError("An account with this email already exists. Please sign in instead.");
         setIsLoading(false);
         return;
@@ -113,12 +116,13 @@ export default function RegisterPage() {
           ? String((err as { message: unknown }).message)
           : "An unexpected error occurred";
 
-      // Check if user was actually created despite error (common with session/cookie issues)
-      // If so, redirect to login instead of showing confusing error
-      if (emailCheck?.exists || errorMessage.includes("already exists") || errorMessage.includes("User exists")) {
+      // Check if this is a "user exists" error from Better Auth (NOT from our pre-check)
+      // Only redirect to login if it's genuinely a duplicate attempt
+      if (!emailAlreadyExisted && (errorMessage.includes("already exists") || errorMessage.includes("User exists"))) {
+        // If we didn't detect duplicates before but BA says exists, user was created despite error
+        console.log("[REGISTER] User was created despite error, redirecting to login...");
         setError("Your account was created! Please sign in to continue.");
-        // Show helpful redirect
-        setTimeout(() => router.push("/login"), 2000);
+        setTimeout(() => window.location.href = "/login", 2000);
         return;
       }
 
