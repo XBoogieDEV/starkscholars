@@ -42,17 +42,6 @@ export default function RegisterPage() {
     setIsLoading(true);
     setError("");
 
-    // DEBUG: Log the exact values of emailCheck
-    console.log("[REGISTER DEBUG] Form email:", formData.email);
-    console.log("[REGISTER DEBUG] Debounced email:", debouncedEmail);
-    console.log("[REGISTER DEBUG] emailCheck full object:", JSON.stringify(emailCheck));
-    console.log("[REGISTER DEBUG] emailCheck?.exists:", emailCheck?.exists);
-
-    // Capture the "exists" state NOW before registration creates the user
-    // (emailCheck is a live query that will update after user creation)
-    const emailAlreadyExisted = emailCheck?.exists ?? false;
-    console.log("[REGISTER DEBUG] emailAlreadyExisted (captured):", emailAlreadyExisted);
-
     try {
       // Validate passwords match
       if (formData.password !== formData.confirmPassword) {
@@ -75,13 +64,10 @@ export default function RegisterPage() {
         return;
       }
 
-      // Check for duplicate email (client-side pre-check using captured value)
-      if (emailAlreadyExisted) {
-        console.log("[REGISTER DEBUG] Blocking due to emailAlreadyExisted=true");
-        setError("An account with this email already exists. Please sign in instead.");
-        setIsLoading(false);
-        return;
-      }
+      // NOTE: Removed blocking client-side pre-check (was causing false positives due to cached/stale data)
+      // Better Auth will handle duplicate detection server-side with accurate data
+      // The emailCheck query is kept for informational UI purposes only (not blocking)
+      console.log("[REGISTER] Proceeding with registration (server will validate)...");
 
       console.log("[REGISTER] Calling signUp.email...");
       const { error, data } = await signUp.email({
@@ -132,12 +118,10 @@ export default function RegisterPage() {
           ? String((err as { message: unknown }).message)
           : "An unexpected error occurred";
 
-      // Check if this is a "user exists" error from Better Auth (NOT from our pre-check)
-      // Only redirect to login if it's genuinely a duplicate attempt
-      if (!emailAlreadyExisted && (errorMessage.includes("already exists") || errorMessage.includes("User exists"))) {
-        // If we didn't detect duplicates before but BA says exists, user was created despite error
-        console.log("[REGISTER] User was created despite error, redirecting to login...");
-        setError("Your account was created! Please sign in to continue.");
+      // If Better Auth says "user exists", show friendly message and redirect to login
+      if (errorMessage.includes("already exists") || errorMessage.includes("User exists")) {
+        console.log("[REGISTER] Better Auth: user already exists, redirecting to login...");
+        setError("An account with this email already exists. Redirecting to login...");
         setTimeout(() => window.location.href = "/login", 2000);
         return;
       }
