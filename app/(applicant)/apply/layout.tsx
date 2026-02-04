@@ -97,8 +97,18 @@ export default function ApplyLayout({
   }, [isAuthLoading, isAuthenticated, user, router, syncWaitTime]);
 
   // Show loading while auth is initializing OR queries are loading OR waiting for sync
-  if (isAuthLoading || user === undefined || application === undefined ||
-    (isAuthenticated && user === null && syncWaitTime < SYNC_GRACE_PERIOD_MS)) {
+  const shouldShowLoading = isAuthLoading || user === undefined || application === undefined ||
+    (isAuthenticated && user === null && syncWaitTime < SYNC_GRACE_PERIOD_MS);
+
+  console.log("[APPLY-LAYOUT] shouldShowLoading:", shouldShowLoading, {
+    isAuthLoading,
+    userUndefined: user === undefined,
+    appUndefined: application === undefined,
+    waitingForSync: isAuthenticated && user === null && syncWaitTime < SYNC_GRACE_PERIOD_MS
+  });
+
+  if (shouldShowLoading) {
+    console.log("[APPLY-LAYOUT] Rendering Loading screen");
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-pulse text-lg">Loading...</div>
@@ -106,7 +116,12 @@ export default function ApplyLayout({
     );
   }
 
-  if (!user) return null;
+  if (!user) {
+    console.log("[APPLY-LAYOUT] User is falsy, returning null");
+    return null;
+  }
+
+  console.log("[APPLY-LAYOUT] Rendering main content");
 
   return (
     <div className="min-h-screen bg-gray-50">
