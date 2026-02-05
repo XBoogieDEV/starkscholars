@@ -180,12 +180,12 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
       },
       {
         id: "recommendations",
-        label: "Recommendations received (2 required)",
+        label: "Recommendations requested (2 required)",
         met: validationStatus.recommendationsMet,
-        value: `${validationStatus.recommendationsCount || 0}/2 submitted`,
+        value: `${validationStatus.recommendationsCount || 0}/2 requested`,
         link: "/apply/step/6",
         icon: <Users className="h-4 w-4" />,
-        description: "At least 2 recommendations must be submitted",
+        description: "Request at least 2 recommendations (they can submit after you apply)",
       },
     ];
   }, [validationStatus, application]);
@@ -616,7 +616,13 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               {recommendations && recommendations.length < 2 && (
                 <p className="text-amber-600 text-sm mt-2">
                   <AlertCircle className="h-4 w-4 inline mr-1" />
-                  At least 2 recommendations are required
+                  Request at least 2 recommendations to submit
+                </p>
+              )}
+              {recommendations && recommendations.length >= 2 && (
+                <p className="text-green-600 text-sm mt-2 bg-green-50 p-2 rounded">
+                  <CheckCircle2 className="h-4 w-4 inline mr-1" />
+                  You can submit your application now! Recommenders can submit their letters at any time.
                 </p>
               )}
             </div>

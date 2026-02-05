@@ -62,8 +62,9 @@ export const getValidationStatus = query({
     const fullTimeStudent = application.isFullTimeStudent === true;
     if (fullTimeStudent) metRequirements++;
 
-    // 5. At least 2 recommendations submitted
-    const recommendationsMet = submittedRecommendations.length >= 2;
+    // 5. At least 2 recommendations REQUESTED (not required to be submitted before application submission)
+    const recommendationsRequested = recommendations.length >= 2;
+    const recommendationsMet = recommendationsRequested; // Changed: only need requests, not submissions
     if (recommendationsMet) metRequirements++;
 
     // 6. Required files uploaded
@@ -96,7 +97,9 @@ export const getValidationStatus = query({
       michiganResident,
       fullTimeStudent,
       recommendationsMet,
-      recommendationsCount: submittedRecommendations.length,
+      recommendationsRequested,
+      recommendationsCount: recommendations.length,
+      recommendationsSubmittedCount: submittedRecommendations.length,
       filesMet,
       profilePhotoUploaded,
       transcriptUploaded,
@@ -114,7 +117,7 @@ export const getValidationStatus = query({
         { id: "gpa", label: "GPA ≥ 3.0", met: gpaMet, value: application.gpa },
         { id: "resident", label: "Michigan resident confirmed", met: michiganResident },
         { id: "fulltime", label: "Full-time student confirmed", met: fullTimeStudent },
-        { id: "recommendations", label: "At least 2 recommendations received", met: recommendationsMet, value: `${submittedRecommendations.length}/2` },
+        { id: "recommendations", label: "At least 2 recommendations requested", met: recommendationsMet, value: `${recommendations.length}/2 requested` },
         { id: "photo", label: "Profile photo uploaded", met: profilePhotoUploaded },
         { id: "transcript", label: "Transcript uploaded", met: transcriptUploaded },
         { id: "essay", label: "Essay complete (250-500 words)", met: essayValid, value: `${wordCount} words` },
@@ -452,20 +455,19 @@ export const submit = mutation({
       }
     }
 
-    // Check recommendations
+    // Check recommendations - only need to be REQUESTED, not submitted
+    // Users can submit their application while waiting for recommenders
     const recommendations = await ctx.db
       .query("recommendations")
       .withIndex("by_application", (q) => q.eq("applicationId", applicationId))
       .collect();
 
     if (recommendations.length < 2) {
-      throw new Error("Need 2 recommendations");
+      throw new Error("Please request at least 2 recommendations before submitting");
     }
 
-    const allSubmitted = recommendations.every((r) => r.status === "submitted");
-    if (!allSubmitted) {
-      throw new Error("Not all recommendations received");
-    }
+    // Note: We no longer require recommendations to be submitted before application submission
+    // Recommendations can arrive after the application is submitted
 
     // Validate signature matches name
     const fullName = `${application.firstName} ${application.lastName}`.toLowerCase().trim();
