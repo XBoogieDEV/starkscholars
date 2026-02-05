@@ -43,6 +43,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
   const createRecommendation = useMutation(api.recommendations.create);
   const sendReminder = useMutation(api.recommendations.sendReminder);
   const resendEmail = useMutation(api.recommendations.resendEmail);
+  const markStepComplete = useMutation(api.applications.markStepComplete);
   const recommendations = useQuery(api.recommendations.getByApplication, {
     applicationId: application._id,
   });
@@ -56,6 +57,16 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
     recommenderOrganization: "",
     relationship: "",
   });
+
+  // Handle step completion - mark step 6 as complete and proceed
+  const handleStepComplete = async () => {
+    try {
+      await markStepComplete({ applicationId: application._id, step: 6 });
+    } catch (error) {
+      console.error("Failed to mark step complete:", error);
+    }
+    onComplete();
+  };
 
   const handleChange = (field: keyof RecommenderForm, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -424,7 +435,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
               </div>
             )}
             <Button
-              onClick={onComplete}
+              onClick={handleStepComplete}
               className={allSubmitted ? "w-full bg-amber-600 hover:bg-amber-700" : "w-full"}
               variant={allSubmitted ? "default" : "outline"}
             >

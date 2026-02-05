@@ -46,8 +46,8 @@ export const getValidationStatus = query({
     const totalRequirements = 8;
     let metRequirements = 0;
 
-    // 1. All 7 steps completed
-    const allStepsCompleted = application.completedSteps.length >= 7;
+    // 1. First 6 steps completed (step 7 is Review & Submit where you actually submit)
+    const allStepsCompleted = application.completedSteps.filter(s => s <= 6).length >= 6;
     if (allStepsCompleted) metRequirements++;
 
     // 2. GPA >= 3.0
@@ -412,6 +412,26 @@ export const updateCurrentStep = mutation({
       currentStep: step,
       updatedAt: Date.now(),
     });
+  },
+});
+
+// Mark a step as complete (used for steps 6 and 7 which don't have dedicated save mutations)
+export const markStepComplete = mutation({
+  args: {
+    applicationId: v.id("applications"),
+    step: v.number(),
+  },
+  handler: async (ctx, { applicationId, step }) => {
+    const application = await ctx.db.get(applicationId);
+    if (!application) throw new Error("Application not found");
+
+    // Only add if not already in completedSteps
+    if (!application.completedSteps.includes(step)) {
+      await ctx.db.patch(applicationId, {
+        completedSteps: [...application.completedSteps, step],
+        updatedAt: Date.now(),
+      });
+    }
   },
 });
 

@@ -106,12 +106,12 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
     return [
       {
         id: "steps",
-        label: "All 7 steps completed",
+        label: "All steps completed",
         met: validationStatus.allStepsCompleted,
-        value: `${application.completedSteps.length}/7`,
+        value: `${application.completedSteps.filter(s => s <= 6).length}/6`,
         link: "/apply/dashboard",
         icon: <CheckCircle2 className="h-4 w-4" />,
-        description: "Complete all sections of the application",
+        description: "Complete steps 1-6 of the application",
       },
       {
         id: "personal",
