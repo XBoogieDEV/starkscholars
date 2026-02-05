@@ -32,6 +32,8 @@ export const AUDIT_ACTIONS = {
   "recommendation:reminder_sent": "Recommendation reminder sent",
   "recommendation:submitted": "Recommendation submitted",
   "recommendation:viewed": "Recommendation viewed",
+  "recommendation:email_resent": "Recommendation email resent by applicant",
+  "recommendation:admin_email_resent": "Recommendation email resent by admin",
 
   // Evaluation actions
   "evaluation:submitted": "Evaluation submitted",

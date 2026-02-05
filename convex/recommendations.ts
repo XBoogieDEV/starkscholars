@@ -371,3 +371,159 @@ export const updateReminderSent = internalMutation({
     });
   },
 });
+
+// ============================================
+// RESEND EMAIL FEATURE
+// ============================================
+
+/**
+ * Resend recommendation request email with a new token.
+ * Accessible by both applicants (who own the recommendation) and admins.
+ * Generates a fresh token in case the old one was marked as spam.
+ */
+export const resendEmail = mutation({
+  args: { recommendationId: v.id("recommendations") },
+  handler: async (ctx, { recommendationId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    // Get the recommendation
+    const rec = await ctx.db.get(recommendationId);
+    if (!rec) throw new Error("Recommendation not found");
+
+    // Don't resend if already submitted
+    if (rec.status === "submitted") {
+      throw new Error("Cannot resend - recommendation already submitted");
+    }
+
+    // Get the application to verify ownership or admin status
+    const application = await ctx.db.get(rec.applicationId);
+    if (!application) throw new Error("Application not found");
+
+    // Check authorization: either the applicant owns this or user is admin
+    // Get the user to check role
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", identity.email as string))
+      .first();
+
+    const isOwner = application.userId === user?._id;
+    const isAdmin = user?.role === "admin" || user?.role === "committee";
+
+    if (!isOwner && !isAdmin) {
+      throw new Error("Not authorized to resend this recommendation email");
+    }
+
+    // Generate a NEW secure token (old one may have been marked as spam)
+    const newToken = generateSecureToken();
+    const newExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+
+    // Update the recommendation with new token
+    await ctx.db.patch(recommendationId, {
+      accessToken: newToken,
+      tokenExpiresAt: newExpiresAt,
+      status: "pending", // Reset to pending since we're resending
+      updatedAt: Date.now(),
+    });
+
+    // Schedule the email send
+    await ctx.scheduler.runAfter(0, api.emails.sendRecommendationRequest, {
+      recommendationId,
+    });
+
+    // Update status to email_sent after scheduling
+    await ctx.db.patch(recommendationId, {
+      status: "email_sent",
+      emailSentAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    // Log the resend action
+    await logAction(ctx, {
+      action: "recommendation:email_resent",
+      userId: identity.subject,
+      applicationId: rec.applicationId,
+      details: {
+        recommendationId: recommendationId,
+        recommenderEmail: rec.recommenderEmail,
+        resendBy: isAdmin ? "admin" : "applicant",
+      },
+    });
+
+    return { success: true, newToken };
+  },
+});
+
+/**
+ * Admin-only mutation to resend any recommendation email.
+ * Includes additional info for admin dashboard.
+ */
+export const adminResendEmail = mutation({
+  args: { recommendationId: v.id("recommendations") },
+  handler: async (ctx, { recommendationId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    // Verify admin role
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", identity.email as string))
+      .first();
+
+    if (!user || (user.role !== "admin" && user.role !== "committee")) {
+      throw new Error("Admin access required");
+    }
+
+    // Get the recommendation
+    const rec = await ctx.db.get(recommendationId);
+    if (!rec) throw new Error("Recommendation not found");
+
+    // Don't resend if already submitted
+    if (rec.status === "submitted") {
+      throw new Error("Cannot resend - recommendation already submitted");
+    }
+
+    // Generate a NEW secure token
+    const newToken = generateSecureToken();
+    const newExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+
+    // Update the recommendation with new token
+    await ctx.db.patch(recommendationId, {
+      accessToken: newToken,
+      tokenExpiresAt: newExpiresAt,
+      status: "pending",
+      updatedAt: Date.now(),
+    });
+
+    // Schedule the email send
+    await ctx.scheduler.runAfter(0, api.emails.sendRecommendationRequest, {
+      recommendationId,
+    });
+
+    // Update status to email_sent
+    await ctx.db.patch(recommendationId, {
+      status: "email_sent",
+      emailSentAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    // Log the admin resend action
+    await logAction(ctx, {
+      action: "recommendation:admin_email_resent",
+      userId: identity.subject,
+      applicationId: rec.applicationId,
+      details: {
+        recommendationId: recommendationId,
+        recommenderEmail: rec.recommenderEmail,
+        adminId: user._id,
+      },
+    });
+
+    return {
+      success: true,
+      newToken,
+      recommenderEmail: rec.recommenderEmail,
+      recommenderName: rec.recommenderName,
+    };
+  },
+});

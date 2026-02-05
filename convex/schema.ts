@@ -367,4 +367,43 @@ export default defineSchema({
     updatedBy: v.optional(v.id("user")),
   })
     .index("by_key", ["key"]),
+
+  // ============================================
+  // EMAIL LOGS
+  // ============================================
+  emailLogs: defineTable({
+    // Email metadata
+    type: v.string(), // "recommendation_request", "recommendation_reminder", "welcome", "verification", etc.
+    recipientEmail: v.string(),
+    subject: v.string(),
+
+    // Status tracking
+    status: v.union(
+      v.literal("pending"),
+      v.literal("sent"),
+      v.literal("failed"),
+      v.literal("bounced")
+    ),
+
+    // Resend tracking
+    resendId: v.optional(v.string()), // Resend message ID for tracking
+    error: v.optional(v.string()), // Error message if failed
+
+    // Related entity (for lookups)
+    relatedId: v.optional(v.string()), // recommendationId, userId, applicationId, etc.
+    relatedType: v.optional(v.string()), // "recommendation", "user", "application"
+
+    // Retry tracking
+    attempts: v.number(),
+    lastAttemptAt: v.number(),
+
+    // Timestamps
+    sentAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_type", ["type"])
+    .index("by_recipient", ["recipientEmail"])
+    .index("by_related", ["relatedType", "relatedId"])
+    .index("by_created", ["createdAt"]),
 });

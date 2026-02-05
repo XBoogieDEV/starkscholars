@@ -17,7 +17,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowRight, Loader2, Plus, Send, Clock, CheckCircle, AlertCircle, X } from "lucide-react";
+import { ArrowRight, Loader2, Plus, Send, Clock, CheckCircle, AlertCircle, X, RefreshCw } from "lucide-react";
 
 interface RecommendationsStepProps {
   application: Doc<"applications">;
@@ -42,6 +42,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
   const { toast } = useToast();
   const createRecommendation = useMutation(api.recommendations.create);
   const sendReminder = useMutation(api.recommendations.sendReminder);
+  const resendEmail = useMutation(api.recommendations.resendEmail);
   const recommendations = useQuery(api.recommendations.getByApplication, {
     applicationId: application._id,
   });
@@ -145,6 +146,22 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
     }
   };
 
+  const handleResendEmail = async (recommendationId: Id<"recommendations">, name: string) => {
+    try {
+      await resendEmail({ recommendationId });
+      toast({
+        title: "Email resent!",
+        description: `A new recommendation request has been sent to ${name} with a fresh link.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to resend email. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -230,13 +247,25 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
                     )}
                   </div>
                   {rec.status !== "submitted" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSendReminder(rec._id, rec.recommenderName || "")}
-                    >
-                      Send Reminder
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSendReminder(rec._id, rec.recommenderName || "")}
+                      >
+                        Send Reminder
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                        onClick={() => handleResendEmail(rec._id, rec.recommenderName || "")}
+                        title="Resend with a new link (use if they didn't receive it)"
+                      >
+                        <RefreshCw className="mr-1 h-3 w-3" />
+                        Resend Email
+                      </Button>
+                    </div>
                   )}
                 </div>
               </CardContent>

@@ -31,6 +31,7 @@ import {
     LogOut,
     Award,
     Shield,
+    Mail,
 } from "lucide-react";
 
 const navItems = [
@@ -43,6 +44,11 @@ const navItems = [
         title: "Applications",
         icon: FileText,
         href: "/admin/applications",
+    },
+    {
+        title: "Email Logs",
+        icon: Mail,
+        href: "/admin/emails",
     },
     {
         title: "Committee Members",
