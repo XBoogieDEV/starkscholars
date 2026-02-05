@@ -34,7 +34,6 @@ const steps = [
 // Success animation component
 function SuccessAnimation({ onComplete }: { onComplete?: () => void }) {
   const shouldReduceMotion = useReducedMotion();
-  const [showContinueButton, setShowContinueButton] = useState(false);
 
   useEffect(() => {
     // Try auto-navigation after 1.5s
@@ -42,14 +41,8 @@ function SuccessAnimation({ onComplete }: { onComplete?: () => void }) {
       onComplete?.();
     }, 1500);
 
-    // Show continue button as fallback after 2.5s
-    const fallbackTimer = setTimeout(() => {
-      setShowContinueButton(true);
-    }, 2500);
-
     return () => {
       clearTimeout(autoNavTimer);
-      clearTimeout(fallbackTimer);
     };
   }, [onComplete]);
 
@@ -88,18 +81,18 @@ function SuccessAnimation({ onComplete }: { onComplete?: () => void }) {
         transition={{ delay: shouldReduceMotion ? 0 : 0.4 }}
         className="text-gray-600 mb-4"
       >
-        {showContinueButton ? "Click below to continue" : "Moving to next step..."}
+        Moving to next step...
       </motion.p>
-      {showContinueButton && (
-        <motion.button
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          onClick={() => onComplete?.()}
-          className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium"
-        >
-          Continue →
-        </motion.button>
-      )}
+      {/* Always show Continue button as immediate fallback */}
+      <motion.button
+        initial={shouldReduceMotion ? {} : { opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: shouldReduceMotion ? 0 : 0.5 }}
+        onClick={() => onComplete?.()}
+        className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium"
+      >
+        Continue →
+      </motion.button>
     </motion.div>
   );
 }

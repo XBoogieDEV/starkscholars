@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx convex env:*)",
+      "Bash(npx convex dev:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: email system - fix domain mismatch, add logging, resend feature\n\nRoot cause fix:\n- Change FROM_EMAIL from noreply@starkscholars.com to info@mail.starkscholars.com\n- Resend only accepts emails from verified subdomain mail.starkscholars.com\n\nEmail logging:\n- Add emailLogs table to track all email sends with Resend IDs\n- Log success/failure for every email type\n- Store error messages for failed emails\n\nResend email feature:\n- Add resendEmail mutation for applicants to resend recommendation requests\n- Add adminResendEmail mutation for admin dashboard\n- Generate new tokens on resend \\(helps with spam issues\\)\n- Add \"Resend Email\" button in recommendations-step UI\n\nAdmin email dashboard:\n- New /admin/emails page showing all email logs\n- Filter by type \\(recommendation_request, welcome, etc.\\) and status\n- Search by recipient email\n- Stats cards for total/sent/failed/pending\n- Resend button for recommendation emails\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(npx convex deploy:*)"
+    ]
+  }
+}
