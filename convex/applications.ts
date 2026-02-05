@@ -42,12 +42,13 @@ export const getValidationStatus = query({
       (r) => r.status === "submitted"
     );
 
-    // Calculate completion percentage
-    const totalRequirements = 8;
+    // Calculate completion percentage - recommendations are NOT required for submission
+    // Users submit their part, recommendation letters arrive separately
+    const totalRequirements = 7;
     let metRequirements = 0;
 
-    // 1. First 6 steps completed (step 7 is Review & Submit where you actually submit)
-    const allStepsCompleted = application.completedSteps.filter(s => s <= 6).length >= 6;
+    // 1. First 5 steps completed (step 6 is recommendations which is optional, step 7 is submit)
+    const allStepsCompleted = application.completedSteps.filter(s => s <= 5).length >= 5;
     if (allStepsCompleted) metRequirements++;
 
     // 2. GPA >= 3.0
@@ -62,24 +63,23 @@ export const getValidationStatus = query({
     const fullTimeStudent = application.isFullTimeStudent === true;
     if (fullTimeStudent) metRequirements++;
 
-    // 5. At least 2 recommendations REQUESTED (not required to be submitted before application submission)
+    // Recommendations are tracked but NOT required for submission
     const recommendationsRequested = recommendations.length >= 2;
-    const recommendationsMet = recommendationsRequested; // Changed: only need requests, not submissions
-    if (recommendationsMet) metRequirements++;
+    const recommendationsMet = recommendationsRequested;
 
-    // 6. Required files uploaded
+    // 5. Required files uploaded
     const profilePhotoUploaded = !!application.profilePhotoId;
     const transcriptUploaded = !!application.transcriptFileId;
     const essayUploaded = !!application.essayText || !!application.essayFileId;
     const filesMet = profilePhotoUploaded && transcriptUploaded && essayUploaded;
     if (filesMet) metRequirements++;
 
-    // 7. Essay word count valid (250-500)
+    // 6. Essay word count valid (250-500)
     const wordCount = application.essayWordCount || 0;
     const essayValid = wordCount >= 250 && wordCount <= 500;
     if (essayValid) metRequirements++;
 
-    // 8. Eligibility info complete (name, address, education)
+    // 7. Eligibility info complete (name, address, education)
     const personalComplete = !!(application.firstName && application.lastName && application.phone && application.dateOfBirth);
     const addressComplete = !!(application.streetAddress && application.city && application.state && application.zipCode);
     const educationComplete = !!(application.highSchoolName && application.collegeName && application.yearInCollege);
@@ -111,13 +111,12 @@ export const getValidationStatus = query({
       addressComplete,
       educationComplete,
 
-      // Requirements detail
+      // Requirements detail (recommendations shown for info but not required)
       requirements: [
-        { id: "steps", label: "All 7 steps completed", met: allStepsCompleted },
+        { id: "steps", label: "All application steps completed", met: allStepsCompleted },
         { id: "gpa", label: "GPA ≥ 3.0", met: gpaMet, value: application.gpa },
         { id: "resident", label: "Michigan resident confirmed", met: michiganResident },
         { id: "fulltime", label: "Full-time student confirmed", met: fullTimeStudent },
-        { id: "recommendations", label: "At least 2 recommendations requested", met: recommendationsMet, value: `${recommendations.length}/2 requested` },
         { id: "photo", label: "Profile photo uploaded", met: profilePhotoUploaded },
         { id: "transcript", label: "Transcript uploaded", met: transcriptUploaded },
         { id: "essay", label: "Essay complete (250-500 words)", met: essayValid, value: `${wordCount} words` },
@@ -475,19 +474,8 @@ export const submit = mutation({
       }
     }
 
-    // Check recommendations - only need to be REQUESTED, not submitted
-    // Users can submit their application while waiting for recommenders
-    const recommendations = await ctx.db
-      .query("recommendations")
-      .withIndex("by_application", (q) => q.eq("applicationId", applicationId))
-      .collect();
-
-    if (recommendations.length < 2) {
-      throw new Error("Please request at least 2 recommendations before submitting");
-    }
-
-    // Note: We no longer require recommendations to be submitted before application submission
-    // Recommendations can arrive after the application is submitted
+    // Recommendations are NOT required for submission - they can arrive later
+    // The application will be marked as "submitted" and letters arrive separately
 
     // Validate signature matches name
     const fullName = `${application.firstName} ${application.lastName}`.toLowerCase().trim();

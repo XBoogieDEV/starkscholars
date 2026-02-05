@@ -106,12 +106,12 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
     return [
       {
         id: "steps",
-        label: "All steps completed",
+        label: "All application steps completed",
         met: validationStatus.allStepsCompleted,
-        value: `${application.completedSteps.filter(s => s <= 6).length}/6`,
+        value: `${application.completedSteps.filter(s => s <= 5).length}/5`,
         link: "/apply/dashboard",
         icon: <CheckCircle2 className="h-4 w-4" />,
-        description: "Complete steps 1-6 of the application",
+        description: "Complete steps 1-5 of the application",
       },
       {
         id: "personal",
@@ -171,21 +171,12 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
       },
       {
         id: "essay",
-        label: "Essay word count valid (250-500 words)",
+        label: "Essay complete (250-500 words)",
         met: validationStatus.essayValid,
-        value: `${validationStatus.wordCount || 0} words`,
+        value: `${validationStatus.wordCount || 0}/250-500 words`,
         link: "/apply/step/5",
         icon: <FileText className="h-4 w-4" />,
         description: "Essay must be between 250-500 words",
-      },
-      {
-        id: "recommendations",
-        label: "Recommendations requested (2 required)",
-        met: validationStatus.recommendationsMet,
-        value: `${validationStatus.recommendationsCount || 0}/2 requested`,
-        link: "/apply/step/6",
-        icon: <Users className="h-4 w-4" />,
-        description: "Request at least 2 recommendations (they can submit after you apply)",
       },
     ];
   }, [validationStatus, application]);
