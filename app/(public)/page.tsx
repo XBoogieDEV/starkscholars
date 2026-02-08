@@ -548,9 +548,6 @@ export default function LandingPage() {
             <p className="text-xs text-secondary-foreground/40">
               © 2026 Stark Scholars. All rights reserved.
             </p>
-            <p className="text-xs text-secondary-foreground/40">
-              Powered by <span className="text-primary">Convex</span> & <span className="text-primary">Next.js</span>
-            </p>
           </div>
         </div>
       </footer>
