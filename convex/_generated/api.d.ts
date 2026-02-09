@@ -25,6 +25,7 @@ import type * as recommendations from "../recommendations.js";
 import type * as reproduce_issue from "../reproduce_issue.js";
 import type * as settings from "../settings.js";
 import type * as storage from "../storage.js";
+import type * as userInvites from "../userInvites.js";
 import type * as users from "../users.js";
 import type * as utils from "../utils.js";
 
@@ -52,6 +53,7 @@ declare const fullApi: ApiFromModules<{
   reproduce_issue: typeof reproduce_issue;
   settings: typeof settings;
   storage: typeof storage;
+  userInvites: typeof userInvites;
   users: typeof users;
   utils: typeof utils;
 }>;

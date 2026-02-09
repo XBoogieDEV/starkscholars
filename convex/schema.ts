@@ -342,6 +342,34 @@ export default defineSchema({
     .index("by_user", ["userId"]),
 
   // ============================================
+  // USER INVITES
+  // ============================================
+  userInvites: defineTable({
+    email: v.string(),
+    role: v.union(v.literal("admin"), v.literal("committee")),
+    token: v.string(),
+    expiresAt: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("revoked"),
+      v.literal("expired")
+    ),
+    invitedBy: v.id("user"),
+    // Optional committee-specific fields (pre-fill committeeMembers record on accept)
+    name: v.optional(v.string()),
+    title: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    isChairman: v.optional(v.boolean()),
+    isExOfficio: v.optional(v.boolean()),
+    createdAt: v.number(),
+    acceptedAt: v.optional(v.number()),
+  })
+    .index("by_token", ["token"])
+    .index("by_email", ["email"])
+    .index("by_status", ["status"]),
+
+  // ============================================
   // ACTIVITY LOG
   // ============================================
   activityLog: defineTable({

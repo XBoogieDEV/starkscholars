@@ -21,7 +21,8 @@ type EmailType =
   | "application_submitted"
   | "application_withdrawn"
   | "selection_congratulations"
-  | "selection_not_selected";
+  | "selection_not_selected"
+  | "user_invite";
 
 type EmailStatus = "pending" | "sent" | "failed" | "bounced";
 
@@ -739,6 +740,77 @@ export const sendWelcomeEmail = action({
 
     return { success: true, resendId: result.resendId };
   }
+});
+
+export const sendInviteEmail = action({
+  args: { inviteId: v.id("userInvites") },
+  handler: async (ctx, { inviteId }) => {
+    const invite2 = await ctx.runQuery(internal.userInvites.getById, { id: inviteId });
+    if (!invite2) throw new Error("Invite not found");
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+    const acceptUrl = `${appUrl}/invite/accept?token=${invite2.token}`;
+    const roleName = invite2.role === "admin" ? "Administrator" : "Committee Member";
+    const expiresDate = new Date(invite2.expiresAt).toLocaleDateString();
+
+    const subject = `You're Invited to Stark Scholars ${roleName} Portal`;
+
+    const html = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading(`You're Invited!`)}
+        ${bodyText(`Hello${invite2.name ? ` ${invite2.name}` : ''},`)}
+        ${bodyText(`You have been invited to join the <strong>William R. Stark Financial Assistance Program</strong> as ${invite2.role === "admin" ? "an <strong>Administrator</strong>" : "a <strong>Committee Member</strong>"}.`)}
+      `)}
+      ${contentSectionFull(infoBox('default', `About the ${roleName} Role`,
+        invite2.role === "admin"
+          ? 'As an administrator, you will have full access to manage applications, committee members, and program settings.'
+          : 'As a committee member, you will review and evaluate scholarship applications from students across Michigan.'
+      ))}
+      ${ctaSection(acceptUrl, 'Accept Invitation', 'default', acceptUrl)}
+      ${contentSectionFull(`
+        <p style="color: ${MUTED_TEXT}; font-family: ${BODY_FONT}; font-size: 14px; margin: 0;">
+          This invitation will expire on <strong>${expiresDate}</strong>. If you have any questions, please contact the scholarship committee.
+        </p>
+      `)}
+      ${contentSectionBottom(signatureBlock('Fraternally,', true))}
+      ${emailFooter()}
+    `);
+
+    // Create email log
+    const logId = await ctx.runMutation(internal.emails.createEmailLog, {
+      type: "user_invite",
+      recipientEmail: invite2.email,
+      subject,
+      relatedId: inviteId,
+      relatedType: "invite",
+    });
+
+    // Send email
+    const result = await sendEmailToResend({
+      to: invite2.email,
+      subject,
+      html,
+    });
+
+    // Update log with result
+    if (result.success && result.resendId) {
+      await ctx.runMutation(internal.emails.updateEmailLogSuccess, {
+        logId,
+        resendId: result.resendId,
+      });
+    } else {
+      await ctx.runMutation(internal.emails.updateEmailLogFailure, {
+        logId,
+        error: result.error || "Unknown error",
+        attempts: 1,
+      });
+      throw new Error(`Failed to send invite email: ${result.error}`);
+    }
+
+    return { success: true, resendId: result.resendId };
+  },
 });
 
 export const sendEmailVerification = action({

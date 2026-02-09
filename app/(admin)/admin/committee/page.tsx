@@ -47,6 +47,7 @@ import {
   Shield,
   Users,
   Loader2,
+  UserPlus,
 } from "lucide-react";
 
 type CommitteeMember = {
@@ -76,6 +77,7 @@ export default function CommitteePage() {
   const createMember = useMutation(api.committeeMembers.create);
   const updateMember = useMutation(api.committeeMembers.update);
   const removeMember = useMutation(api.committeeMembers.remove);
+  const createInvite = useMutation(api.userInvites.create);
 
   // Dialog state
   const [addOpen, setAddOpen] = useState(false);
@@ -99,10 +101,54 @@ export default function CommitteePage() {
   const [editIsChairman, setEditIsChairman] = useState(false);
   const [editIsExOfficio, setEditIsExOfficio] = useState(false);
 
+  // Invite dialog state
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteTitle, setInviteTitle] = useState("");
+  const [invitePhone, setInvitePhone] = useState("");
+  const [inviteIsChairman, setInviteIsChairman] = useState(false);
+  const [inviteIsExOfficio, setInviteIsExOfficio] = useState(false);
+
   // Remove state
   const [removingMember, setRemovingMember] = useState<CommitteeMember | null>(
     null
   );
+
+  function resetInviteForm() {
+    setInviteEmail("");
+    setInviteName("");
+    setInviteTitle("");
+    setInvitePhone("");
+    setInviteIsChairman(false);
+    setInviteIsExOfficio(false);
+  }
+
+  async function handleInvite() {
+    if (!inviteEmail) {
+      toast.error("Email is required");
+      return;
+    }
+    setSaving(true);
+    try {
+      await createInvite({
+        email: inviteEmail,
+        role: "committee",
+        name: inviteName || undefined,
+        title: inviteTitle || undefined,
+        phone: invitePhone || undefined,
+        isChairman: inviteIsChairman || undefined,
+        isExOfficio: inviteIsExOfficio || undefined,
+      });
+      toast.success(`Invitation sent to ${inviteEmail}`);
+      setInviteOpen(false);
+      resetInviteForm();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send invitation");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   function resetAddForm() {
     setSelectedUserId("");
@@ -248,10 +294,16 @@ export default function CommitteePage() {
             Manage scholarship committee members and their roles
           </p>
         </div>
-        <Button onClick={() => { resetAddForm(); setAddOpen(true); }}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Member
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => { resetInviteForm(); setInviteOpen(true); }}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Invite Member
+          </Button>
+          <Button onClick={() => { resetAddForm(); setAddOpen(true); }}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Member
+          </Button>
+        </div>
       </div>
 
       {/* Stats bar */}
@@ -527,6 +579,82 @@ export default function CommitteePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Invite Member Dialog */}
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Invite Committee Member</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">Email Address</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="member@example.com"
+              />
+              <p className="text-xs text-muted-foreground">
+                An invitation email will be sent to this address
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-name">Name (optional)</Label>
+              <Input
+                id="invite-name"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                placeholder="Full name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-title">Title (optional)</Label>
+              <Input
+                id="invite-title"
+                value={inviteTitle}
+                onChange={(e) => setInviteTitle(e.target.value)}
+                placeholder="e.g. Committee Member"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-phone">Phone (optional)</Label>
+              <Input
+                id="invite-phone"
+                value={invitePhone}
+                onChange={(e) => setInvitePhone(e.target.value)}
+                placeholder="(555) 123-4567"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="invite-chairman">Chairman</Label>
+              <Switch
+                id="invite-chairman"
+                checked={inviteIsChairman}
+                onCheckedChange={setInviteIsChairman}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="invite-exofficio">Ex-Officio</Label>
+              <Switch
+                id="invite-exofficio"
+                checked={inviteIsExOfficio}
+                onCheckedChange={setInviteIsExOfficio}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleInvite} disabled={saving || !inviteEmail}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Send Invitation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
