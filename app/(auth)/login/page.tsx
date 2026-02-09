@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/apply/dashboard";
+  const explicitRedirect = searchParams.get("redirect");
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -45,8 +45,18 @@ function LoginForm() {
         return;
       }
 
-      // Success
-      console.log("[LOGIN] Login successful, redirecting to:", redirect);
+      // Success — determine redirect based on role if no explicit redirect
+      let targetRedirect = explicitRedirect || "/apply/dashboard";
+      const userRole = (data?.user as any)?.role as string | undefined;
+      if (!explicitRedirect && userRole) {
+        if (userRole === "admin") {
+          targetRedirect = "/admin";
+        } else if (userRole === "committee") {
+          targetRedirect = "/committee";
+        }
+      }
+
+      console.log("[LOGIN] Login successful, redirecting to:", targetRedirect);
       toast({
         title: "Welcome back!",
         description: "Signing you in...",
@@ -54,7 +64,7 @@ function LoginForm() {
 
       // Use window.location for consistent redirect behavior
       console.log("[LOGIN] Executing redirect...");
-      window.location.href = redirect;
+      window.location.href = targetRedirect;
 
     } catch (err) {
       console.error("[LOGIN] Catch error:", err);

@@ -3,7 +3,7 @@ import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import type { GenericCtx } from "@convex-dev/better-auth/utils";
 import type { BetterAuthOptions } from "better-auth";
 import { betterAuth } from "better-auth";
-import { components, api } from "../_generated/api"; // Added api import
+import { components, internal } from "../_generated/api";
 import type { DataModel } from "../_generated/dataModel";
 import authConfig from "../auth.config";
 import schema from "./schema";
@@ -71,15 +71,33 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
       user: {
         create: {
           after: async (user) => {
-            if ("scheduler" in ctx) {
-              // @ts-expect-error - api type not generated yet
-              await ctx.scheduler.runAfter(0, api.users.syncUser, {
-                email: user.email,
-                name: user.name,
-                role: user.role || "applicant",
-                image: user.image || undefined,
-                externalId: user.id, // Better Auth User ID
-              });
+            console.log("[databaseHooks] user.create.after fired for:", user.email, "id:", user.id);
+            try {
+              if ("scheduler" in ctx && typeof (ctx as any).scheduler?.runAfter === "function") {
+                console.log("[databaseHooks] scheduler available, scheduling syncUser");
+                await (ctx as any).scheduler.runAfter(0, internal.users.syncUser, {
+                  email: user.email,
+                  name: user.name,
+                  role: user.role || "applicant",
+                  image: user.image || undefined,
+                  externalId: user.id,
+                });
+                console.log("[databaseHooks] syncUser scheduled successfully");
+              } else if ("runMutation" in ctx && typeof (ctx as any).runMutation === "function") {
+                console.log("[databaseHooks] No scheduler, trying runMutation");
+                await (ctx as any).runMutation(internal.users.syncUser, {
+                  email: user.email,
+                  name: user.name,
+                  role: user.role || "applicant",
+                  image: user.image || undefined,
+                  externalId: user.id,
+                });
+                console.log("[databaseHooks] syncUser via runMutation succeeded");
+              } else {
+                console.error("[databaseHooks] Neither scheduler nor runMutation available on ctx. Keys:", Object.keys(ctx));
+              }
+            } catch (e: any) {
+              console.error("[databaseHooks] Error syncing user:", e.message || String(e));
             }
           },
         },
@@ -87,15 +105,31 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
       session: {
         create: {
           after: async (session) => {
-            if ("scheduler" in ctx) {
-              // @ts-expect-error - api type not generated yet
-              await ctx.scheduler.runAfter(0, api.users.syncSession, {
-                token: session.token,
-                expiresAt: session.expiresAt,
-                baUserId: session.userId, // Better Auth User ID (external)
-                ipAddress: session.ipAddress || null,
-                userAgent: session.userAgent || null,
-              });
+            console.log("[databaseHooks] session.create.after fired for userId:", session.userId);
+            try {
+              if ("scheduler" in ctx && typeof (ctx as any).scheduler?.runAfter === "function") {
+                await (ctx as any).scheduler.runAfter(0, internal.users.syncSession, {
+                  token: session.token,
+                  expiresAt: session.expiresAt,
+                  baUserId: session.userId,
+                  ipAddress: session.ipAddress || null,
+                  userAgent: session.userAgent || null,
+                });
+                console.log("[databaseHooks] syncSession scheduled successfully");
+              } else if ("runMutation" in ctx && typeof (ctx as any).runMutation === "function") {
+                await (ctx as any).runMutation(internal.users.syncSession, {
+                  token: session.token,
+                  expiresAt: session.expiresAt,
+                  baUserId: session.userId,
+                  ipAddress: session.ipAddress || null,
+                  userAgent: session.userAgent || null,
+                });
+                console.log("[databaseHooks] syncSession via runMutation succeeded");
+              } else {
+                console.error("[databaseHooks] Neither scheduler nor runMutation available for session sync. Keys:", Object.keys(ctx));
+              }
+            } catch (e: any) {
+              console.error("[databaseHooks] Error syncing session:", e.message || String(e));
             }
           },
         },

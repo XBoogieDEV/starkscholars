@@ -2,7 +2,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 // Environment variables
-const CONVEX_SITE_URL = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
+// Use .convex.cloud URL for query API, NOT .convex.site (which only serves HTTP action routes)
+const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL;
 const BETTER_AUTH_COOKIE_NAME = process.env.BETTER_AUTH_COOKIE_NAME || "better-auth.session_token";
 
 // Role type matching schema
@@ -13,8 +14,8 @@ export type UserRole = "applicant" | "admin" | "committee";
  * Usage: await requireAuth(["admin"]) in a layout or page.
  */
 export async function requireAuth(allowedRoles: UserRole[]) {
-    if (!CONVEX_SITE_URL) {
-        console.error("NEXT_PUBLIC_CONVEX_SITE_URL is not set");
+    if (!CONVEX_URL) {
+        console.error("NEXT_PUBLIC_CONVEX_URL is not set");
         redirect("/login?error=config_error");
     }
 
@@ -31,7 +32,7 @@ export async function requireAuth(allowedRoles: UserRole[]) {
     try {
         // 1. Validate Session via Custom Convex Query (Reliable)
         // We use the System API to call 'verify:session' (Main App Proxy)
-        const sessionResponse = await fetch(`${CONVEX_SITE_URL}/api/query`, {
+        const sessionResponse = await fetch(`${CONVEX_URL}/api/query`, {
             method: "POST",
             body: JSON.stringify({
                 path: "users:verifySession",
