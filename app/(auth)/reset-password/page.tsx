@@ -133,7 +133,7 @@ function ResetPasswordForm() {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Password Reset Successful!
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-500 mb-6">
             Your password has been updated successfully. You can now sign in with your new password.
           </p>
           <Button asChild className="bg-amber-600 hover:bg-amber-700">
@@ -209,7 +209,7 @@ function ResetPasswordForm() {
             {formData.password && (
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Password strength:</span>
+                  <span className="text-gray-400">Password strength:</span>
                   <span className={passwordStrength.score >= 3 ? "text-green-600" : "text-amber-600"}>
                     {passwordStrength.label}
                   </span>
@@ -221,7 +221,7 @@ function ResetPasswordForm() {
               </div>
             )}
 
-            <div className="text-xs text-gray-500 space-y-1">
+            <div className="text-xs text-gray-400 space-y-1">
               <p>Password must:</p>
               <ul className="list-disc list-inside ml-2 space-y-0.5">
                 <li className={formData.password.length >= 8 ? "text-green-600" : ""}>
@@ -295,7 +295,7 @@ function ResetPasswordForm() {
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <p className="text-gray-600">
+          <p className="text-gray-500">
             Remember your password?{" "}
             <Link
               href="/login"
@@ -318,7 +318,7 @@ export default function ResetPasswordPage() {
           <h1 className="text-2xl font-bold text-amber-800">
             Stark Scholars
           </h1>
-          <p className="text-gray-600">Financial Assistance Program</p>
+          <p className="text-gray-500">Financial Assistance Program</p>
         </div>
 
         <Suspense fallback={
@@ -333,7 +333,7 @@ export default function ResetPasswordPage() {
           <ResetPasswordForm />
         </Suspense>
 
-        <p className="text-center text-sm text-gray-500 mt-8">
+        <p className="text-center text-sm text-gray-400 mt-8">
           <Link href="/" className="hover:underline">
             ← Back to home
           </Link>

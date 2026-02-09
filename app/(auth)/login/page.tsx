@@ -137,7 +137,7 @@ function LoginForm() {
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <p className="text-gray-600">
+          <p className="text-gray-500">
             Don&apos;t have an account?{" "}
             <Link
               href="/register"
@@ -162,7 +162,7 @@ export default function LoginPage() {
               Stark Scholars
             </h1>
           </Link>
-          <p className="text-gray-600">Financial Assistance Program</p>
+          <p className="text-gray-500">Financial Assistance Program</p>
         </div>
 
         <Suspense fallback={
@@ -177,7 +177,7 @@ export default function LoginPage() {
           <LoginForm />
         </Suspense>
 
-        <p className="text-center text-sm text-gray-500 mt-8">
+        <p className="text-center text-sm text-gray-400 mt-8">
           <Link href="/" className="hover:underline">
             ← Back to home
           </Link>

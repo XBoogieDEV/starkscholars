@@ -139,7 +139,7 @@ export function AddressStep({ application, onComplete }: AddressStepProps) {
             disabled
             className="bg-gray-100"
           />
-          <p className="text-xs text-gray-500">Michigan only</p>
+          <p className="text-xs text-gray-400">Michigan only</p>
         </div>
 
         <div className="space-y-2">
@@ -154,7 +154,7 @@ export function AddressStep({ application, onComplete }: AddressStepProps) {
             maxLength={5}
             required
           />
-          <p className="text-xs text-gray-500">Michigan ZIP: 48001-49971</p>
+          <p className="text-xs text-gray-400">Michigan ZIP: 48001-49971</p>
         </div>
       </div>
 

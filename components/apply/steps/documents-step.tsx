@@ -199,7 +199,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
       {/* Transcript Upload */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Transcript</h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-500">
           Upload your official or unofficial transcript showing your current GPA.
           Accepted formats: PDF, JPG, PNG (max 10MB)
         </p>
@@ -269,7 +269,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
           </p>
         </div>
 
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-500">
           Write a {ESSAY_MIN_WORDS}-{ESSAY_MAX_WORDS} word essay on the topic above.
           Be specific about your community and how your field of study relates to community impact.
         </p>
@@ -289,7 +289,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
               <span className={getWordCountColor()}>
                 {wordCount} / {ESSAY_MAX_WORDS} words
               </span>
-              <span className="text-gray-500">
+              <span className="text-gray-400">
                 {wordCount < ESSAY_MIN_WORDS
                   ? `${ESSAY_MIN_WORDS - wordCount} more needed`
                   : wordCount > ESSAY_MAX_WORDS
@@ -307,7 +307,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
         {/* Writing Tips */}
         <div className="bg-gray-50 rounded-lg p-4 text-sm">
           <p className="font-medium text-gray-900 mb-2">Tips for a strong essay:</p>
-          <ul className="list-disc list-inside space-y-1 text-gray-600">
+          <ul className="list-disc list-inside space-y-1 text-gray-500">
             <li>Be specific about your community and its needs</li>
             <li>Explain how your field of study relates to community impact</li>
             <li>Share personal experiences that shaped your perspective</li>

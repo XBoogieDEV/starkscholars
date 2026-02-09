@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Check Your Email
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-500 mb-6">
                 We&apos;ve sent a password reset link to{" "}
                 <strong className="text-gray-900">{email}</strong>. Click the
                 link in the email to reset your password.
@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
           <h1 className="text-2xl font-bold text-amber-800">
             Stark Scholars
           </h1>
-          <p className="text-gray-600">Financial Assistance Program</p>
+          <p className="text-gray-500">Financial Assistance Program</p>
         </div>
 
         <Card>
@@ -165,7 +165,7 @@ export default function ForgotPasswordPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm text-gray-500 mt-8">
+        <p className="text-center text-sm text-gray-400 mt-8">
           <Link href="/" className="hover:underline">
             ← Back to home
           </Link>

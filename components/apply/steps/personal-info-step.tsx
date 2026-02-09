@@ -200,8 +200,8 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Profile Photo Upload */}
       <div className="space-y-3">
-        <Label className="text-base font-medium">Profile Photo <span className="text-gray-500 font-normal">(Optional)</span></Label>
-        <p className="text-sm text-gray-600">
+        <Label className="text-base font-medium">Profile Photo <span className="text-gray-400 font-normal">(Optional)</span></Label>
+        <p className="text-sm text-gray-500">
           Upload a professional headshot. Accepted formats: JPG, PNG (max 5MB)
         </p>
 
@@ -247,7 +247,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
 
             {profilePhoto ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">{profilePhoto.name}</span>
+                <span className="text-sm text-gray-500">{profilePhoto.name}</span>
                 <Button
                   type="button"
                   variant="ghost"
@@ -322,7 +322,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
             required
             disabled={isLoading}
           />
-          <p className="text-sm text-gray-500">Format: (XXX) XXX-XXXX</p>
+          <p className="text-sm text-gray-400">Format: (XXX) XXX-XXXX</p>
         </div>
 
         <div className="space-y-2">

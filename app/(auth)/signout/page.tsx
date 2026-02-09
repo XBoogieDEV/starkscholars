@@ -41,7 +41,7 @@ export default function SignOutPage() {
                 {/* Message */}
                 {!isSigningOut && (
                     <div className="space-y-4">
-                        <p className="text-gray-600">
+                        <p className="text-gray-500">
                             Thank you for using Stark Scholars. Your session has been securely ended.
                         </p>
 
@@ -72,7 +72,7 @@ export default function SignOutPage() {
 
                 {/* Footer */}
                 <div className="mt-12 pt-6 border-t border-gray-200">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-400">
                         William R. Stark Financial Assistance Program
                     </p>
                 </div>

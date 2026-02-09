@@ -73,7 +73,7 @@
 
   /* Soft Muted */
   --muted: oklch(0.96 0.003 85);
-  --muted-foreground: oklch(0.45 0.03 260);
+  --muted-foreground: oklch(0.55 0.03 260);
 
   /* Accent (Gold Tint) */
   --accent: oklch(0.95 0.04 85);
@@ -125,7 +125,7 @@
   --secondary-foreground: oklch(0.98 0.003 85);
 
   --muted: oklch(0.25 0.05 262);
-  --muted-foreground: oklch(0.70 0.03 260);
+  --muted-foreground: oklch(0.75 0.03 260);
 
   --accent: oklch(0.25 0.05 262);
   --accent-foreground: oklch(0.98 0.003 85);

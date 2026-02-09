@@ -241,13 +241,13 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
                       <h5 className="font-medium text-gray-900">{rec.recommenderName}</h5>
                       {getStatusBadge(rec.status)}
                     </div>
-                    <p className="text-sm text-gray-600">{rec.recommenderEmail}</p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500">{rec.recommenderEmail}</p>
+                    <p className="text-sm text-gray-400 mt-1">
                       {recommenderTypes.find((t) => t.value === rec.recommenderType)?.label}
                       {rec.recommenderOrganization && ` • ${rec.recommenderOrganization}`}
                     </p>
                     {rec.relationship && (
-                      <p className="text-sm text-gray-500 italic mt-1">
+                      <p className="text-sm text-gray-400 italic mt-1">
                         &ldquo;{rec.relationship}&rdquo;
                       </p>
                     )}
@@ -319,7 +319,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
                     placeholder="sarah.johnson@school.edu"
                     required
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-400">
                     We&apos;ll send them a secure link to upload their letter
                   </p>
                 </div>

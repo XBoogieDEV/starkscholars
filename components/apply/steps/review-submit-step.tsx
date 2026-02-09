@@ -332,7 +332,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
       {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900">Review & Submit</h2>
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-500 mt-2">
           Review your application and complete the certification before submitting
         </p>
       </div>
@@ -343,7 +343,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-semibold text-gray-900">Application Completion</h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-400">
                 {passedCount} of {totalCount} requirements met
               </p>
             </div>
@@ -431,7 +431,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
                         )}
                       </div>
                       {req.value && (
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-400">
                           Current: {req.value}
                         </span>
                       )}
@@ -463,7 +463,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               <User className="h-4 w-4" />
               Personal Information
             </h4>
-            <div className="text-sm text-gray-600 space-y-1">
+            <div className="text-sm text-gray-500 space-y-1">
               <p>
                 <strong>Name:</strong> {application.firstName} {application.lastName}
               </p>
@@ -482,7 +482,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               <Home className="h-4 w-4" />
               Address
             </h4>
-            <div className="text-sm text-gray-600 space-y-1">
+            <div className="text-sm text-gray-500 space-y-1">
               <p>{application.streetAddress}</p>
               <p>
                 {application.city}, {application.state} {application.zipCode}
@@ -504,7 +504,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               <GraduationCap className="h-4 w-4" />
               Education
             </h4>
-            <div className="text-sm text-gray-600 space-y-1">
+            <div className="text-sm text-gray-500 space-y-1">
               <p>
                 <strong>High School:</strong> {application.highSchoolName}
               </p>
@@ -542,7 +542,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               <Upload className="h-4 w-4" />
               Documents
             </h4>
-            <div className="text-sm text-gray-600 space-y-2">
+            <div className="text-sm text-gray-500 space-y-2">
               <p className="flex items-center gap-2">
                 <strong>Profile Photo:</strong>
                 {application.profilePhotoId ? (
@@ -583,7 +583,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               <Users className="h-4 w-4" />
               Recommendations
             </h4>
-            <div className="text-sm text-gray-600 space-y-2">
+            <div className="text-sm text-gray-500 space-y-2">
               {recommendations?.map((rec: any, idx: number) => (
                 <p key={rec._id} className="flex items-center gap-2">
                   <strong>#{idx + 1}:</strong> {rec.recommenderName || rec.recommenderEmail}
@@ -625,7 +625,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
       <Card className={allRequirementsMet ? "" : "opacity-75"}>
         <CardHeader>
           <CardTitle className="text-lg">Certification & Signature</CardTitle>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-400">
             Please review and confirm the following before submitting
           </p>
         </CardHeader>
@@ -705,7 +705,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               Electronic Signature
               <span className="text-red-500">*</span>
             </Label>
-            <p className="text-sm text-gray-500 mb-3">
+            <p className="text-sm text-gray-400 mb-3">
               Type your full legal name exactly as it appears: <strong>{application.firstName} {application.lastName}</strong>
             </p>
             <Input
@@ -760,7 +760,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               {allRequirementsMet ? "Submit Application" : "Complete Requirements to Submit"}
             </Button>
 
-            <p className="text-center text-sm text-gray-500 mt-3">
+            <p className="text-center text-sm text-gray-400 mt-3">
               By submitting, you confirm all information is accurate and complete.
             </p>
           </div>
@@ -840,10 +840,10 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
                 <AlertCircle className="h-6 w-6 text-amber-600" />
               </div>
-              <p className="text-center text-sm text-gray-600">
+              <p className="text-center text-sm text-gray-500">
                 By clicking &ldquo;Submit,&rdquo; you confirm that:
               </p>
-              <ul className="text-sm text-gray-600 space-y-1 list-disc pl-5">
+              <ul className="text-sm text-gray-500 space-y-1 list-disc pl-5">
                 <li>All information is accurate and complete</li>
                 <li>Your electronic signature matches your legal name</li>
                 <li>You agree to all certifications</li>

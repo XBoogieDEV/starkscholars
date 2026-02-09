@@ -135,7 +135,7 @@ export default function RegisterPage() {
               Stark Scholars
             </h1>
           </Link>
-          <p className="text-gray-600">Financial Assistance Program</p>
+          <p className="text-gray-500">Financial Assistance Program</p>
         </div>
 
         <Card>
@@ -219,7 +219,7 @@ export default function RegisterPage() {
                   }
                   required
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-400">
                   Must be at least 8 characters
                 </p>
               </div>
@@ -275,7 +275,7 @@ export default function RegisterPage() {
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <p className="text-gray-600">
+              <p className="text-gray-500">
                 Already have an account?{" "}
                 <Link
                   href="/login"
@@ -288,7 +288,7 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm text-gray-500 mt-8">
+        <p className="text-center text-sm text-gray-400 mt-8">
           <Link href="/" className="hover:underline">
             ← Back to home
           </Link>

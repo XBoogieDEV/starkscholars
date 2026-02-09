@@ -214,7 +214,7 @@ export function EducationStep({ application, onComplete }: EducationStepProps) {
               placeholder="3.50"
               required
             />
-            <p className="text-xs text-gray-500">Minimum 3.0 required</p>
+            <p className="text-xs text-gray-400">Minimum 3.0 required</p>
           </div>
 
           <div className="space-y-2">
