@@ -159,11 +159,23 @@ export const create = mutation({
 
     if (existing) return existing._id;
 
+    // Look up user to pre-populate name from signup
+    const user = await ctx.db.get(userId);
+    let firstName = "";
+    let lastName = "";
+    if (user?.name) {
+      const parts = user.name.trim().split(/\s+/);
+      firstName = parts[0] || "";
+      lastName = parts.slice(1).join(" ") || "";
+    }
+
     const applicationId = await ctx.db.insert("applications", {
       userId,
       status: "draft",
       currentStep: 1,
       completedSteps: [],
+      firstName: firstName || undefined,
+      lastName: lastName || undefined,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
