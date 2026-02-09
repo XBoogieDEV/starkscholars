@@ -425,3 +425,111 @@ export const exportApplicationsToCSV = action({
     };
   },
 });
+
+// ============================================
+// BULK OPERATIONS & SELECTION
+// ============================================
+
+export const bulkUpdateStatus = mutation({
+  args: {
+    applicationIds: v.array(v.id("applications")),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("in_progress"),
+      v.literal("pending_recommendations"),
+      v.literal("submitted"),
+      v.literal("under_review"),
+      v.literal("finalist"),
+      v.literal("selected"),
+      v.literal("not_selected"),
+      v.literal("withdrawn")
+    ),
+  },
+  handler: async (ctx, { applicationIds, status }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+    const email = identity.email;
+    if (!email) throw new Error("Email not available");
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+    if (!user || user.role !== "admin") throw new Error("Unauthorized");
+
+    for (const appId of applicationIds) {
+      await ctx.db.patch(appId, { status, updatedAt: Date.now() });
+      await ctx.db.insert("activityLog", {
+        applicationId: appId,
+        userId: user._id,
+        action: "status_changed",
+        details: `Bulk status change to ${status}`,
+        createdAt: Date.now(),
+      });
+    }
+
+    return { updated: applicationIds.length };
+  },
+});
+
+export const finalizeSelection = mutation({
+  args: {
+    selectedIds: v.array(v.id("applications")),
+  },
+  handler: async (ctx, { selectedIds }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+    const email = identity.email;
+    if (!email) throw new Error("Email not available");
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+    if (!user || user.role !== "admin") throw new Error("Unauthorized");
+
+    // Get max recipients setting (default 2)
+    const maxSetting = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "max_scholarship_recipients"))
+      .first();
+    const maxRecipients = maxSetting ? parseInt(maxSetting.value) : 2;
+
+    if (selectedIds.length !== maxRecipients) {
+      throw new Error(`Must select exactly ${maxRecipients} recipients`);
+    }
+
+    // Mark selected applications
+    for (const appId of selectedIds) {
+      await ctx.db.patch(appId, { status: "selected" as const, updatedAt: Date.now() });
+      await ctx.db.insert("activityLog", {
+        applicationId: appId,
+        userId: user._id,
+        action: "status_changed",
+        details: "Selected as scholarship recipient",
+        createdAt: Date.now(),
+      });
+    }
+
+    // Mark all other submitted/finalist/under_review as not_selected
+    const allApps = await ctx.db.query("applications").collect();
+    const selectedSet = new Set(selectedIds.map(id => id.toString()));
+    let notSelectedCount = 0;
+    for (const app of allApps) {
+      if (
+        !selectedSet.has(app._id.toString()) &&
+        (app.status === "submitted" || app.status === "under_review" || app.status === "finalist")
+      ) {
+        await ctx.db.patch(app._id, { status: "not_selected" as const, updatedAt: Date.now() });
+        await ctx.db.insert("activityLog", {
+          applicationId: app._id,
+          userId: user._id,
+          action: "status_changed",
+          details: "Not selected in final selection",
+          createdAt: Date.now(),
+        });
+        notSelectedCount++;
+      }
+    }
+
+    return { selectedCount: selectedIds.length, notSelectedCount };
+  },
+});

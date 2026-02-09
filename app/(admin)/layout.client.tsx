@@ -32,34 +32,17 @@ import {
     Award,
     Shield,
     Mail,
+    BarChart3,
 } from "lucide-react";
 
 const navItems = [
-    {
-        title: "Dashboard",
-        icon: LayoutDashboard,
-        href: "/admin",
-    },
-    {
-        title: "Applications",
-        icon: FileText,
-        href: "/admin/applications",
-    },
-    {
-        title: "Email Logs",
-        icon: Mail,
-        href: "/admin/emails",
-    },
-    {
-        title: "Committee Members",
-        icon: Users,
-        href: "/admin/committee",
-    },
-    {
-        title: "Settings",
-        icon: Settings,
-        href: "/admin/settings",
-    },
+    { title: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+    { title: "Applications", icon: FileText, href: "/admin/applications" },
+    { title: "Selection", icon: Award, href: "/admin/selection" },
+    { title: "Committee Members", icon: Users, href: "/admin/committee" },
+    { title: "Email Logs", icon: Mail, href: "/admin/emails" },
+    { title: "Analytics", icon: BarChart3, href: "/admin/analytics" },
+    { title: "Settings", icon: Settings, href: "/admin/settings" },
 ];
 
 interface AdminLayoutClientProps {

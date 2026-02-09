@@ -1,10 +1,12 @@
 "use client";
 
+import "./admin/print.css";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import AdminLayoutClient from "./layout.client";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function AdminLayout({
   children,
@@ -57,8 +59,11 @@ export default function AdminLayout({
   }
 
   return (
-    <AdminLayoutClient user={{ name: user.name, email: user.email, role: user.role ?? "admin" }}>
-      {children}
-    </AdminLayoutClient>
+    <>
+      <AdminLayoutClient user={{ name: user.name, email: user.email, role: user.role ?? "admin" }}>
+        {children}
+      </AdminLayoutClient>
+      <Toaster />
+    </>
   );
 }

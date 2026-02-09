@@ -2,7 +2,8 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { useQuery } from "convex/react";
+import dynamic from "next/dynamic";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,8 +35,19 @@ import {
   Calendar,
   Sparkles,
   Activity,
+  Printer,
 } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
+import { toast } from "sonner";
+
+const PDFDownloadButton = dynamic(
+  () => import("@/components/admin/pdf/pdf-download-button").then(mod => ({ default: mod.PDFDownloadButton })),
+  { ssr: false }
+);
+const ApplicationReport = dynamic(
+  () => import("@/components/admin/pdf/application-report").then(mod => ({ default: mod.ApplicationReport })),
+  { ssr: false }
+);
 
 const statusOptions = [
   { value: "draft", label: "Draft" },
@@ -218,6 +230,19 @@ export default function ApplicationDetailPage({
   const applicationId = id as Id<"applications">;
 
   const data = useQuery(api.admin.getApplicationDetails, { id: applicationId });
+  const updateStatus = useMutation(api.admin.updateApplicationStatus);
+  const transcriptUrl = useQuery(
+    api.storage.getFileUrl,
+    data?.application.transcriptFileId
+      ? { storageId: data.application.transcriptFileId }
+      : "skip"
+  );
+  const essayFileUrl = useQuery(
+    api.storage.getFileUrl,
+    data?.application.essayFileId
+      ? { storageId: data.application.essayFileId }
+      : "skip"
+  );
 
   if (data === undefined) {
     return (
@@ -280,7 +305,37 @@ export default function ApplicationDetailPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Select defaultValue={application.status}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="no-print"
+            onClick={() => window.print()}
+          >
+            <Printer className="mr-2 h-4 w-4" />
+            Print
+          </Button>
+          {data && (
+            <PDFDownloadButton
+              document={<ApplicationReport data={data} />}
+              filename={`application-${application.firstName}-${application.lastName}.pdf`}
+            >
+              Download PDF
+            </PDFDownloadButton>
+          )}
+          <Select
+            defaultValue={application.status}
+            onValueChange={async (value) => {
+              try {
+                await updateStatus({
+                  applicationId: application._id,
+                  status: value as any
+                });
+                toast.success("Status updated successfully");
+              } catch (error) {
+                toast.error("Failed to update status");
+              }
+            }}
+          >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Change status" />
             </SelectTrigger>
@@ -577,7 +632,12 @@ export default function ApplicationDetailPage({
                       </p>
                     </div>
                     {application.transcriptFileId && (
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => transcriptUrl && window.open(transcriptUrl, "_blank")}
+                        disabled={!transcriptUrl}
+                      >
                         View
                       </Button>
                     )}
@@ -599,7 +659,12 @@ export default function ApplicationDetailPage({
                       </p>
                     </div>
                     {(application.essayText || application.essayFileId) && (
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => essayFileUrl && window.open(essayFileUrl, "_blank")}
+                        disabled={!essayFileUrl}
+                      >
                         View
                       </Button>
                     )}

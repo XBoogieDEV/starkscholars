@@ -19,7 +19,9 @@ type EmailType =
   | "email_verification"
   | "password_reset"
   | "application_submitted"
-  | "application_withdrawn";
+  | "application_withdrawn"
+  | "selection_congratulations"
+  | "selection_not_selected";
 
 type EmailStatus = "pending" | "sent" | "failed" | "bounced";
 
@@ -203,6 +205,214 @@ async function sendEmailToResend({ to, subject, html }: SendEmailParams): Promis
 }
 
 // ============================================
+// BRAND DESIGN SYSTEM — "Modern Elegance with Classic Prestige"
+// ============================================
+
+type EmailVariant = 'default' | 'success' | 'alert';
+
+interface VariantColors {
+  ctaBg: string;
+  infoBoxBg: string;
+  infoBoxBorder: string;
+}
+
+const VARIANT_COLORS: Record<EmailVariant, VariantColors> = {
+  default: { ctaBg: '#D4AF37', infoBoxBg: '#F7F0D8', infoBoxBorder: '#D4AF37' },
+  success: { ctaBg: '#16A34A', infoBoxBg: '#F0FDF4', infoBoxBorder: '#16A34A' },
+  alert:   { ctaBg: '#DC2626', infoBoxBg: '#FEF2F2', infoBoxBorder: '#DC2626' },
+};
+
+// Brand constants
+const GOLD = '#D4AF37';
+const NAVY = '#0F172A';
+const WARM_PAPER = '#F9F8F6';
+const BODY_TEXT = '#334155';
+const MUTED_TEXT = '#64748B';
+const LIGHT_BORDER = '#E2E8F0';
+const HEADING_FONT = "Georgia, 'Times New Roman', Times, serif";
+const BODY_FONT = "Arial, Helvetica, sans-serif";
+
+function emailHeader(): string {
+  return `
+    <tr>
+      <td style="background-color: ${NAVY}; padding: 40px 30px 32px 30px; text-align: center;">
+        <!-- Gold accent line top -->
+        <table role="presentation" width="80" cellspacing="0" cellpadding="0" style="margin: 0 auto 20px auto;">
+          <tr><td style="border-top: 2px solid ${GOLD}; font-size: 0; line-height: 0;">&nbsp;</td></tr>
+        </table>
+        <img src="https://starkscholars.com/images/SS-LOGO1.png" alt="Stark Scholars" width="240" style="display:block; margin:0 auto 16px auto;" />
+        <!-- Gold accent line below logo -->
+        <table role="presentation" width="80" cellspacing="0" cellpadding="0" style="margin: 0 auto 16px auto;">
+          <tr><td style="border-top: 2px solid ${GOLD}; font-size: 0; line-height: 0;">&nbsp;</td></tr>
+        </table>
+        <h1 style="color: #ffffff; font-family: ${HEADING_FONT}; font-size: 26px; margin: 0 0 8px 0; font-weight: normal; letter-spacing: 3px; text-transform: uppercase;">
+          &#9733; STARK SCHOLARS &#9733;
+        </h1>
+        <p style="color: ${GOLD}; font-family: ${BODY_FONT}; font-size: 12px; margin: 0; text-transform: uppercase; letter-spacing: 2px;">
+          WILLIAM R. STARK FINANCIAL ASSISTANCE PROGRAM
+        </p>
+      </td>
+    </tr>`;
+}
+
+function goldDivider(): string {
+  return `
+    <tr>
+      <td style="padding: 0;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="25%" style="border-top: 3px solid rgba(212,175,55,0.15);"></td>
+            <td width="50%" style="border-top: 3px solid ${GOLD};"></td>
+            <td width="25%" style="border-top: 3px solid rgba(212,175,55,0.15);"></td>
+          </tr>
+        </table>
+      </td>
+    </tr>`;
+}
+
+function goldSectionDivider(): string {
+  return `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 24px 0;">
+      <tr>
+        <td width="40%" style="border-top: 1px solid ${LIGHT_BORDER};"></td>
+        <td width="20%" style="border-top: 1px solid ${GOLD};"></td>
+        <td width="40%" style="border-top: 1px solid ${LIGHT_BORDER};"></td>
+      </tr>
+    </table>`;
+}
+
+function emailFooter(): string {
+  return `
+    <tr>
+      <td style="background-color: ${NAVY}; border-top: 3px solid ${GOLD}; padding: 32px 40px; text-align: center;">
+        <p style="color: #94A3B8; font-family: ${BODY_FONT}; font-size: 14px; margin: 0 0 12px 0;">
+          Questions? Contact us at
+          <a href="mailto:blackgoldmine@sbcglobal.net" style="color: ${GOLD}; text-decoration: none;">
+            blackgoldmine@sbcglobal.net
+          </a>
+        </p>
+        <p style="color: #64748B; font-family: ${HEADING_FONT}; font-size: 13px; margin: 0 0 8px 0; letter-spacing: 1px;">
+          &#9733; Stark Scholars &#9733;
+        </p>
+        <p style="color: #475569; font-family: ${BODY_FONT}; font-size: 11px; margin: 0;">
+          &copy; 2026 William R. Stark Financial Assistance Committee
+        </p>
+      </td>
+    </tr>`;
+}
+
+function signatureBlock(closing: string, includeChairman?: boolean): string {
+  return `
+    <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 16px; line-height: 1.7; margin: 0 0 4px 0;">
+      <em>${closing}</em>
+    </p>
+    ${includeChairman ? `
+    <p style="color: ${NAVY}; font-family: ${BODY_FONT}; font-size: 14px; margin: 0 0 2px 0; font-weight: bold;">
+      GIG Kenny R. Askew 33&deg;, Chairman
+    </p>` : ''}
+    <p style="color: ${MUTED_TEXT}; font-family: ${BODY_FONT}; font-size: 14px; margin: 0;">
+      William R. Stark Financial Assistance Committee
+    </p>`;
+}
+
+function ctaButton(url: string, label: string, variant: EmailVariant = 'default'): string {
+  const bg = VARIANT_COLORS[variant].ctaBg;
+  return `
+    <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+      <tr>
+        <td style="background-color: ${bg}; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+          <a href="${url}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-family: ${BODY_FONT}; font-size: 16px; font-weight: bold; letter-spacing: 0.5px;">
+            ${label}
+          </a>
+        </td>
+      </tr>
+    </table>`;
+}
+
+function infoBox(variant: EmailVariant, title: string, bodyHtml: string): string {
+  const v = VARIANT_COLORS[variant];
+  return `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: ${v.infoBoxBg}; border-radius: 8px; border-left: 4px solid ${v.infoBoxBorder};">
+      <tr>
+        <td style="padding: 20px 24px;">
+          <h3 style="color: ${NAVY}; font-family: ${HEADING_FONT}; font-size: 16px; margin: 0 0 10px 0; font-weight: bold;">${title}</h3>
+          <div style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; line-height: 1.6;">${bodyHtml}</div>
+        </td>
+      </tr>
+    </table>`;
+}
+
+function wrapEmail(innerHtml: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: ${BODY_FONT}; background-color: ${WARM_PAPER}; line-height: 1.7;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: ${WARM_PAPER};">
+    <tr>
+      <td align="center" style="padding: 48px 20px;">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid ${LIGHT_BORDER};">
+          ${innerHtml}
+        </table>
+        <!-- Star tagline below card -->
+        <p style="color: ${MUTED_TEXT}; font-family: ${HEADING_FONT}; font-size: 12px; margin: 16px 0 0 0; letter-spacing: 1px;">
+          &#9733; Stark Scholars &#9733;
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function contentSection(html: string): string {
+  return `
+    <tr>
+      <td style="padding: 48px 48px 0 48px;">
+        ${html}
+      </td>
+    </tr>`;
+}
+
+function contentSectionBottom(html: string): string {
+  return `
+    <tr>
+      <td style="padding: 0 48px 48px 48px;">
+        ${html}
+      </td>
+    </tr>`;
+}
+
+function contentSectionFull(html: string): string {
+  return `
+    <tr>
+      <td style="padding: 0 48px;">
+        ${html}
+      </td>
+    </tr>`;
+}
+
+function ctaSection(url: string, label: string, variant: EmailVariant = 'default', fallbackUrl?: string): string {
+  return `
+    <tr>
+      <td style="padding: 32px 48px;" align="center">
+        ${ctaButton(url, label, variant)}
+        ${fallbackUrl !== undefined ? `<p style="font-family: ${BODY_FONT}; font-size: 12px; color: ${MUTED_TEXT}; margin: 12px 0 0 0; word-break: break-all;">Or copy and paste this link: ${fallbackUrl}</p>` : ''}
+      </td>
+    </tr>`;
+}
+
+function sectionHeading(text: string): string {
+  return `<h2 style="color: ${NAVY}; font-family: ${HEADING_FONT}; font-size: 28px; margin: 0 0 20px 0; font-weight: normal;">${text}</h2>`;
+}
+
+function bodyText(text: string): string {
+  return `<p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">${text}</p>`;
+}
+
+// ============================================
 // RECOMMENDATION EMAILS
 // ============================================
 
@@ -225,74 +435,54 @@ export const sendRecommendationRequest = action({
 
     const subject = `Recommendation Request for ${application.firstName} ${application.lastName} - Stark Scholars`;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #b45309;">Recommendation Request</h2>
-
-        <p>Dear ${rec.recommenderName || "Recommender"},</p>
-
-        <p>
-          <strong>${application.firstName} ${application.lastName}</strong> has requested that you
-          provide a letter of recommendation for the <strong>William R. Stark Financial Assistance Program</strong>.
-        </p>
-
-        <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin-top: 0; color: #92400e;">About the Scholarship</h3>
-          <p style="margin-bottom: 0;">
-            The William R. Stark Class of 2023 President&apos;s Club awards two $500
-            scholarships to Michigan students committed to using their education
-            to improve their communities.
-          </p>
-        </div>
-
-        <p>
-          <strong>Relationship:</strong> ${rec.relationship || "Not specified"}<br>
-          <strong>Applicant:</strong> ${application.firstName} ${application.lastName}<br>
-          <strong>High School:</strong> ${application.highSchoolName || "Not provided"}<br>
-          <strong>College:</strong> ${application.collegeName || "Not provided"}
-        </p>
-
-        <div style="text-align: center; margin: 30px 0;">
-          <a
-            href="${recommendationUrl}"
-            style="background: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;"
-          >
-            Submit Recommendation Letter
-          </a>
-        </div>
-
-        <p style="font-size: 12px; color: #666;">
-          Or copy and paste this link: ${recommendationUrl}
-        </p>
-
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-
-        <h3 style="color: #92400e;">What to Include</h3>
-        <ul>
+    const html = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Recommendation Request')}
+        ${bodyText(`Dear ${rec.recommenderName || "Recommender"},`)}
+        ${bodyText(`<strong>${application.firstName} ${application.lastName}</strong> has requested that you provide a letter of recommendation for the <strong>William R. Stark Financial Assistance Program</strong>.`)}
+      `)}
+      ${contentSectionFull(infoBox('default', 'About the Scholarship',
+        `The William R. Stark Class of 2023 President&apos;s Club awards two $500 scholarships to Michigan students committed to using their education to improve their communities.`
+      ))}
+      ${contentSectionFull(`
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 20px;">
+          <tr><td style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; line-height: 1.8;">
+            <strong>Relationship:</strong> ${rec.relationship || "Not specified"}<br>
+            <strong>Applicant:</strong> ${application.firstName} ${application.lastName}<br>
+            <strong>High School:</strong> ${application.highSchoolName || "Not provided"}<br>
+            <strong>College:</strong> ${application.collegeName || "Not provided"}
+          </td></tr>
+        </table>
+      `)}
+      ${ctaSection(recommendationUrl, 'Submit Recommendation Letter', 'default', recommendationUrl)}
+      ${contentSectionFull(`
+        ${goldSectionDivider()}
+        <h3 style="color: ${NAVY}; font-family: ${HEADING_FONT}; font-size: 16px; margin: 0 0 12px 0;">What to Include</h3>
+        <ul style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; padding-left: 20px; margin: 0; line-height: 1.8;">
           <li>How long and in what capacity you&apos;ve known the applicant</li>
           <li>The applicant&apos;s academic abilities and achievements</li>
           <li>The applicant&apos;s character and personal qualities</li>
           <li>Examples of community involvement or leadership</li>
           <li>Why you believe they deserve this scholarship</li>
         </ul>
-
-        <p>
+      `)}
+      ${contentSectionFull(`
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 20px 0 16px 0;">
           <strong>Deadline:</strong> This link will expire on ${new Date(rec.tokenExpiresAt).toLocaleDateString()}.
         </p>
-
-        <p>
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0 0 16px 0;">
           If you have any questions, please contact the scholarship committee at
-          <a href="mailto:blackgoldmine@sbcglobal.net">blackgoldmine@sbcglobal.net</a>.
+          <a href="mailto:blackgoldmine@sbcglobal.net" style="color: ${GOLD};">blackgoldmine@sbcglobal.net</a>.
         </p>
-
-        <p>
-          Thank you for supporting ${application.firstName}&apos;s educational journey.<br>
-          <em>Fraternally,</em><br>
-          <strong>GIG Kenny R. Askew 33°, Chairman</strong><br>
-          William R. Stark Financial Assistance Committee
-        </p>
-      </div>
-    `;
+      `)}
+      ${contentSectionBottom(`
+        ${bodyText(`Thank you for supporting ${application.firstName}&apos;s educational journey.`)}
+        ${signatureBlock('Fraternally,', true)}
+      `)}
+      ${emailFooter()}
+    `);
 
     // Create email log
     const logId = await ctx.runMutation(internal.emails.createEmailLog, {
@@ -345,42 +535,30 @@ export const sendRecommendationReminder = action({
 
     const subject = `Reminder: Recommendation Request for ${application.firstName} ${application.lastName}`;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #b45309;">Friendly Reminder: Recommendation Request</h2>
-
-        <p>Dear ${rec.recommenderName || "Recommender"},</p>
-
-        <p>
-          This is a friendly reminder that <strong>${application.firstName} ${application.lastName}</strong>
-          is still waiting for your letter of recommendation for the William R. Stark Financial Assistance Program.
-        </p>
-
-        <div style="text-align: center; margin: 30px 0;">
-          <a
-            href="${recommendationUrl}"
-            style="background: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;"
-          >
-            Submit Recommendation Letter
-          </a>
-        </div>
-
-        <p>
+    const html = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Friendly Reminder: Recommendation Request')}
+        ${bodyText(`Dear ${rec.recommenderName || "Recommender"},`)}
+        ${bodyText(`This is a friendly reminder that <strong>${application.firstName} ${application.lastName}</strong> is still waiting for your letter of recommendation for the William R. Stark Financial Assistance Program.`)}
+      `)}
+      ${ctaSection(recommendationUrl, 'Submit Recommendation Letter', 'default')}
+      ${contentSectionFull(`
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0 0 16px 0;">
           <strong>Deadline:</strong> This link will expire on ${new Date(rec.tokenExpiresAt).toLocaleDateString()}.
         </p>
-
-        <p>
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0 0 16px 0;">
           If you have any questions, please contact the scholarship committee at
-          <a href="mailto:blackgoldmine@sbcglobal.net">blackgoldmine@sbcglobal.net</a>.
+          <a href="mailto:blackgoldmine@sbcglobal.net" style="color: ${GOLD};">blackgoldmine@sbcglobal.net</a>.
         </p>
-
-        <p>
-          Thank you for your time and support.<br>
-          <em>Fraternally,</em><br>
-          <strong>William R. Stark Financial Assistance Committee</strong>
-        </p>
-      </div>
-    `;
+      `)}
+      ${contentSectionBottom(`
+        ${bodyText('Thank you for your time and support.')}
+        ${signatureBlock('Fraternally,')}
+      `)}
+      ${emailFooter()}
+    `);
 
     // Create email log
     const logId = await ctx.runMutation(internal.emails.createEmailLog, {
@@ -435,97 +613,21 @@ export const notifyRecommendationReceived = action({
 
     const subject = "Recommendation Received - Stark Scholars";
 
-    const html = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f0fdf4; line-height: 1.6;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f0fdf4;">
-          <tr>
-            <td align="center" style="padding: 40px 20px;">
-              <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-
-                <!-- Header Banner -->
-                <tr>
-                  <td style="background-color: #15803d; padding: 40px 30px; text-align: center;">
-                    <img src="https://starkscholars.com/images/SS-LOGO1.png" alt="Stark Scholars" width="80" style="display:block; margin:0 auto 12px auto;" />
-                    <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; font-weight: normal; letter-spacing: 1px;">
-                      STARK SCHOLARS
-                    </h1>
-                    <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0; text-transform: uppercase; letter-spacing: 2px;">
-                      William R. Stark Financial Assistance Program
-                    </p>
-                  </td>
-                </tr>
-
-                <!-- Content -->
-                <tr>
-                  <td style="padding: 40px 40px 20px 40px;">
-                    <h2 style="color: #15803d; font-size: 24px; margin: 0 0 20px 0;">
-                      Recommendation Received!
-                    </h2>
-                    <p style="color: #374151; font-size: 16px; margin: 0 0 20px 0;">
-                      Hello ${application.firstName || user.name || "Applicant"},
-                    </p>
-                    <p style="color: #374151; font-size: 16px; margin: 0 0 20px 0;">
-                      Good news! <strong>${recommenderName}</strong> has submitted their letter of recommendation
-                      for your William R. Stark Financial Assistance application.
-                    </p>
-                  </td>
-                </tr>
-
-                <!-- Info Box -->
-                <tr>
-                  <td style="padding: 0 40px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #dcfce7; border-radius: 8px; border-left: 4px solid #15803d;">
-                      <tr>
-                        <td style="padding: 20px;">
-                          <p style="color: #166534; font-size: 15px; margin: 0;">
-                            You can check the status of all your recommendations by visiting your application dashboard.
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-
-                <!-- CTA Button -->
-                <tr>
-                  <td style="padding: 30px 40px;" align="center">
-                    <table role="presentation" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td style="background-color: #15803d; border-radius: 6px;">
-                          <a href="${appUrl}/apply/dashboard" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; letter-spacing: 0.5px;">
-                            View Application Status
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-
-                <!-- Signature -->
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="color: #6b7280; font-size: 14px; margin: 0 0 4px 0;">
-                      <em>Best regards,</em>
-                    </p>
-                    <p style="color: #374151; font-size: 14px; margin: 0; font-weight: bold;">
-                      William R. Stark Financial Assistance Committee
-                    </p>
-                  </td>
-                </tr>
-
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-      </html>
-    `;
+    const html = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Recommendation Received!')}
+        ${bodyText(`Hello ${application.firstName || user.name || "Applicant"},`)}
+        ${bodyText(`Good news! <strong>${recommenderName}</strong> has submitted their letter of recommendation for your William R. Stark Financial Assistance application.`)}
+      `)}
+      ${contentSectionFull(infoBox('success', 'Status Update',
+        `You can check the status of all your recommendations by visiting your application dashboard.`
+      ))}
+      ${ctaSection(`${appUrl}/apply/dashboard`, 'View Application Status', 'success')}
+      ${contentSectionBottom(signatureBlock('Best regards,'))}
+      ${emailFooter()}
+    `);
 
     // Create email log
     const logId = await ctx.runMutation(internal.emails.createEmailLog, {
@@ -576,113 +678,33 @@ export const sendWelcomeEmail = action({
 
     const subject = "Welcome to Stark Scholars - Your Journey Begins!";
 
-    const html = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; background-color: #f8f5f0; line-height: 1.6;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8f5f0;">
-          <tr>
-            <td align="center" style="padding: 40px 20px;">
-              <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-
-                <!-- Header Banner -->
-                <tr>
-                  <td style="background-color: #b45309; padding: 40px 30px; text-align: center;">
-                    <img src="https://starkscholars.com/images/SS-LOGO1.png" alt="Stark Scholars" width="80" style="display:block; margin:0 auto 12px auto;" />
-                    <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; font-weight: normal; letter-spacing: 1px;">
-                      ★ STARK SCHOLARS ★
-                    </h1>
-                    <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0; text-transform: uppercase; letter-spacing: 2px;">
-                      William R. Stark Financial Assistance Program
-                    </p>
-                  </td>
-                </tr>
-
-                <!-- Welcome Message -->
-                <tr>
-                  <td style="padding: 40px 40px 20px 40px;">
-                    <h2 style="color: #92400e; font-size: 24px; margin: 0 0 20px 0; font-weight: normal;">
-                      Welcome, ${user.name || "Future Scholar"}!
-                    </h2>
-                    <p style="color: #374151; font-size: 16px; margin: 0 0 20px 0;">
-                      Thank you for joining the William R. Stark Class of 2023 President's Club scholarship program.
-                      We're honored that you're considering us on your educational journey.
-                    </p>
-                  </td>
-                </tr>
-
-                <!-- Next Steps Box -->
-                <tr>
-                  <td style="padding: 0 40px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #fef3c7; border-radius: 8px; border-left: 4px solid #d97706;">
-                      <tr>
-                        <td style="padding: 24px;">
-                          <h3 style="color: #92400e; font-size: 18px; margin: 0 0 16px 0; font-weight: bold;">
-                            📋 Next Steps
-                          </h3>
-                          <table role="presentation" cellspacing="0" cellpadding="0">
-                            <tr>
-                              <td style="padding: 4px 0; color: #78350f;">
-                                <span style="display: inline-block; width: 24px; text-align: center; font-weight: bold;">1.</span>
-                                Complete your application (7 steps)
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 4px 0; color: #78350f;">
-                                <span style="display: inline-block; width: 24px; text-align: center; font-weight: bold;">2.</span>
-                                Request 2 recommendation letters
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style="padding: 4px 0; color: #78350f;">
-                                <span style="display: inline-block; width: 24px; text-align: center; font-weight: bold;">3.</span>
-                                Submit before <strong>April 15, 2026</strong>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-
-                <!-- CTA Button -->
-                <tr>
-                  <td align="center" style="padding: 40px;">
-                    <a href="${appUrl}/apply/dashboard"
-                       style="display: inline-block; background-color: #d97706; color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);">
-                      Start Your Application →
-                    </a>
-                  </td>
-                </tr>
-
-                <!-- Footer -->
-                <tr>
-                  <td style="background-color: #1f2937; padding: 30px 40px; text-align: center;">
-                    <p style="color: #d1d5db; font-size: 14px; margin: 0 0 12px 0;">
-                      Questions? Contact us at
-                      <a href="mailto:blackgoldmine@sbcglobal.net" style="color: #fcd34d; text-decoration: none;">
-                        blackgoldmine@sbcglobal.net
-                      </a>
-                    </p>
-                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                      © 2026 William R. Stark Financial Assistance Committee<br>
-                      <em>Fraternally, GIG Kenny R. Askew 33°, Chairman</em>
-                    </p>
-                  </td>
-                </tr>
-
-              </table>
-            </td>
-          </tr>
+    const html = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading(`Welcome, ${user.name || "Future Scholar"}!`)}
+        ${bodyText(`Thank you for joining the William R. Stark Class of 2023 President's Club scholarship program. We're honored that you're considering us on your educational journey.`)}
+      `)}
+      ${contentSectionFull(infoBox('default', 'Next Steps', `
+        <table role="presentation" cellspacing="0" cellpadding="0" width="100%">
+          <tr><td style="padding: 4px 0; color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px;">
+            <span style="display: inline-block; width: 28px; text-align: center; font-weight: bold; color: ${GOLD};">1.</span>
+            Complete your application (7 steps)
+          </td></tr>
+          <tr><td style="padding: 4px 0; color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px;">
+            <span style="display: inline-block; width: 28px; text-align: center; font-weight: bold; color: ${GOLD};">2.</span>
+            Request 2 recommendation letters
+          </td></tr>
+          <tr><td style="padding: 4px 0; color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px;">
+            <span style="display: inline-block; width: 28px; text-align: center; font-weight: bold; color: ${GOLD};">3.</span>
+            Submit before <strong>April 15, 2026</strong>
+          </td></tr>
         </table>
-      </body>
-      </html>
-    `;
+      `))}
+      ${ctaSection(`${appUrl}/apply/dashboard`, 'Start Your Application &rarr;', 'default')}
+      ${contentSectionBottom(signatureBlock('Fraternally,', true))}
+      ${emailFooter()}
+    `);
 
     // Create email log
     const logId = await ctx.runMutation(internal.emails.createEmailLog, {
@@ -728,40 +750,23 @@ export const sendEmailVerification = action({
   handler: async (ctx, { email, name, url }) => {
     const subject = "Verify Your Email - Stark Scholars";
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #d97706;">Verify Your Email Address</h2>
-
-        <p>Hello ${name || "Scholar"},</p>
-
-        <p>
-          Please verify your email address to complete your registration for the
-          William R. Stark Financial Assistance Program.
-        </p>
-
-        <div style="text-align: center; margin: 30px 0;">
-          <a
-            href="${url}"
-            style="background: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;"
-          >
-            Verify Email Address
-          </a>
-        </div>
-
-        <p style="font-size: 12px; color: #666;">
-          Or copy and paste this link: ${url}
-        </p>
-
-        <p>
+    const html = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Verify Your Email Address')}
+        ${bodyText(`Hello ${name || "Scholar"},`)}
+        ${bodyText('Please verify your email address to complete your registration for the William R. Stark Financial Assistance Program.')}
+      `)}
+      ${ctaSection(url, 'Verify Email Address', 'default', url)}
+      ${contentSectionFull(`
+        <p style="color: ${MUTED_TEXT}; font-family: ${BODY_FONT}; font-size: 14px; margin: 0;">
           If you didn't create an account, you can safely ignore this email.
         </p>
-
-        <p>
-          <em>Best regards,</em><br>
-          <strong>William R. Stark Financial Assistance Committee</strong>
-        </p>
-      </div>
-    `;
+      `)}
+      ${contentSectionBottom(signatureBlock('Best regards,'))}
+      ${emailFooter()}
+    `);
 
     // Create email log
     const logId = await ctx.runMutation(internal.emails.createEmailLog, {
@@ -804,41 +809,23 @@ export const sendPasswordResetEmail = action({
   handler: async (ctx, { email, url }) => {
     const subject = "Reset Your Password - Stark Scholars";
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #d97706;">Reset Your Password</h2>
-
-        <p>Hello,</p>
-
-        <p>
-          You requested a password reset for your Stark Scholars account.
-          Click the button below to create a new password.
+    const html = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Reset Your Password')}
+        ${bodyText('Hello,')}
+        ${bodyText('You requested a password reset for your Stark Scholars account. Click the button below to create a new password.')}
+      `)}
+      ${ctaSection(url, 'Reset Password', 'default', url)}
+      ${contentSectionFull(`
+        <p style="color: ${MUTED_TEXT}; font-family: ${BODY_FONT}; font-size: 14px; margin: 0;">
+          This link will expire in 1 hour. If you didn't request this reset, you can safely ignore this email.
         </p>
-
-        <div style="text-align: center; margin: 30px 0;">
-          <a
-            href="${url}"
-            style="background: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;"
-          >
-            Reset Password
-          </a>
-        </div>
-
-        <p style="font-size: 12px; color: #666;">
-          Or copy and paste this link: ${url}
-        </p>
-
-        <p>
-          This link will expire in 1 hour. If you didn't request this reset,
-          you can safely ignore this email.
-        </p>
-
-        <p>
-          <em>Best regards,</em><br>
-          <strong>Stark Scholars Platform</strong>
-        </p>
-      </div>
-    `;
+      `)}
+      ${contentSectionBottom(signatureBlock('Best regards,'))}
+      ${emailFooter()}
+    `);
 
     // Create email log
     const logId = await ctx.runMutation(internal.emails.createEmailLog, {
@@ -888,45 +875,38 @@ export const sendApplicationSubmitted = action({
     const user = await ctx.runQuery(api.users.getById, { id: application.userId });
     if (!user) throw new Error("User not found");
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+
     const subject = "Application Submitted - Stark Scholars";
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #15803d;">Application Submitted!</h2>
-
-        <p>Hello ${application.firstName || user.name || "Applicant"},</p>
-
-        <p>
-          Congratulations! Your application for the <strong>William R. Stark Financial Assistance Program</strong>
-          has been submitted successfully.
-        </p>
-
-        <div style="background: #dcfce7; padding: 16px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin-top: 0; color: #166534;">What Happens Next?</h3>
-          <ul style="margin-bottom: 0; padding-left: 20px;">
-            <li>Your application will be reviewed by the scholarship committee</li>
-            <li>All committee members will evaluate your application</li>
-            <li>Selections will be announced after the deadline (April 15, 2026)</li>
-            <li>You will be notified via email of the decision</li>
-          </ul>
-        </div>
-
-        <p>
-          <strong>Application Reference:</strong> ${application._id}<br>
-          <strong>Submitted:</strong> ${new Date().toLocaleDateString()}
-        </p>
-
-        <p>
-          You can track the status of your application at any time by visiting your
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/apply/status">application status page</a>.
-        </p>
-
-        <p>
-          <em>Best regards,</em><br>
-          <strong>William R. Stark Financial Assistance Committee</strong>
-        </p>
-      </div>
-    `;
+    const html = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Application Submitted!')}
+        ${bodyText(`Hello ${application.firstName || user.name || "Applicant"},`)}
+        ${bodyText('Congratulations! Your application for the <strong>William R. Stark Financial Assistance Program</strong> has been submitted successfully.')}
+      `)}
+      ${contentSectionFull(infoBox('success', 'What Happens Next?', `
+        <ul style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; padding-left: 20px; margin: 0; line-height: 1.8;">
+          <li>Your application will be reviewed by the scholarship committee</li>
+          <li>All committee members will evaluate your application</li>
+          <li>Selections will be announced after the deadline (April 15, 2026)</li>
+          <li>You will be notified via email of the decision</li>
+        </ul>
+      `))}
+      ${contentSectionFull(`
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 20px;">
+          <tr><td style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; line-height: 1.8;">
+            <strong>Application Reference:</strong> ${application._id}<br>
+            <strong>Submitted:</strong> ${new Date().toLocaleDateString()}
+          </td></tr>
+        </table>
+      `)}
+      ${ctaSection(`${appUrl}/apply/status`, 'View Application Status', 'success')}
+      ${contentSectionBottom(signatureBlock('Best regards,'))}
+      ${emailFooter()}
+    `);
 
     // Create email log
     const logId = await ctx.runMutation(internal.emails.createEmailLog, {
@@ -981,37 +961,28 @@ export const sendWithdrawalConfirmation = action({
 
     const subject = "Application Withdrawn - Stark Scholars";
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #dc2626;">Application Withdrawn</h2>
-
-        <p>Hello ${application.firstName || user.name || "Applicant"},</p>
-
-        <p>
-          Your application for the William R. Stark Financial Assistance Program
-          has been withdrawn as requested.
-        </p>
-
-        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
-
-        <div style="background: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0;">
-          <p style="margin: 0;">
-            If you withdrew before the deadline (April 15, 2026), you may submit
-            a new application if you wish.
-          </p>
-        </div>
-
-        <p>
+    const html = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Application Withdrawn')}
+        ${bodyText(`Hello ${application.firstName || user.name || "Applicant"},`)}
+        ${bodyText('Your application for the William R. Stark Financial Assistance Program has been withdrawn as requested.')}
+        ${reason ? bodyText(`<strong>Reason:</strong> ${reason}`) : ''}
+      `)}
+      ${contentSectionFull(infoBox('alert', 'Reapply?',
+        'If you withdrew before the deadline (April 15, 2026), you may submit a new application if you wish.'
+      ))}
+      ${ctaSection(`${appUrl}/apply/dashboard`, 'Start New Application', 'alert')}
+      ${contentSectionFull(`
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0;">
           If you have any questions, please contact us at
-          <a href="mailto:blackgoldmine@sbcglobal.net">blackgoldmine@sbcglobal.net</a>.
+          <a href="mailto:blackgoldmine@sbcglobal.net" style="color: ${GOLD};">blackgoldmine@sbcglobal.net</a>.
         </p>
-
-        <p>
-          <em>Best regards,</em><br>
-          <strong>William R. Stark Financial Assistance Committee</strong>
-        </p>
-      </div>
-    `;
+      `)}
+      ${contentSectionBottom(signatureBlock('Best regards,'))}
+      ${emailFooter()}
+    `);
 
     // Create email log
     const logId = await ctx.runMutation(internal.emails.createEmailLog, {
@@ -1069,5 +1040,352 @@ export const retryFailedEmail = internalAction({
     // For now, just mark as needing manual resend
     // A full implementation would need to store the HTML or reconstruct it
     throw new Error("Retry not implemented - use resend mutation directly");
+  },
+});
+
+// ============================================
+// TEST: Send all email templates to a test address (keep for future use)
+// ============================================
+
+export const sendAllTestEmails = action({
+  args: { testEmail: v.string() },
+  handler: async (ctx, { testEmail }) => {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+    const results: { template: string; success: boolean; error?: string }[] = [];
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    const sampleRecUrl = `${appUrl}/recommend/sample-test-token-12345`;
+    const sampleDate = new Date().toLocaleDateString();
+
+    // ---- 1. Recommendation Request ----
+    const recRequestHtml = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Recommendation Request')}
+        ${bodyText('Dear Dr. Martin Luther King,')}
+        ${bodyText('<strong>Aaron Dickason</strong> has requested that you provide a letter of recommendation for the <strong>William R. Stark Financial Assistance Program</strong>.')}
+      `)}
+      ${contentSectionFull(infoBox('default', 'About the Scholarship',
+        'The William R. Stark Class of 2023 President&apos;s Club awards two $500 scholarships to Michigan students committed to using their education to improve their communities.'
+      ))}
+      ${contentSectionFull(`
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 20px;">
+          <tr><td style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; line-height: 1.8;">
+            <strong>Relationship:</strong> Academic Advisor<br>
+            <strong>Applicant:</strong> Aaron Dickason<br>
+            <strong>High School:</strong> Cass Technical High School<br>
+            <strong>College:</strong> University of Michigan
+          </td></tr>
+        </table>
+      `)}
+      ${ctaSection(sampleRecUrl, 'Submit Recommendation Letter', 'default', sampleRecUrl)}
+      ${contentSectionFull(`
+        ${goldSectionDivider()}
+        <h3 style="color: ${NAVY}; font-family: ${HEADING_FONT}; font-size: 16px; margin: 0 0 12px 0;">What to Include</h3>
+        <ul style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; padding-left: 20px; margin: 0; line-height: 1.8;">
+          <li>How long and in what capacity you&apos;ve known the applicant</li>
+          <li>The applicant&apos;s academic abilities and achievements</li>
+          <li>The applicant&apos;s character and personal qualities</li>
+          <li>Examples of community involvement or leadership</li>
+          <li>Why you believe they deserve this scholarship</li>
+        </ul>
+      `)}
+      ${contentSectionFull(`
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 20px 0 16px 0;">
+          <strong>Deadline:</strong> This link will expire on ${sampleDate}.
+        </p>
+      `)}
+      ${contentSectionBottom(`
+        ${bodyText('Thank you for supporting Aaron&apos;s educational journey.')}
+        ${signatureBlock('Fraternally,', true)}
+      `)}
+      ${emailFooter()}
+    `);
+
+    let r = await sendEmailToResend({ to: testEmail, subject: "[TEST 1/8] Recommendation Request - Stark Scholars", html: recRequestHtml });
+    results.push({ template: "Recommendation Request", success: r.success, error: r.error });
+
+    // ---- 2. Recommendation Reminder ----
+    const recReminderHtml = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Friendly Reminder: Recommendation Request')}
+        ${bodyText('Dear Dr. Martin Luther King,')}
+        ${bodyText('This is a friendly reminder that <strong>Aaron Dickason</strong> is still waiting for your letter of recommendation for the William R. Stark Financial Assistance Program.')}
+      `)}
+      ${ctaSection(sampleRecUrl, 'Submit Recommendation Letter', 'default')}
+      ${contentSectionFull(`
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0 0 16px 0;">
+          <strong>Deadline:</strong> This link will expire on ${sampleDate}.
+        </p>
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0;">
+          If you have any questions, please contact the scholarship committee at
+          <a href="mailto:blackgoldmine@sbcglobal.net" style="color: ${GOLD};">blackgoldmine@sbcglobal.net</a>.
+        </p>
+      `)}
+      ${contentSectionBottom(`
+        ${bodyText('Thank you for your time and support.')}
+        ${signatureBlock('Fraternally,')}
+      `)}
+      ${emailFooter()}
+    `);
+
+    await delay(1500);
+    r = await sendEmailToResend({ to: testEmail, subject: "[TEST 2/8] Recommendation Reminder - Stark Scholars", html: recReminderHtml });
+    results.push({ template: "Recommendation Reminder", success: r.success, error: r.error });
+
+    // ---- 3. Recommendation Received ----
+    const recReceivedHtml = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Recommendation Received!')}
+        ${bodyText('Hello Aaron,')}
+        ${bodyText('Good news! <strong>Dr. Martin Luther King</strong> has submitted their letter of recommendation for your William R. Stark Financial Assistance application.')}
+      `)}
+      ${contentSectionFull(infoBox('success', 'Status Update',
+        'You can check the status of all your recommendations by visiting your application dashboard.'
+      ))}
+      ${ctaSection(`${appUrl}/apply/dashboard`, 'View Application Status', 'success')}
+      ${contentSectionBottom(signatureBlock('Best regards,'))}
+      ${emailFooter()}
+    `);
+
+    await delay(1500);
+    r = await sendEmailToResend({ to: testEmail, subject: "[TEST 3/8] Recommendation Received - Stark Scholars", html: recReceivedHtml });
+    results.push({ template: "Recommendation Received", success: r.success, error: r.error });
+
+    // ---- 4. Welcome Email ----
+    const welcomeHtml = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Welcome, Aaron Dickason!')}
+        ${bodyText("Thank you for joining the William R. Stark Class of 2023 President's Club scholarship program. We're honored that you're considering us on your educational journey.")}
+      `)}
+      ${contentSectionFull(infoBox('default', 'Next Steps', `
+        <table role="presentation" cellspacing="0" cellpadding="0" width="100%">
+          <tr><td style="padding: 4px 0; color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px;">
+            <span style="display: inline-block; width: 28px; text-align: center; font-weight: bold; color: ${GOLD};">1.</span>
+            Complete your application (7 steps)
+          </td></tr>
+          <tr><td style="padding: 4px 0; color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px;">
+            <span style="display: inline-block; width: 28px; text-align: center; font-weight: bold; color: ${GOLD};">2.</span>
+            Request 2 recommendation letters
+          </td></tr>
+          <tr><td style="padding: 4px 0; color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px;">
+            <span style="display: inline-block; width: 28px; text-align: center; font-weight: bold; color: ${GOLD};">3.</span>
+            Submit before <strong>April 15, 2026</strong>
+          </td></tr>
+        </table>
+      `))}
+      ${ctaSection(`${appUrl}/apply/dashboard`, 'Start Your Application &rarr;', 'default')}
+      ${contentSectionBottom(signatureBlock('Fraternally,', true))}
+      ${emailFooter()}
+    `);
+
+    await delay(1500);
+    r = await sendEmailToResend({ to: testEmail, subject: "[TEST 4/8] Welcome to Stark Scholars - Your Journey Begins!", html: welcomeHtml });
+    results.push({ template: "Welcome", success: r.success, error: r.error });
+
+    // ---- 5. Email Verification ----
+    const verifyHtml = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Verify Your Email Address')}
+        ${bodyText('Hello Aaron,')}
+        ${bodyText('Please verify your email address to complete your registration for the William R. Stark Financial Assistance Program.')}
+      `)}
+      ${ctaSection(`${appUrl}/verify-email?token=sample-test-token`, 'Verify Email Address', 'default', `${appUrl}/verify-email?token=sample-test-token`)}
+      ${contentSectionFull(`
+        <p style="color: ${MUTED_TEXT}; font-family: ${BODY_FONT}; font-size: 14px; margin: 0;">
+          If you didn't create an account, you can safely ignore this email.
+        </p>
+      `)}
+      ${contentSectionBottom(signatureBlock('Best regards,'))}
+      ${emailFooter()}
+    `);
+
+    await delay(1500);
+    r = await sendEmailToResend({ to: testEmail, subject: "[TEST 5/8] Verify Your Email - Stark Scholars", html: verifyHtml });
+    results.push({ template: "Email Verification", success: r.success, error: r.error });
+
+    // ---- 6. Password Reset ----
+    const resetHtml = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Reset Your Password')}
+        ${bodyText('Hello,')}
+        ${bodyText('You requested a password reset for your Stark Scholars account. Click the button below to create a new password.')}
+      `)}
+      ${ctaSection(`${appUrl}/reset-password?token=sample-test-token`, 'Reset Password', 'default', `${appUrl}/reset-password?token=sample-test-token`)}
+      ${contentSectionFull(`
+        <p style="color: ${MUTED_TEXT}; font-family: ${BODY_FONT}; font-size: 14px; margin: 0;">
+          This link will expire in 1 hour. If you didn't request this reset, you can safely ignore this email.
+        </p>
+      `)}
+      ${contentSectionBottom(signatureBlock('Best regards,'))}
+      ${emailFooter()}
+    `);
+
+    await delay(1500);
+    r = await sendEmailToResend({ to: testEmail, subject: "[TEST 6/8] Reset Your Password - Stark Scholars", html: resetHtml });
+    results.push({ template: "Password Reset", success: r.success, error: r.error });
+
+    // ---- 7. Application Submitted ----
+    const submittedHtml = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Application Submitted!')}
+        ${bodyText('Hello Aaron,')}
+        ${bodyText('Congratulations! Your application for the <strong>William R. Stark Financial Assistance Program</strong> has been submitted successfully.')}
+      `)}
+      ${contentSectionFull(infoBox('success', 'What Happens Next?', `
+        <ul style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; padding-left: 20px; margin: 0; line-height: 1.8;">
+          <li>Your application will be reviewed by the scholarship committee</li>
+          <li>All committee members will evaluate your application</li>
+          <li>Selections will be announced after the deadline (April 15, 2026)</li>
+          <li>You will be notified via email of the decision</li>
+        </ul>
+      `))}
+      ${contentSectionFull(`
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 20px;">
+          <tr><td style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; line-height: 1.8;">
+            <strong>Application Reference:</strong> test-app-ref-12345<br>
+            <strong>Submitted:</strong> ${sampleDate}
+          </td></tr>
+        </table>
+      `)}
+      ${ctaSection(`${appUrl}/apply/status`, 'View Application Status', 'success')}
+      ${contentSectionBottom(signatureBlock('Best regards,'))}
+      ${emailFooter()}
+    `);
+
+    await delay(1500);
+    r = await sendEmailToResend({ to: testEmail, subject: "[TEST 7/8] Application Submitted - Stark Scholars", html: submittedHtml });
+    results.push({ template: "Application Submitted", success: r.success, error: r.error });
+
+    // ---- 8. Withdrawal Confirmation ----
+    const withdrawHtml = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('Application Withdrawn')}
+        ${bodyText('Hello Aaron,')}
+        ${bodyText('Your application for the William R. Stark Financial Assistance Program has been withdrawn as requested.')}
+        ${bodyText('<strong>Reason:</strong> Changed educational plans')}
+      `)}
+      ${contentSectionFull(infoBox('alert', 'Reapply?',
+        'If you withdrew before the deadline (April 15, 2026), you may submit a new application if you wish.'
+      ))}
+      ${ctaSection(`${appUrl}/apply/dashboard`, 'Start New Application', 'alert')}
+      ${contentSectionFull(`
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0;">
+          If you have any questions, please contact us at
+          <a href="mailto:blackgoldmine@sbcglobal.net" style="color: ${GOLD};">blackgoldmine@sbcglobal.net</a>.
+        </p>
+      `)}
+      ${contentSectionBottom(signatureBlock('Best regards,'))}
+      ${emailFooter()}
+    `);
+
+    await delay(1500);
+    r = await sendEmailToResend({ to: testEmail, subject: "[TEST 8/8] Application Withdrawn - Stark Scholars", html: withdrawHtml });
+    results.push({ template: "Withdrawal Confirmation", success: r.success, error: r.error });
+
+    console.log("[sendAllTestEmails] Results:", JSON.stringify(results, null, 2));
+    return results;
+  },
+});
+
+// ============================================
+// SELECTION NOTIFICATION EMAILS
+// ============================================
+
+export const sendSelectionNotification = action({
+  args: {
+    applicationId: v.id("applications"),
+    isSelected: v.boolean(),
+  },
+  handler: async (ctx, { applicationId, isSelected }) => {
+    const application = await ctx.runQuery(api.applications.getById, {
+      id: applicationId,
+    });
+    if (!application) throw new Error("Application not found");
+
+    const user = await ctx.runQuery(api.users.getById, { id: application.userId });
+    if (!user) throw new Error("User not found");
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+
+    const subject = isSelected
+      ? "Congratulations! You've Been Selected - Stark Scholars"
+      : "Thank You for Applying - Stark Scholars";
+
+    const html = isSelected
+      ? wrapEmail(`
+          ${emailHeader()}
+          ${goldDivider()}
+          ${contentSection(`
+            ${sectionHeading('Congratulations!')}
+            ${bodyText(`Dear ${application.firstName || user.name || "Applicant"},`)}
+            ${bodyText('We are delighted to inform you that you have been <strong>selected as a recipient</strong> of the William R. Stark Financial Assistance Program scholarship!')}
+          `)}
+          ${contentSectionFull(infoBox('success', 'Your Scholarship', `
+            <p style="margin: 0;">You have been awarded a <strong>$500 scholarship</strong> in recognition of your academic excellence, community involvement, and commitment to using your education to improve your community.</p>
+          `))}
+          ${contentSectionFull(`
+            ${bodyText('A representative from the scholarship committee will be in touch with you shortly regarding the details of your award and next steps.')}
+            ${bodyText('Once again, congratulations on this wonderful achievement!')}
+          `)}
+          ${ctaSection(`${appUrl}/apply/dashboard`, 'View Your Dashboard', 'success')}
+          ${contentSectionBottom(signatureBlock('Fraternally,', true))}
+          ${emailFooter()}
+        `)
+      : wrapEmail(`
+          ${emailHeader()}
+          ${goldDivider()}
+          ${contentSection(`
+            ${sectionHeading('Thank You for Applying')}
+            ${bodyText(`Dear ${application.firstName || user.name || "Applicant"},`)}
+            ${bodyText('Thank you for your application to the William R. Stark Financial Assistance Program. After careful review by our scholarship committee, we regret to inform you that you were not selected as a recipient for this cycle.')}
+          `)}
+          ${contentSectionFull(`
+            ${bodyText('Please know that the selection process was highly competitive, and your application demonstrated many admirable qualities. We encourage you to continue your educational pursuits and to apply again in future cycles.')}
+            ${bodyText('We wish you the very best in your academic journey and future endeavors.')}
+          `)}
+          ${contentSectionBottom(signatureBlock('Fraternally,', true))}
+          ${emailFooter()}
+        `);
+
+    const logId = await ctx.runMutation(internal.emails.createEmailLog, {
+      type: isSelected ? "selection_congratulations" : "selection_not_selected",
+      recipientEmail: user.email,
+      subject,
+      relatedId: applicationId,
+      relatedType: "application",
+    });
+
+    const result = await sendEmailToResend({ to: user.email, subject, html });
+
+    if (result.success && result.resendId) {
+      await ctx.runMutation(internal.emails.updateEmailLogSuccess, {
+        logId,
+        resendId: result.resendId,
+      });
+    } else {
+      await ctx.runMutation(internal.emails.updateEmailLogFailure, {
+        logId,
+        error: result.error || "Unknown error",
+        attempts: 1,
+      });
+    }
+
+    return { success: result.success };
   },
 });

@@ -3,13 +3,14 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { useQuery } from "convex/react";
+import { useQuery, useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -26,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { toast } from "sonner";
 import {
   ChevronLeft,
   ChevronRight,
@@ -184,7 +186,11 @@ export default function ApplicationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const shouldReduceMotion = useReducedMotion();
+  const exportCSV = useAction(api.admin.exportApplicationsToCSV);
+  const bulkUpdateStatus = useMutation(api.admin.bulkUpdateStatus);
 
   const applicationsData = useQuery(
     api.admin.getAllApplications,
@@ -204,9 +210,25 @@ export default function ApplicationsPage() {
     startIndex + ITEMS_PER_PAGE
   );
 
-  const handleExportCSV = () => {
-    // Placeholder for CSV export functionality
-    alert("CSV Export functionality coming soon!");
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    try {
+      const result = await exportCSV({ status: statusFilter !== "all" ? statusFilter : undefined });
+      const blob = new Blob([result.csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = result.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("CSV exported successfully");
+    } catch (error) {
+      toast.error("Failed to export CSV");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (applicationsData === undefined) {
@@ -276,10 +298,11 @@ export default function ApplicationsPage() {
           <Button
             variant="outline"
             onClick={handleExportCSV}
+            disabled={isExporting}
             className="shrink-0 w-full sm:w-auto"
           >
             <Download className="mr-2 h-4 w-4" />
-            Export CSV
+            {isExporting ? "Exporting..." : "Export CSV"}
           </Button>
         </motion.div>
       </div>
@@ -345,6 +368,18 @@ export default function ApplicationsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={selectedItems.size > 0 && selectedItems.size === paginatedApplications.length}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedItems(new Set(paginatedApplications.map(a => a._id)));
+                            } else {
+                              setSelectedItems(new Set());
+                            }
+                          }}
+                        />
+                      </TableHead>
                       <TableHead>Applicant</TableHead>
                       <TableHead>City</TableHead>
                       <TableHead>GPA</TableHead>
@@ -363,6 +398,16 @@ export default function ApplicationsPage() {
                         transition={{ delay: index * 0.03 }}
                         className="border-b last:border-0 hover:bg-muted/30"
                       >
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedItems.has(app._id)}
+                            onCheckedChange={(checked) => {
+                              const newSelected = new Set(selectedItems);
+                              if (checked) { newSelected.add(app._id); } else { newSelected.delete(app._id); }
+                              setSelectedItems(newSelected);
+                            }}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
@@ -460,6 +505,38 @@ export default function ApplicationsPage() {
           )}
         </CardContent>
       </Card>
+
+      {selectedItems.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border rounded-lg shadow-lg p-4 flex items-center gap-4">
+          <span className="text-sm font-medium">{selectedItems.size} selected</span>
+          <Select onValueChange={async (status) => {
+            try {
+              await bulkUpdateStatus({
+                applicationIds: Array.from(selectedItems) as any[],
+                status: status as any,
+              });
+              toast.success(`Updated ${selectedItems.size} applications`);
+              setSelectedItems(new Set());
+            } catch (error) {
+              toast.error("Failed to update applications");
+            }
+          }}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Change Status" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.filter(s => s.value !== "all").map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button variant="ghost" size="sm" onClick={() => setSelectedItems(new Set())}>
+            Clear
+          </Button>
+        </div>
+      )}
     </motion.div>
   );
 }

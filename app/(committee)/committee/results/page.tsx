@@ -17,6 +17,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import {
   Trophy,
   Users,
   ClipboardCheck,
@@ -24,6 +36,7 @@ import {
   Star,
   CheckCircle2,
   Lock,
+  Loader2,
 } from "lucide-react";
 import {
   ratingLabels,
@@ -39,6 +52,8 @@ export default function ResultsPage() {
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(
     new Set()
   );
+  const [isFinalizing, setIsFinalizing] = useState(false);
+  const finalizeSelection = useMutation(api.admin.finalizeSelection);
 
   const isAdmin = user?.role === "admin";
 
@@ -375,13 +390,47 @@ export default function ResultsPage() {
               </div>
             )}
 
-            <Button
-              disabled={selectedRecipients.size !== 2}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              Confirm Selection
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  disabled={selectedRecipients.size !== 2 || isFinalizing}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  {isFinalizing ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                  )}
+                  Confirm Selection
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirm Final Selection</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will mark the selected candidates as scholarship recipients and notify all applicants. This action cannot be easily undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={async () => {
+                    setIsFinalizing(true);
+                    try {
+                      await finalizeSelection({
+                        selectedIds: Array.from(selectedRecipients) as any[],
+                      });
+                      toast.success("Selection finalized successfully!");
+                    } catch (error) {
+                      toast.error("Failed to finalize selection");
+                    } finally {
+                      setIsFinalizing(false);
+                    }
+                  }}>
+                    Confirm & Notify
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             {selectedRecipients.size !== 2 && (
               <p className="text-sm text-purple-600 mt-2">

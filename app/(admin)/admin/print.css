@@ -1,0 +1,17 @@
+@media print {
+  [data-sidebar],
+  header,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-break {
+    page-break-before: always;
+  }
+}

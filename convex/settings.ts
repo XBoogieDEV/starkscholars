@@ -1,6 +1,18 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    const settings = await ctx.db.query("settings").collect();
+    const map: Record<string, string> = {};
+    for (const s of settings) {
+      map[s.key] = s.value;
+    }
+    return map;
+  },
+});
+
 export const get = query({
   args: { key: v.string() },
   handler: async (ctx, { key }) => {
