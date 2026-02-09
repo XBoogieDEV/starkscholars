@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
@@ -73,6 +74,7 @@ interface CertificationState {
 
 export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepProps) {
   const { toast } = useToast();
+  const router = useRouter();
 
   // Fetch recommendations and validation status
   const recommendations = useQuery(api.recommendations.getByApplication, {
@@ -286,7 +288,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
         description: "Your application has been submitted successfully.",
       });
 
-      onComplete();
+      router.push("/apply/confirmation");
     } catch (error: any) {
       toast({
         title: "Error",
