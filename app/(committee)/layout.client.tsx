@@ -17,7 +17,7 @@ export default function CommitteeLayoutClient({
     const shouldReduceMotion = useReducedMotion();
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-muted/50">
             <CommitteeHeader user={user} />
             <div className="flex">
                 <CommitteeSidebar userRole={user.role} />

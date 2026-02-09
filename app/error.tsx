@@ -16,15 +16,15 @@ export default function ErrorBoundary({
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-white/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <GraduationCap className="h-5 w-5 text-white" />
             </div>
-            <span className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+            <span className="text-base sm:text-lg font-semibold text-foreground font-serif truncate">
               Stark Scholars
             </span>
           </Link>
@@ -44,15 +44,15 @@ export default function ErrorBoundary({
             variants={shouldReduceMotion ? {} : heroTextItem}
             className="mb-8"
           >
-            <div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-amber-100">
-              <AlertTriangle className="h-12 w-12 text-amber-600" />
+            <div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-primary/10">
+              <AlertTriangle className="h-12 w-12 text-primary" />
             </div>
           </motion.div>
 
           {/* Heading */}
           <motion.h1
             variants={shouldReduceMotion ? {} : heroTextItem}
-            className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl"
+            className="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
           >
             Something Went Wrong
           </motion.h1>
@@ -60,7 +60,7 @@ export default function ErrorBoundary({
           {/* Message */}
           <motion.p
             variants={shouldReduceMotion ? {} : heroTextItem}
-            className="mb-4 text-lg text-gray-600"
+            className="mb-4 text-lg text-muted-foreground"
           >
             We&apos;re sorry, but something unexpected happened. Please try again.
           </motion.p>
@@ -91,7 +91,7 @@ export default function ErrorBoundary({
             <Button
               onClick={reset}
               size="lg"
-              className="h-12 w-full sm:w-auto bg-amber-600 px-8 text-base hover:bg-amber-700"
+              className="h-12 w-full sm:w-auto bg-primary px-8 text-base hover:bg-primary/90"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               Try Again
@@ -100,7 +100,7 @@ export default function ErrorBoundary({
               asChild
               variant="outline"
               size="lg"
-              className="h-12 w-full sm:w-auto px-8 text-base border-gray-300 hover:bg-gray-50"
+              className="h-12 w-full sm:w-auto px-8 text-base border-border hover:bg-muted/50"
             >
               <Link href="/">
                 <Home className="mr-2 h-4 w-4" />
@@ -112,18 +112,18 @@ export default function ErrorBoundary({
           {/* Contact Support */}
           <motion.div
             variants={shouldReduceMotion ? {} : heroTextItem}
-            className="mt-8 p-6 rounded-lg bg-white border border-gray-200"
+            className="mt-8 p-6 rounded-lg bg-card border border-border"
           >
-            <h2 className="mb-2 text-sm font-semibold text-gray-900 uppercase tracking-wide">
+            <h2 className="mb-2 text-sm font-semibold text-foreground uppercase tracking-wide">
               Problem persists?
             </h2>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               If the problem continues, please contact our support team for assistance.
             </p>
             <Button
               asChild
               variant="ghost"
-              className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+              className="text-primary hover:text-primary/90 hover:bg-primary/5"
             >
               <Link href="mailto:blackgoldmine@sbcglobal.net">
                 <Mail className="mr-2 h-4 w-4" />
@@ -135,9 +135,9 @@ export default function ErrorBoundary({
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-white py-6">
+      <footer className="border-t border-border bg-card py-6">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-sm text-gray-500">
+          <div className="text-center text-sm text-muted-foreground">
             © {new Date().getFullYear()} Stark Scholars Platform. All rights reserved.
           </div>
         </div>

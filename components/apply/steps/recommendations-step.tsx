@@ -177,14 +177,14 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
     switch (status) {
       case "pending":
         return (
-          <Badge variant="outline" className="text-gray-600">
+          <Badge variant="outline" className="text-muted-foreground">
             <Clock className="mr-1 h-3 w-3" />
             Pending
           </Badge>
         );
       case "email_sent":
         return (
-          <Badge variant="outline" className="text-amber-600 border-amber-200">
+          <Badge variant="outline" className="text-primary border-primary/20">
             <Send className="mr-1 h-3 w-3" />
             Email Sent
           </Badge>
@@ -219,9 +219,9 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
   return (
     <div className="space-y-6">
       {/* Requirements Info */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-        <h4 className="font-medium text-amber-900 mb-2">Recommendation Requirements</h4>
-        <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
+      <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+        <h4 className="font-medium text-primary mb-2">Recommendation Requirements</h4>
+        <ul className="text-sm text-primary space-y-1 list-disc list-inside">
           <li>You need exactly 2 letters of recommendation</li>
           <li>At least one must be from an educator or community group leader</li>
           <li>Both must be submitted before you can complete your application</li>
@@ -231,23 +231,23 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
       {/* Current Recommendations */}
       {recommendations && recommendations.length > 0 && (
         <div className="space-y-4">
-          <h4 className="font-medium text-gray-900">Your Recommendations</h4>
+          <h4 className="font-medium text-foreground">Your Recommendations</h4>
           {recommendations.map((rec: any) => (
             <Card key={rec._id}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h5 className="font-medium text-gray-900">{rec.recommenderName}</h5>
+                      <h5 className="font-medium text-foreground">{rec.recommenderName}</h5>
                       {getStatusBadge(rec.status)}
                     </div>
-                    <p className="text-sm text-gray-500">{rec.recommenderEmail}</p>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <p className="text-sm text-muted-foreground">{rec.recommenderEmail}</p>
+                    <p className="text-sm text-muted-foreground/70 mt-1">
                       {recommenderTypes.find((t) => t.value === rec.recommenderType)?.label}
                       {rec.recommenderOrganization && ` • ${rec.recommenderOrganization}`}
                     </p>
                     {rec.relationship && (
-                      <p className="text-sm text-gray-400 italic mt-1">
+                      <p className="text-sm text-muted-foreground/70 italic mt-1">
                         &ldquo;{rec.relationship}&rdquo;
                       </p>
                     )}
@@ -269,7 +269,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                        className="text-primary hover:text-primary hover:bg-primary/5"
                         onClick={() => handleResendEmail(rec._id, rec.recommenderName || "")}
                         title="Resend with a new link (use if they didn't receive it)"
                       >
@@ -319,7 +319,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
                     placeholder="sarah.johnson@school.edu"
                     required
                   />
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground/70">
                     We&apos;ll send them a secure link to upload their letter
                   </p>
                 </div>
@@ -377,7 +377,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-amber-600 hover:bg-amber-700"
+                  className="bg-primary hover:bg-primary/90"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -436,7 +436,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
             )}
             <Button
               onClick={handleStepComplete}
-              className={allSubmitted ? "w-full bg-amber-600 hover:bg-amber-700" : "w-full"}
+              className={allSubmitted ? "w-full bg-primary hover:bg-primary/90" : "w-full"}
               variant={allSubmitted ? "default" : "outline"}
             >
               {allSubmitted ? "Save & Continue" : "Continue to Next Step"}
@@ -444,8 +444,8 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
             </Button>
           </>
         ) : (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
-            <p className="text-sm text-amber-800">
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 text-center">
+            <p className="text-sm text-primary">
               Please add {2 - (recommendations?.length || 0)} more recommender(s) to proceed.
             </p>
           </div>

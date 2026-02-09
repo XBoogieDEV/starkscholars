@@ -187,7 +187,7 @@ export function EligibilityStep({ application, onComplete }: EligibilityStepProp
       <div className="pt-4 border-t">
         <Button
           type="submit"
-          className="bg-amber-600 hover:bg-amber-700"
+          className="bg-primary hover:bg-primary/90"
           disabled={isLoading || !isEligible}
         >
           {isLoading ? (

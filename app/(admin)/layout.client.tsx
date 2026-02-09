@@ -89,7 +89,7 @@ export default function AdminLayoutClient({
                         <SidebarMenuItem>
                             <SidebarMenuButton size="lg" asChild>
                                 <Link href="/admin">
-                                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-amber-600 text-sidebar-primary-foreground">
+                                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-sidebar-primary-foreground">
                                         <Award className="size-4" />
                                     </div>
                                     <div className="grid flex-1 text-left text-sm leading-tight">
@@ -137,7 +137,7 @@ export default function AdminLayoutClient({
                                         className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                                     >
                                         <Avatar className="h-8 w-8 rounded-lg">
-                                            <AvatarFallback className="rounded-lg bg-amber-100 text-amber-800 text-xs">
+                                            <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs">
                                                 {initials}
                                             </AvatarFallback>
                                         </Avatar>
@@ -164,7 +164,7 @@ export default function AdminLayoutClient({
                                     <DropdownMenuItem
                                         className="cursor-pointer text-red-600 focus:text-red-600"
                                         onClick={() => {
-                                            window.location.href = "/api/auth/signout";
+                                            window.location.href = "/signout";
                                         }}
                                     >
                                         <LogOut className="mr-2 h-4 w-4" />

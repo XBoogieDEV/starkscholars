@@ -96,9 +96,9 @@ export function AddressStep({ application, onComplete }: AddressStepProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Michigan Residents Only Alert */}
-      <Alert className="bg-amber-50 border-amber-200">
-        <AlertTriangle className="h-4 w-4 text-amber-600" />
-        <AlertDescription className="text-amber-800">
+      <Alert className="bg-primary/5 border-primary/20">
+        <AlertTriangle className="h-4 w-4 text-primary" />
+        <AlertDescription className="text-primary">
           <strong>Michigan Residents Only:</strong> This scholarship is only available to 
           permanent residents of the State of Michigan.
         </AlertDescription>
@@ -137,9 +137,9 @@ export function AddressStep({ application, onComplete }: AddressStepProps) {
             id="state"
             value="MI"
             disabled
-            className="bg-gray-100"
+            className="bg-muted"
           />
-          <p className="text-xs text-gray-400">Michigan only</p>
+          <p className="text-xs text-muted-foreground/70">Michigan only</p>
         </div>
 
         <div className="space-y-2">
@@ -154,14 +154,14 @@ export function AddressStep({ application, onComplete }: AddressStepProps) {
             maxLength={5}
             required
           />
-          <p className="text-xs text-gray-400">Michigan ZIP: 48001-49971</p>
+          <p className="text-xs text-muted-foreground/70">Michigan ZIP: 48001-49971</p>
         </div>
       </div>
 
       <div className="pt-4 border-t">
         <Button
           type="submit"
-          className="bg-amber-600 hover:bg-amber-700"
+          className="bg-primary hover:bg-primary/90"
           disabled={isLoading}
         >
           {isLoading ? (

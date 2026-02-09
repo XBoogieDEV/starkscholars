@@ -57,8 +57,8 @@ function MetricCard({
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <div className="h-8 w-8 rounded-md bg-amber-100 flex items-center justify-center">
-          <Icon className="h-4 w-4 text-amber-600" />
+        <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center">
+          <Icon className="h-4 w-4 text-primary" />
         </div>
       </CardHeader>
       <CardContent>
@@ -131,28 +131,28 @@ export default function AnalyticsDashboardPage() {
 
       {/* Real-time Stats */}
       {realTimeStats && (
-        <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
+        <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Activity className="h-4 w-4 text-amber-600" />
-              <span className="text-sm font-medium text-amber-900">Today&apos;s Activity</span>
+              <Activity className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Today&apos;s Activity</span>
             </div>
             <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
               <div>
-                <p className="text-2xl font-bold text-amber-700">{realTimeStats.applicationsToday}</p>
-                <p className="text-xs text-amber-600">New Applications</p>
+                <p className="text-2xl font-bold text-primary">{realTimeStats.applicationsToday}</p>
+                <p className="text-xs text-primary/80">New Applications</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-700">{realTimeStats.submissionsToday}</p>
-                <p className="text-xs text-amber-600">Submissions</p>
+                <p className="text-2xl font-bold text-primary">{realTimeStats.submissionsToday}</p>
+                <p className="text-xs text-primary/80">Submissions</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-700">{realTimeStats.pendingRecommendations}</p>
-                <p className="text-xs text-amber-600">Pending Recommendations</p>
+                <p className="text-2xl font-bold text-primary">{realTimeStats.pendingRecommendations}</p>
+                <p className="text-xs text-primary/80">Pending Recommendations</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-700">{realTimeStats.pendingSubmissions}</p>
-                <p className="text-xs text-amber-600">Draft Applications</p>
+                <p className="text-2xl font-bold text-primary">{realTimeStats.pendingSubmissions}</p>
+                <p className="text-xs text-primary/80">Draft Applications</p>
               </div>
             </div>
           </CardContent>
@@ -251,7 +251,7 @@ export default function AnalyticsDashboardPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium">{count}</span>
-                        <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                           <div 
                             className="h-full rounded-full" 
                             style={{ 
@@ -328,9 +328,9 @@ export default function AnalyticsDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <p className="text-3xl font-bold text-gray-900">{recommendationStats.total}</p>
-                  <p className="text-sm text-gray-600">Total Requested</p>
+                <div className="text-center p-4 bg-muted/50 rounded-lg">
+                  <p className="text-3xl font-bold text-foreground">{recommendationStats.total}</p>
+                  <p className="text-sm text-muted-foreground">Total Requested</p>
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <p className="text-3xl font-bold text-green-700">{recommendationStats.submitted}</p>
@@ -354,7 +354,7 @@ export default function AnalyticsDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-amber-600" />
+                  <MapPin className="h-5 w-5 text-primary" />
                   Top Cities
                 </CardTitle>
                 <CardDescription>Most common applicant locations</CardDescription>
@@ -383,7 +383,7 @@ export default function AnalyticsDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5 text-amber-600" />
+                  <GraduationCap className="h-5 w-5 text-primary" />
                   Top Colleges
                 </CardTitle>
                 <CardDescription>Most common educational institutions</CardDescription>
@@ -417,17 +417,17 @@ export default function AnalyticsDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <p className="text-3xl font-bold text-gray-900">{userStats.totalUsers}</p>
-                  <p className="text-sm text-gray-600">Total Users</p>
+                <div className="text-center p-4 bg-muted/50 rounded-lg">
+                  <p className="text-3xl font-bold text-foreground">{userStats.totalUsers}</p>
+                  <p className="text-sm text-muted-foreground">Total Users</p>
                 </div>
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
                   <p className="text-3xl font-bold text-blue-700">{userStats.applicants}</p>
                   <p className="text-sm text-blue-600">Applicants</p>
                 </div>
-                <div className="text-center p-4 bg-amber-50 rounded-lg">
-                  <p className="text-3xl font-bold text-amber-700">{userStats.committee}</p>
-                  <p className="text-sm text-amber-600">Committee</p>
+                <div className="text-center p-4 bg-primary/5 rounded-lg">
+                  <p className="text-3xl font-bold text-primary">{userStats.committee}</p>
+                  <p className="text-sm text-primary/80">Committee</p>
                 </div>
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
                   <p className="text-3xl font-bold text-purple-700">{userStats.admins}</p>
@@ -460,11 +460,11 @@ export default function AnalyticsDashboardPage() {
                           {member.completed} of {member.total} ({member.percentage}%)
                         </span>
                       </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                         <div 
                           className={`h-full rounded-full transition-all duration-300 ${
                             member.percentage >= 80 ? "bg-green-500" :
-                            member.percentage >= 50 ? "bg-amber-500" : "bg-red-500"
+                            member.percentage >= 50 ? "bg-primary/80" : "bg-red-500"
                           }`}
                           style={{ width: `${member.percentage}%` }}
                         />
@@ -483,13 +483,13 @@ export default function AnalyticsDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <p className="text-3xl font-bold text-gray-900">{summary.totalEvaluations}</p>
-                  <p className="text-sm text-gray-600">Total Evaluations</p>
+                <div className="text-center p-4 bg-muted/50 rounded-lg">
+                  <p className="text-3xl font-bold text-foreground">{summary.totalEvaluations}</p>
+                  <p className="text-sm text-muted-foreground">Total Evaluations</p>
                 </div>
-                <div className="text-center p-4 bg-amber-50 rounded-lg">
-                  <p className="text-3xl font-bold text-amber-700">{summary.totalRecommendations}</p>
-                  <p className="text-sm text-amber-600">Total Recommendations</p>
+                <div className="text-center p-4 bg-primary/5 rounded-lg">
+                  <p className="text-3xl font-bold text-primary">{summary.totalRecommendations}</p>
+                  <p className="text-sm text-primary/80">Total Recommendations</p>
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <p className="text-3xl font-bold text-green-700">

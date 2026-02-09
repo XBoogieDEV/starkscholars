@@ -17,23 +17,23 @@ export default function ConfirmationPage() {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl font-bold font-serif text-foreground mb-4">
             Application Submitted!
           </h1>
 
           {/* Description */}
-          <p className="text-lg text-gray-600 mb-8">
+          <p className="text-lg text-muted-foreground mb-8">
             Thank you for applying to the William R. Stark Financial Assistance Program.
             Your application has been received and is now under review.
           </p>
 
           {/* Next Steps */}
-          <div className="bg-gray-50 rounded-lg p-6 text-left mb-8">
-            <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Clock className="h-5 w-5 text-amber-600" />
+          <div className="bg-muted/50 rounded-lg p-6 text-left mb-8">
+            <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
               What Happens Next?
             </h2>
-            <ul className="space-y-3 text-gray-600">
+            <ul className="space-y-3 text-muted-foreground">
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 <span>
@@ -63,13 +63,13 @@ export default function ConfirmationPage() {
 
           {/* Important Info */}
           <div className="space-y-4 mb-8">
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <Mail className="h-4 w-4" />
               <span>
                 A confirmation email has been sent to your registered email address
               </span>
             </div>
-            <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+            <Badge className="bg-primary/10 text-primary hover:bg-primary/10">
               <Clock className="mr-1 h-3 w-3" />
               Decisions by April 15, 2026
             </Badge>
@@ -83,7 +83,7 @@ export default function ConfirmationPage() {
                 View Application Status
               </Link>
             </Button>
-            <Button asChild className="bg-amber-600 hover:bg-amber-700">
+            <Button asChild className="bg-primary hover:bg-primary/90">
               <Link href="/apply/dashboard">
                 Go to Dashboard
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -94,11 +94,11 @@ export default function ConfirmationPage() {
       </Card>
 
       {/* Footer */}
-      <p className="text-center text-sm text-gray-500 mt-8">
+      <p className="text-center text-sm text-muted-foreground mt-8">
         Questions? Contact the scholarship committee at{" "}
         <a
           href="mailto:blackgoldmine@sbcglobal.net"
-          className="text-amber-600 hover:underline"
+          className="text-primary hover:underline"
         >
           blackgoldmine@sbcglobal.net
         </a>

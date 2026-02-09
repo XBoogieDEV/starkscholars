@@ -315,7 +315,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
   // Get status color based on percentage
   const getProgressColor = (percentage: number) => {
     if (percentage >= 100) return "bg-green-600";
-    if (percentage >= 75) return "bg-amber-600";
+    if (percentage >= 75) return "bg-primary";
     if (percentage >= 50) return "bg-yellow-500";
     return "bg-red-500";
   };
@@ -323,8 +323,8 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
   if (!validationStatus) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-600" />
-        <span className="ml-3 text-gray-600">Loading validation status...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-3 text-muted-foreground">Loading validation status...</span>
       </div>
     );
   }
@@ -333,24 +333,24 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Review & Submit</h2>
-        <p className="text-gray-500 mt-2">
+        <h2 className="text-2xl font-bold text-foreground">Review & Submit</h2>
+        <p className="text-muted-foreground mt-2">
           Review your application and complete the certification before submitting
         </p>
       </div>
 
       {/* Progress Overview Card */}
-      <Card className="border-amber-200">
+      <Card className="border-primary/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-semibold text-gray-900">Application Completion</h3>
-              <p className="text-sm text-gray-400">
+              <h3 className="font-semibold text-foreground">Application Completion</h3>
+              <p className="text-sm text-muted-foreground/70">
                 {passedCount} of {totalCount} requirements met
               </p>
             </div>
             <div className="text-right">
-              <span className={`text-2xl font-bold ${completionPercentage === 100 ? "text-green-600" : "text-amber-600"
+              <span className={`text-2xl font-bold ${completionPercentage === 100 ? "text-green-600" : "text-primary"
                 }`}>
                 {completionPercentage}%
               </span>
@@ -373,15 +373,15 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               </>
             ) : (
               <>
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
-                <span className="text-amber-700">
+                <AlertTriangle className="h-5 w-5 text-primary" />
+                <span className="text-primary">
                   Please complete all requirements before submitting.
                 </span>
                 <Button
                   variant="link"
                   size="sm"
                   onClick={() => setShowValidationDetails(true)}
-                  className="text-amber-700 underline"
+                  className="text-primary underline"
                 >
                   View details
                 </Button>
@@ -395,7 +395,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <FileCheck className="h-5 w-5 text-amber-600" />
+            <FileCheck className="h-5 w-5 text-primary" />
             Requirements Checklist
           </CardTitle>
         </CardHeader>
@@ -418,13 +418,13 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={req.met ? "text-gray-900" : "text-red-700 font-medium"}>
+                        <span className={req.met ? "text-foreground" : "text-red-700 font-medium"}>
                           {req.label}
                         </span>
                         {req.description && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                              <Info className="h-4 w-4 text-muted-foreground/70 cursor-help" />
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>{req.description}</p>
@@ -433,7 +433,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
                         )}
                       </div>
                       {req.value && (
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-muted-foreground/70">
                           Current: {req.value}
                         </span>
                       )}
@@ -461,11 +461,11 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
         <CardContent className="space-y-6">
           {/* Personal Info */}
           <div>
-            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+            <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
               <User className="h-4 w-4" />
               Personal Information
             </h4>
-            <div className="text-sm text-gray-500 space-y-1">
+            <div className="text-sm text-muted-foreground space-y-1">
               <p>
                 <strong>Name:</strong> {application.firstName} {application.lastName}
               </p>
@@ -480,11 +480,11 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
 
           {/* Address */}
           <div className="pt-4 border-t">
-            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+            <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
               <Home className="h-4 w-4" />
               Address
             </h4>
-            <div className="text-sm text-gray-500 space-y-1">
+            <div className="text-sm text-muted-foreground space-y-1">
               <p>{application.streetAddress}</p>
               <p>
                 {application.city}, {application.state} {application.zipCode}
@@ -502,11 +502,11 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
 
           {/* Education */}
           <div className="pt-4 border-t">
-            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+            <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
               <GraduationCap className="h-4 w-4" />
               Education
             </h4>
-            <div className="text-sm text-gray-500 space-y-1">
+            <div className="text-sm text-muted-foreground space-y-1">
               <p>
                 <strong>High School:</strong> {application.highSchoolName}
               </p>
@@ -540,11 +540,11 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
 
           {/* Documents */}
           <div className="pt-4 border-t">
-            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+            <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
               <Upload className="h-4 w-4" />
               Documents
             </h4>
-            <div className="text-sm text-gray-500 space-y-2">
+            <div className="text-sm text-muted-foreground space-y-2">
               <p className="flex items-center gap-2">
                 <strong>Profile Photo:</strong>
                 {application.profilePhotoId ? (
@@ -581,18 +581,18 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
 
           {/* Recommendations */}
           <div className="pt-4 border-t">
-            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+            <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
               <Users className="h-4 w-4" />
               Recommendations
             </h4>
-            <div className="text-sm text-gray-500 space-y-2">
+            <div className="text-sm text-muted-foreground space-y-2">
               {recommendations?.map((rec: any, idx: number) => (
                 <p key={rec._id} className="flex items-center gap-2">
                   <strong>#{idx + 1}:</strong> {rec.recommenderName || rec.recommenderEmail}
                   {rec.status === "submitted" ? (
                     <Badge className="bg-green-100 text-green-800">Received ✓</Badge>
                   ) : (
-                    <Badge variant="outline" className="text-amber-600">
+                    <Badge variant="outline" className="text-primary">
                       {rec.status === "pending" ? "Pending" :
                         rec.status === "email_sent" ? "Email sent" :
                           rec.status === "viewed" ? "Viewed" : rec.status}
@@ -607,7 +607,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
                 </p>
               )}
               {recommendations && recommendations.length < 2 && (
-                <p className="text-amber-600 text-sm mt-2">
+                <p className="text-primary text-sm mt-2">
                   <AlertCircle className="h-4 w-4 inline mr-1" />
                   Request at least 2 recommendations to submit
                 </p>
@@ -627,16 +627,16 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
       <Card className={allRequirementsMet ? "" : "opacity-75"}>
         <CardHeader>
           <CardTitle className="text-lg">Certification & Signature</CardTitle>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-muted-foreground/70">
             Please review and confirm the following before submitting
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Certifications */}
           <div className="space-y-4">
-            <h4 className="font-medium text-gray-900">Required Certifications</h4>
+            <h4 className="font-medium text-foreground">Required Certifications</h4>
 
-            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.accurate ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.accurate ? "bg-green-50 border-green-200" : "bg-muted/50 border-border"
               }`}>
               <Checkbox
                 id="cert-accurate"
@@ -657,7 +657,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               </div>
             </div>
 
-            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.publish ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.publish ? "bg-green-50 border-green-200" : "bg-muted/50 border-border"
               }`}>
               <Checkbox
                 id="cert-publish"
@@ -679,7 +679,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               </div>
             </div>
 
-            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.disqualify ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.disqualify ? "bg-green-50 border-green-200" : "bg-muted/50 border-border"
               }`}>
               <Checkbox
                 id="cert-disqualify"
@@ -707,7 +707,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               Electronic Signature
               <span className="text-red-500">*</span>
             </Label>
-            <p className="text-sm text-gray-400 mb-3">
+            <p className="text-sm text-muted-foreground/70 mb-3">
               Type your full legal name exactly as it appears: <strong>{application.firstName} {application.lastName}</strong>
             </p>
             <Input
@@ -741,8 +741,8 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
           {/* Submit Button */}
           <div className="pt-4">
             {!allRequirementsMet && (
-              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-amber-800 text-sm flex items-start gap-2">
+              <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <p className="text-primary text-sm flex items-start gap-2">
                   <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                   <span>
                     Please complete all application requirements before submitting.
@@ -754,7 +754,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
 
             <Button
               onClick={handleSubmitClick}
-              className="w-full bg-amber-600 hover:bg-amber-700"
+              className="w-full bg-primary hover:bg-primary/90"
               size="lg"
               disabled={isLoading}
             >
@@ -762,7 +762,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
               {allRequirementsMet ? "Submit Application" : "Complete Requirements to Submit"}
             </Button>
 
-            <p className="text-center text-sm text-gray-400 mt-3">
+            <p className="text-center text-sm text-muted-foreground/70 mt-3">
               By submitting, you confirm all information is accurate and complete.
             </p>
           </div>
@@ -774,7 +774,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-amber-600" />
+              <AlertCircle className="h-5 w-5 text-primary" />
               Requirements Check
             </DialogTitle>
             <DialogDescription>
@@ -839,13 +839,13 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex flex-col items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
-                <AlertCircle className="h-6 w-6 text-amber-600" />
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <AlertCircle className="h-6 w-6 text-primary" />
               </div>
-              <p className="text-center text-sm text-gray-500">
+              <p className="text-center text-sm text-muted-foreground">
                 By clicking &ldquo;Submit,&rdquo; you confirm that:
               </p>
-              <ul className="text-sm text-gray-500 space-y-1 list-disc pl-5">
+              <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
                 <li>All information is accurate and complete</li>
                 <li>Your electronic signature matches your legal name</li>
                 <li>You agree to all certifications</li>
@@ -858,7 +858,7 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
             </Button>
             <Button
               onClick={handleSubmit}
-              className="bg-amber-600 hover:bg-amber-700"
+              className="bg-primary hover:bg-primary/90"
               disabled={isLoading}
             >
               {isLoading ? (

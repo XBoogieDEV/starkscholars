@@ -31,7 +31,7 @@ export function MobileTableCard({ children, index = 0 }: MobileTableCardProps) {
       animate="animate"
       variants={tableRowAnimation}
       transition={{ delay: index * 0.05 }}
-      className="bg-white border rounded-lg p-4 space-y-3 shadow-sm"
+      className="bg-card border rounded-lg p-4 space-y-3 shadow-sm"
     >
       {children}
     </motion.div>
@@ -48,8 +48,8 @@ interface MobileTableRowProps {
 export function MobileTableRow({ label, value, className = "" }: MobileTableRowProps) {
   return (
     <div className={`flex justify-between items-center ${className}`}>
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-medium text-gray-900">{value}</span>
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-medium text-foreground">{value}</span>
     </div>
   );
 }
@@ -82,7 +82,7 @@ export function MobilePagination({
         <button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className="h-11 w-11 min-w-[44px] flex items-center justify-center rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed active:bg-gray-100 touch-manipulation"
+          className="h-11 w-11 min-w-[44px] flex items-center justify-center rounded-md border border-border disabled:opacity-50 disabled:cursor-not-allowed active:bg-muted touch-manipulation"
           aria-label="Previous page"
         >
           <svg
@@ -105,7 +105,7 @@ export function MobilePagination({
         <button
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className="h-11 w-11 min-w-[44px] flex items-center justify-center rounded-md border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed active:bg-gray-100 touch-manipulation"
+          className="h-11 w-11 min-w-[44px] flex items-center justify-center rounded-md border border-border disabled:opacity-50 disabled:cursor-not-allowed active:bg-muted touch-manipulation"
           aria-label="Next page"
         >
           <svg
@@ -148,7 +148,7 @@ export function AdaptiveTable({
       <div className="space-y-3 sm:space-y-0">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-16 bg-gray-100 rounded-lg sm:rounded-none sm:h-12" />
+            <div className="h-16 bg-muted rounded-lg sm:rounded-none sm:h-12" />
           </div>
         ))}
       </div>
@@ -161,11 +161,11 @@ export function AdaptiveTable({
       <div className="hidden sm:block rounded-md border">
         <table className="w-full">
           <thead>
-            <tr className="border-b bg-gray-50/50">
+            <tr className="border-b bg-muted/30">
               {headers.map((header) => (
                 <th
                   key={header.key}
-                  className={`px-4 py-3 text-left text-sm font-medium text-gray-500 ${
+                  className={`px-4 py-3 text-left text-sm font-medium text-muted-foreground ${
                     header.className || ""
                   }`}
                 >
@@ -182,7 +182,7 @@ export function AdaptiveTable({
                 animate="animate"
                 variants={tableRowAnimation}
                 transition={{ delay: index * 0.03 }}
-                className="border-b last:border-0 hover:bg-gray-50/50"
+                className="border-b last:border-0 hover:bg-muted/30"
               >
                 {headers.map((header) => (
                   <td key={header.key} className="px-4 py-3">

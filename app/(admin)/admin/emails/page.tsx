@@ -77,7 +77,7 @@ function getStatusBadge(status: string) {
       );
     case "pending":
       return (
-        <Badge variant="outline" className="text-amber-600 border-amber-200">
+        <Badge variant="outline" className="text-primary border-primary/20">
           <Clock className="mr-1 h-3 w-3" />
           Pending
         </Badge>
@@ -294,8 +294,8 @@ export default function EmailsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-amber-600" />
-              <span className="text-2xl font-bold text-amber-600">{stats.pending}</span>
+              <Clock className="h-5 w-5 text-primary" />
+              <span className="text-2xl font-bold text-primary">{stats.pending}</span>
             </div>
           </CardContent>
         </Card>
@@ -407,7 +407,7 @@ export default function EmailsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleResend(log)}
-                              className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                              className="text-primary hover:text-primary/90 hover:bg-primary/5"
                             >
                               <RefreshCw className="mr-1 h-3 w-3" />
                               Resend

@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function UnauthorizedPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md text-center">
         {/* Icon */}
         <div className="mb-6 flex justify-center">
@@ -18,12 +18,12 @@ export default function UnauthorizedPage() {
         </div>
 
         {/* Heading */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2">
           Unauthorized Access
         </h1>
 
         {/* Description */}
-        <p className="text-gray-600 mb-8">
+        <p className="text-muted-foreground mb-8">
           You don&apos;t have the necessary permissions to access this page. 
           This area is restricted to authorized users only.
         </p>
@@ -32,7 +32,7 @@ export default function UnauthorizedPage() {
         <div className="space-y-3">
           <Button
             asChild
-            className="w-full bg-amber-600 hover:bg-amber-700"
+            className="w-full bg-primary hover:bg-primary/90"
           >
             <Link href="/">
               <Home className="mr-2 h-4 w-4" />
@@ -53,7 +53,7 @@ export default function UnauthorizedPage() {
         </div>
 
         {/* Additional help text */}
-        <p className="text-sm text-gray-500 mt-8">
+        <p className="text-sm text-muted-foreground mt-8">
           If you believe this is an error, please contact the scholarship 
           committee for assistance.
         </p>

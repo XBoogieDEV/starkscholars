@@ -65,8 +65,8 @@ export function MobileNavLink({
       onClick={onClick}
       className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors min-h-[44px] ${
         isActive
-          ? "bg-amber-50 text-amber-700"
-          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+          ? "bg-primary/5 text-primary"
+          : "text-foreground/80 hover:bg-muted hover:text-foreground"
       }`}
     >
       {icon && <span className="h-5 w-5">{icon}</span>}
@@ -86,7 +86,7 @@ export function MobileNavSection({
   return (
     <div className="py-2">
       {title && (
-        <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           {title}
         </div>
       )}

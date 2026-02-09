@@ -103,7 +103,7 @@ export default function CandidateDetailPage() {
   if (!data?.application) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-foreground">
           Candidate not found
         </h2>
         <Link href="/committee/candidates">
@@ -164,7 +164,7 @@ export default function CandidateDetailPage() {
               className="object-cover"
             />
           ) : (
-            <AvatarFallback className="bg-amber-100 text-amber-800 text-xl">
+            <AvatarFallback className="bg-primary/10 text-primary text-xl">
               {initials}
             </AvatarFallback>
           )}
@@ -173,10 +173,10 @@ export default function CandidateDetailPage() {
         <div className="flex-1">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-foreground">
                 {application.firstName} {application.lastName}
               </h1>
-              <div className="flex items-center gap-4 text-sm text-gray-600 mt-2 flex-wrap">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2 flex-wrap">
                 {application.city && (
                   <span className="flex items-center gap-1">
                     <MapPin className="h-4 w-4" />
@@ -191,7 +191,7 @@ export default function CandidateDetailPage() {
                 )}
                 {application.gpa && (
                   <span className="flex items-center gap-1">
-                    <Star className="h-4 w-4 text-amber-500" />
+                    <Star className="h-4 w-4 text-primary/80" />
                     GPA: {application.gpa.toFixed(2)}
                   </span>
                 )}
@@ -218,7 +218,7 @@ export default function CandidateDetailPage() {
             ) : (
               <Badge
                 variant="outline"
-                className="text-amber-600 border-amber-200"
+                className="text-primary border-primary/20"
               >
                 <Clock className="h-3 w-3 mr-1" />
                 Needs Your Review
@@ -262,29 +262,29 @@ export default function CandidateDetailPage() {
             <TabsContent value="overview" className="space-y-6 mt-6">
               {/* AI Summary Card */}
               {application.aiSummary && (
-                <Card className="border-amber-200 bg-amber-50/30">
+                <Card className="border-primary/20 bg-primary/5">
                   <CardHeader>
-                    <CardTitle className="text-amber-900 flex items-center gap-2">
-                      <Star className="h-5 w-5 text-amber-600" />
+                    <CardTitle className="text-primary flex items-center gap-2">
+                      <Star className="h-5 w-5 text-primary" />
                       AI-Generated Summary
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p className="text-gray-700">{application.aiSummary}</p>
+                    <p className="text-foreground/80">{application.aiSummary}</p>
 
                     {application.aiHighlights &&
                       application.aiHighlights.length > 0 && (
                         <div>
-                          <h4 className="font-medium text-gray-900 mb-2">
+                          <h4 className="font-medium text-foreground mb-2">
                             Key Highlights
                           </h4>
                           <ul className="space-y-2">
                             {application.aiHighlights.map((highlight, idx) => (
                               <li
                                 key={idx}
-                                className="flex items-start gap-2 text-sm text-gray-700"
+                                className="flex items-start gap-2 text-sm text-foreground/80"
                               >
-                                <span className="text-amber-500 mt-0.5">•</span>
+                                <span className="text-primary/80 mt-0.5">•</span>
                                 {highlight}
                               </li>
                             ))}
@@ -302,14 +302,14 @@ export default function CandidateDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">
+                    <h4 className="text-sm font-medium text-muted-foreground">
                       High School
                     </h4>
-                    <p className="text-gray-900">
+                    <p className="text-foreground">
                       {application.highSchoolName || "N/A"}
                     </p>
                     {application.highSchoolCity && (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {application.highSchoolCity},{" "}
                         {application.highSchoolState}
                       </p>
@@ -317,27 +317,27 @@ export default function CandidateDetailPage() {
                   </div>
                   <Separator />
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">
+                    <h4 className="text-sm font-medium text-muted-foreground">
                       College/University
                     </h4>
-                    <p className="text-gray-900">
+                    <p className="text-foreground">
                       {application.collegeName || "N/A"}
                     </p>
                     {application.collegeCity && (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {application.collegeCity}, {application.collegeState}
                       </p>
                     )}
                     <div className="flex gap-4 mt-2">
                       {application.yearInCollege && (
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           <strong>Year:</strong>{" "}
                           {application.yearInCollege.charAt(0).toUpperCase() +
                             application.yearInCollege.slice(1)}
                         </span>
                       )}
                       {application.major && (
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           <strong>Major:</strong> {application.major}
                         </span>
                       )}
@@ -345,22 +345,22 @@ export default function CandidateDetailPage() {
                   </div>
                   <Separator />
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">
+                    <h4 className="text-sm font-medium text-muted-foreground">
                       Academic Performance
                     </h4>
                     <div className="flex gap-4 mt-2">
                       {application.gpa && (
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           <strong>GPA:</strong> {application.gpa.toFixed(2)}
                         </span>
                       )}
                       {application.actScore && (
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           <strong>ACT:</strong> {application.actScore}
                         </span>
                       )}
                       {application.satScore && (
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           <strong>SAT:</strong> {application.satScore}
                         </span>
                       )}
@@ -378,14 +378,14 @@ export default function CandidateDetailPage() {
                 <CardContent>
                   {application.essayText ? (
                     <div className="prose max-w-none">
-                      <p className="text-gray-700 whitespace-pre-wrap">
+                      <p className="text-foreground/80 whitespace-pre-wrap">
                         {application.essayText}
                       </p>
                     </div>
                   ) : application.essayFileId ? (
                     <div className="text-center py-8">
-                      <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-600">
+                      <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                      <p className="text-muted-foreground">
                         Essay uploaded as file. Download to view.
                       </p>
                       <Button className="mt-4" variant="outline">
@@ -393,10 +393,10 @@ export default function CandidateDetailPage() {
                       </Button>
                     </div>
                   ) : (
-                    <p className="text-gray-500 italic">No essay submitted.</p>
+                    <p className="text-muted-foreground italic">No essay submitted.</p>
                   )}
                   {application.essayWordCount && (
-                    <p className="text-sm text-gray-500 mt-4">
+                    <p className="text-sm text-muted-foreground mt-4">
                       Word count: {application.essayWordCount}
                     </p>
                   )}
@@ -412,14 +412,14 @@ export default function CandidateDetailPage() {
                 <CardContent>
                   {application.transcriptFileId ? (
                     <div className="text-center py-8">
-                      <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-600">Transcript uploaded.</p>
+                      <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                      <p className="text-muted-foreground">Transcript uploaded.</p>
                       <Button className="mt-4" variant="outline">
                         View Transcript
                       </Button>
                     </div>
                   ) : (
-                    <p className="text-gray-500 italic">
+                    <p className="text-muted-foreground italic">
                       No transcript uploaded.
                     </p>
                   )}
@@ -439,23 +439,23 @@ export default function CandidateDetailPage() {
                         {idx > 0 && <Separator className="my-4" />}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-gray-900">
+                            <h4 className="font-medium text-foreground">
                               Recommendation {idx + 1}
                             </h4>
                             <Badge variant="outline">{rec.recommenderType}</Badge>
                           </div>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             <strong>From:</strong> {rec.recommenderName}
                           </p>
                           {rec.recommenderOrganization && (
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-muted-foreground">
                               <strong>Organization:</strong>{" "}
                               {rec.recommenderOrganization}
                             </p>
                           )}
                           {rec.letterText ? (
-                            <div className="mt-3 p-4 bg-gray-50 rounded-md">
-                              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                            <div className="mt-3 p-4 bg-muted/50 rounded-md">
+                              <p className="text-sm text-foreground/80 whitespace-pre-wrap">
                                 {rec.letterText}
                               </p>
                             </div>
@@ -468,7 +468,7 @@ export default function CandidateDetailPage() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500 italic">
+                    <p className="text-muted-foreground italic">
                       No recommendations received yet.
                     </p>
                   )}
@@ -503,8 +503,8 @@ export default function CandidateDetailPage() {
                       key={option.value}
                       className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${
                         rating === option.value
-                          ? "border-amber-500 bg-amber-50"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? "border-primary/50 bg-primary/5"
+                          : "border-border hover:border-border/80"
                       }`}
                     >
                       <RadioGroupItem
@@ -520,7 +520,7 @@ export default function CandidateDetailPage() {
                           <span className="text-xl">{option.emoji}</span>
                           <span className="font-medium">{option.label}</span>
                         </span>
-                        <span className="text-sm text-gray-500 block mt-0.5">
+                        <span className="text-sm text-muted-foreground block mt-0.5">
                           {option.description}
                         </span>
                       </Label>
@@ -550,7 +550,7 @@ export default function CandidateDetailPage() {
               <Button
                 onClick={handleSubmit}
                 disabled={!rating || isSubmitting}
-                className="w-full bg-amber-600 hover:bg-amber-700"
+                className="w-full bg-primary hover:bg-primary/90"
               >
                 {isSubmitting ? (
                   "Submitting..."
@@ -582,14 +582,14 @@ export default function CandidateDetailPage() {
                 {otherEvaluations.map((evaluation: any) => (
                   <div
                     key={evaluation._id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                   >
                     <div>
-                      <p className="font-medium text-sm text-gray-900">
+                      <p className="font-medium text-sm text-foreground">
                         {evaluation.evaluator?.name || "Committee Member"}
                       </p>
                       {evaluation.notes && (
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           &quot;{evaluation.notes.substring(0, 50)}
                           {evaluation.notes.length > 50 ? "..." : ""}&quot;
                         </p>
@@ -618,7 +618,7 @@ export default function CandidateDetailPage() {
             (!otherEvaluations || otherEvaluations.length === 0) && (
               <Card>
                 <CardContent className="p-4 text-center">
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     No other committee ratings yet.
                   </p>
                 </CardContent>

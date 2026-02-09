@@ -140,7 +140,7 @@ export function EducationStep({ application, onComplete }: EducationStepProps) {
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* High School Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">High School</h3>
+        <h3 className="text-lg font-semibold text-foreground">High School</h3>
         
         <div className="space-y-2">
           <Label htmlFor="highSchoolName">
@@ -175,7 +175,7 @@ export function EducationStep({ application, onComplete }: EducationStepProps) {
               id="highSchoolState"
               value="MI"
               disabled
-              className="bg-gray-100"
+              className="bg-muted"
             />
           </div>
         </div>
@@ -196,7 +196,7 @@ export function EducationStep({ application, onComplete }: EducationStepProps) {
 
       {/* Academic Performance */}
       <div className="space-y-4 pt-4 border-t">
-        <h3 className="text-lg font-semibold text-gray-900">Academic Performance</h3>
+        <h3 className="text-lg font-semibold text-foreground">Academic Performance</h3>
         
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
@@ -214,7 +214,7 @@ export function EducationStep({ application, onComplete }: EducationStepProps) {
               placeholder="3.50"
               required
             />
-            <p className="text-xs text-gray-400">Minimum 3.0 required</p>
+            <p className="text-xs text-muted-foreground/70">Minimum 3.0 required</p>
           </div>
 
           <div className="space-y-2">
@@ -247,7 +247,7 @@ export function EducationStep({ application, onComplete }: EducationStepProps) {
 
       {/* College Section */}
       <div className="space-y-4 pt-4 border-t">
-        <h3 className="text-lg font-semibold text-gray-900">College/University</h3>
+        <h3 className="text-lg font-semibold text-foreground">College/University</h3>
         
         <div className="space-y-2">
           <Label htmlFor="collegeName">
@@ -327,7 +327,7 @@ export function EducationStep({ application, onComplete }: EducationStepProps) {
       <div className="pt-4 border-t">
         <Button
           type="submit"
-          className="bg-amber-600 hover:bg-amber-700"
+          className="bg-primary hover:bg-primary/90"
           disabled={isLoading}
         >
           {isLoading ? (

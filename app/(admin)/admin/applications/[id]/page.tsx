@@ -52,7 +52,7 @@ const statusOptions = [
 const ratingOptions = [
   { value: "strong_yes", label: "Strong Yes", color: "text-green-600" },
   { value: "yes", label: "Yes", color: "text-green-500" },
-  { value: "maybe", label: "Maybe", color: "text-amber-500" },
+  { value: "maybe", label: "Maybe", color: "text-primary/80" },
   { value: "no", label: "No", color: "text-red-500" },
   { value: "strong_no", label: "Strong No", color: "text-red-600" },
 ];
@@ -130,10 +130,10 @@ function AISummaryCard({ summary, highlights }: { summary?: string; highlights?:
   }
 
   return (
-    <Card className="border-amber-200 bg-amber-50/30">
+    <Card className="border-primary/20 bg-primary/5">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Sparkles className="h-4 w-4 text-amber-500" />
+          <Sparkles className="h-4 w-4 text-primary/80" />
           AI-Generated Summary
         </CardTitle>
       </CardHeader>
@@ -150,7 +150,7 @@ function AISummaryCard({ summary, highlights }: { summary?: string; highlights?:
             <ul className="space-y-1">
               {highlights.map((highlight, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
-                  <span className="text-amber-500 mt-1">•</span>
+                  <span className="text-primary/80 mt-1">•</span>
                   {highlight}
                 </li>
               ))}
@@ -180,9 +180,9 @@ function RecommendationCard({
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case "pending":
       case "email_sent":
-        return <Clock className="h-4 w-4 text-amber-500" />;
+        return <Clock className="h-4 w-4 text-primary/80" />;
       default:
-        return <AlertCircle className="h-4 w-4 text-gray-400" />;
+        return <AlertCircle className="h-4 w-4 text-muted-foreground/70" />;
     }
   };
 
@@ -485,7 +485,7 @@ export default function ApplicationDetailPage({
                 <CardContent className="pt-6">
                   <div className="flex flex-col items-center text-center">
                     <Avatar className="h-24 w-24 mb-4">
-                      <AvatarFallback className="bg-amber-100 text-amber-800 text-2xl">
+                      <AvatarFallback className="bg-primary/10 text-primary text-2xl">
                         {application.firstName?.[0] || "?"}
                         {application.lastName?.[0] || "?"}
                       </AvatarFallback>
@@ -719,7 +719,7 @@ export default function ApplicationDetailPage({
                 <div className="space-y-4">
                   {activityLog.map((log) => (
                     <div key={log._id} className="flex items-start gap-3 py-2">
-                      <div className="h-2 w-2 rounded-full bg-amber-500 mt-2" />
+                      <div className="h-2 w-2 rounded-full bg-primary/80 mt-2" />
                       <div className="flex-1">
                         <p className="text-sm font-medium capitalize">
                           {log.action.replace("_", " ")}

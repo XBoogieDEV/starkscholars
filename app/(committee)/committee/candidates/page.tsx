@@ -63,10 +63,10 @@ export default function CandidatesPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Candidates
           </h1>
-          <p className="text-gray-600 mt-1 text-sm sm:text-base">
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Review and evaluate scholarship applicants
           </p>
         </div>
@@ -86,7 +86,7 @@ export default function CandidatesPage() {
             <CheckCircle2 className="h-3 w-3 mr-1" />
             {evaluatedCandidates.length} Evaluated
           </Badge>
-          <Badge className="bg-amber-100 text-amber-800 px-2 sm:px-3 py-1 text-xs sm:text-sm">
+          <Badge className="bg-primary/10 text-primary px-2 sm:px-3 py-1 text-xs sm:text-sm">
             <ClipboardCheck className="h-3 w-3 mr-1" />
             {pendingCandidates.length} Pending
           </Badge>
@@ -102,7 +102,7 @@ export default function CandidatesPage() {
         <Card>
           <CardContent className="p-3 sm:p-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
               <Input
                 placeholder="Search by name, city, school, or major..."
                 value={searchQuery}
@@ -208,11 +208,11 @@ export default function CandidatesPage() {
             >
               <Card>
                 <CardContent className="p-6 sm:p-8 text-center">
-                  <ClipboardCheck className="h-10 w-10 sm:h-12 sm:w-12 text-gray-300 mx-auto mb-3 sm:mb-4" />
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+                  <ClipboardCheck className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/50 mx-auto mb-3 sm:mb-4" />
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
                     No Evaluations Yet
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     You haven&apos;t evaluated any candidates yet. Start reviewing!
                   </p>
                 </CardContent>

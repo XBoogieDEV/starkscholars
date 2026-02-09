@@ -127,15 +127,15 @@ export default function RegisterPage() {
   /* Removed success view logic as we redirect immediately */
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/">
-            <h1 className="text-2xl font-bold text-amber-800 cursor-pointer">
+            <h1 className="text-2xl font-bold text-primary font-serif cursor-pointer">
               Stark Scholars
             </h1>
           </Link>
-          <p className="text-gray-500">Financial Assistance Program</p>
+          <p className="text-muted-foreground">Financial Assistance Program</p>
         </div>
 
         <Card>
@@ -192,10 +192,10 @@ export default function RegisterPage() {
                     setFormData((prev) => ({ ...prev, email: e.target.value }))
                   }
                   required
-                  className={emailCheck?.exists ? "border-amber-500 focus-visible:ring-amber-500" : ""}
+                  className={emailCheck?.exists ? "border-primary/50 focus-visible:ring-primary/50" : ""}
                 />
                 {emailCheck?.exists && (
-                  <div className="flex items-center gap-2 text-sm text-amber-600">
+                  <div className="flex items-center gap-2 text-sm text-primary">
                     <AlertCircle className="h-4 w-4" />
                     <span>
                       An account with this email already exists.{" "}
@@ -219,7 +219,7 @@ export default function RegisterPage() {
                   }
                   required
                 />
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted-foreground/70">
                   Must be at least 8 characters
                 </p>
               </div>
@@ -248,11 +248,11 @@ export default function RegisterPage() {
                 />
                 <Label htmlFor="terms" className="text-sm font-normal cursor-pointer">
                   I agree to the{" "}
-                  <Link href="/terms" className="text-amber-600 hover:underline" target="_blank">
+                  <Link href="/terms" className="text-primary hover:underline" target="_blank">
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link href="/privacy" className="text-amber-600 hover:underline" target="_blank">
+                  <Link href="/privacy" className="text-primary hover:underline" target="_blank">
                     Privacy Policy
                   </Link>
                 </Label>
@@ -260,7 +260,7 @@ export default function RegisterPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-amber-600 hover:bg-amber-700"
+                className="w-full bg-primary hover:bg-primary/90"
                 disabled={isLoading || emailCheck?.exists}
               >
                 {isLoading ? (
@@ -275,11 +275,11 @@ export default function RegisterPage() {
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 Already have an account?{" "}
                 <Link
                   href="/login"
-                  className="text-amber-600 hover:underline font-medium"
+                  className="text-primary hover:underline font-medium"
                 >
                   Sign in
                 </Link>
@@ -288,7 +288,7 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm text-gray-400 mt-8">
+        <p className="text-center text-sm text-muted-foreground/70 mt-8">
           <Link href="/" className="hover:underline">
             ← Back to home
           </Link>

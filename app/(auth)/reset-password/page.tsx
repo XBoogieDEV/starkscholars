@@ -130,13 +130,13 @@ function ResetPasswordForm() {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl font-bold text-foreground mb-2">
             Password Reset Successful!
           </h2>
-          <p className="text-gray-500 mb-6">
+          <p className="text-muted-foreground mb-6">
             Your password has been updated successfully. You can now sign in with your new password.
           </p>
-          <Button asChild className="bg-amber-600 hover:bg-amber-700">
+          <Button asChild className="bg-primary hover:bg-primary/90">
             <Link href="/login">Sign In</Link>
           </Button>
         </CardContent>
@@ -194,7 +194,7 @@ function ResetPasswordForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/80"
                 tabIndex={-1}
               >
                 {showPassword ? (
@@ -209,8 +209,8 @@ function ResetPasswordForm() {
             {formData.password && (
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Password strength:</span>
-                  <span className={passwordStrength.score >= 3 ? "text-green-600" : "text-amber-600"}>
+                  <span className="text-muted-foreground/70">Password strength:</span>
+                  <span className={passwordStrength.score >= 3 ? "text-green-600" : "text-primary"}>
                     {passwordStrength.label}
                   </span>
                 </div>
@@ -221,7 +221,7 @@ function ResetPasswordForm() {
               </div>
             )}
 
-            <div className="text-xs text-gray-400 space-y-1">
+            <div className="text-xs text-muted-foreground/70 space-y-1">
               <p>Password must:</p>
               <ul className="list-disc list-inside ml-2 space-y-0.5">
                 <li className={formData.password.length >= 8 ? "text-green-600" : ""}>
@@ -254,7 +254,7 @@ function ResetPasswordForm() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/80"
                 tabIndex={-1}
               >
                 {showConfirmPassword ? (
@@ -280,7 +280,7 @@ function ResetPasswordForm() {
 
           <Button
             type="submit"
-            className="w-full bg-amber-600 hover:bg-amber-700"
+            className="w-full bg-primary hover:bg-primary/90"
             disabled={isLoading || !token || formData.password !== formData.confirmPassword}
           >
             {isLoading ? (
@@ -295,11 +295,11 @@ function ResetPasswordForm() {
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             Remember your password?{" "}
             <Link
               href="/login"
-              className="text-amber-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               Sign in
             </Link>
@@ -312,20 +312,20 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-amber-800">
+          <h1 className="text-2xl font-bold text-primary font-serif">
             Stark Scholars
           </h1>
-          <p className="text-gray-500">Financial Assistance Program</p>
+          <p className="text-muted-foreground">Financial Assistance Program</p>
         </div>
 
         <Suspense fallback={
           <Card>
             <CardContent className="p-8">
               <div className="flex justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-amber-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             </CardContent>
           </Card>
@@ -333,7 +333,7 @@ export default function ResetPasswordPage() {
           <ResetPasswordForm />
         </Suspense>
 
-        <p className="text-center text-sm text-gray-400 mt-8">
+        <p className="text-center text-sm text-muted-foreground/70 mt-8">
           <Link href="/" className="hover:underline">
             ← Back to home
           </Link>

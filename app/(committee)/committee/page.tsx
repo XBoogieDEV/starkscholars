@@ -44,15 +44,15 @@ export default function CommitteeDashboardPage() {
       {/* Welcome Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-foreground">
             Welcome back{user?.name ? `, ${user.name}` : ""}!
           </h1>
-          <p className="text-gray-600 mt-1">
-            Thank you for serving on the Stark Scholars selection committee.
+          <p className="text-muted-foreground mt-1">
+            Thank you for serving on the <span className="font-serif">Stark Scholars</span> selection committee.
           </p>
         </div>
         <Link href="/committee/candidates">
-          <Button className="bg-amber-600 hover:bg-amber-700">
+          <Button className="bg-primary hover:bg-primary/90">
             Start Evaluating
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
@@ -66,10 +66,10 @@ export default function CommitteeDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-muted-foreground">
                     Total Applications
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">
+                  <p className="text-3xl font-bold text-foreground mt-1">
                     {stats.totalApplications}
                   </p>
                 </div>
@@ -84,10 +84,10 @@ export default function CommitteeDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-muted-foreground">
                     My Evaluations
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">
+                  <p className="text-3xl font-bold text-foreground mt-1">
                     {stats.myEvaluationsCompleted}
                   </p>
                 </div>
@@ -102,15 +102,15 @@ export default function CommitteeDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-muted-foreground">
                     Remaining to Evaluate
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">
+                  <p className="text-3xl font-bold text-foreground mt-1">
                     {stats.remainingToEvaluate}
                   </p>
                 </div>
-                <div className="p-3 bg-amber-100 rounded-lg">
-                  <Clock className="h-6 w-6 text-amber-600" />
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <Clock className="h-6 w-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -120,18 +120,18 @@ export default function CommitteeDashboardPage() {
 
       {/* Progress Overview */}
       {stats && (
-        <Card className="border-amber-200 bg-amber-50/50">
+        <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-gray-900">Your Progress</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <h3 className="font-semibold text-foreground">Your Progress</h3>
+                <p className="text-sm text-muted-foreground mt-1">
                   You&apos;ve evaluated {stats.myEvaluationsCompleted} of{" "}
                   {stats.totalApplications} applications
                 </p>
               </div>
               <div className="text-right">
-                <span className="text-3xl font-bold text-amber-600">
+                <span className="text-3xl font-bold text-primary">
                   {stats.totalApplications > 0
                     ? Math.round(
                         (stats.myEvaluationsCompleted / stats.totalApplications) * 100
@@ -141,9 +141,9 @@ export default function CommitteeDashboardPage() {
                 </span>
               </div>
             </div>
-            <div className="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-amber-600 transition-all duration-500"
+                className="h-full bg-primary transition-all duration-500"
                 style={{
                   width: `${
                     stats.totalApplications > 0
@@ -160,12 +160,12 @@ export default function CommitteeDashboardPage() {
       {/* Candidates to Review */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-foreground">
             Candidates to Review
           </h2>
           <Link
             href="/committee/candidates"
-            className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+            className="text-sm text-primary hover:text-primary/90 font-medium"
           >
             View All
           </Link>
@@ -205,12 +205,12 @@ export default function CommitteeDashboardPage() {
       {topCandidates.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-foreground">
               Top Candidates
             </h2>
             <Link
               href="/committee/results"
-              className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+              className="text-sm text-primary hover:text-primary/90 font-medium"
             >
               View Rankings
             </Link>
@@ -222,27 +222,27 @@ export default function CommitteeDashboardPage() {
                 {topCandidates.map((candidate, index) => (
                   <div
                     key={candidate._id}
-                    className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                    className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-800 font-semibold text-sm">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
                         {index + 1}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-foreground">
                           {candidate.firstName} {candidate.lastName}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           {candidate.collegeName} • {candidate.major}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           {candidate.evaluationCount} evaluations
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           GPA: {candidate.gpa?.toFixed(2) || "N/A"}
                         </p>
                       </div>

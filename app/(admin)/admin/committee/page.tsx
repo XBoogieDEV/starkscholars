@@ -24,8 +24,8 @@ export default function CommitteePage() {
         <Card className="border-dashed">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center py-8">
-              <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-                <UserCog className="h-6 w-6 text-amber-600" />
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <UserCog className="h-6 w-6 text-primary" />
               </div>
               <h3 className="font-semibold mb-2">Committee Management</h3>
               <p className="text-sm text-muted-foreground mb-4">

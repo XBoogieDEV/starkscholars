@@ -62,8 +62,8 @@ export default function RecommendationPage() {
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center">
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h1 className="text-xl font-bold text-gray-900 mb-2">Invalid Link</h1>
-            <p className="text-gray-600">
+            <h1 className="text-xl font-bold text-foreground mb-2">Invalid Link</h1>
+            <p className="text-muted-foreground">
               This recommendation link is invalid or has expired.
             </p>
           </CardContent>
@@ -77,9 +77,9 @@ export default function RecommendationPage() {
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center">
-            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-            <h1 className="text-xl font-bold text-gray-900 mb-2">Link Expired</h1>
-            <p className="text-gray-600">
+            <AlertTriangle className="h-12 w-12 text-primary/80 mx-auto mb-4" />
+            <h1 className="text-xl font-bold text-foreground mb-2">Link Expired</h1>
+            <p className="text-muted-foreground">
               This recommendation link has expired. Please contact the applicant to request a new invitation.
             </p>
           </CardContent>
@@ -94,11 +94,11 @@ export default function RecommendationPage() {
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h1 className="text-xl font-bold text-gray-900 mb-2">Thank You!</h1>
-            <p className="text-gray-600 mb-4">
+            <h1 className="text-xl font-bold text-foreground mb-2">Thank You!</h1>
+            <p className="text-muted-foreground mb-4">
               Your recommendation has been submitted successfully. The applicant has been notified.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               You can close this page now.
             </p>
           </CardContent>
@@ -204,14 +204,14 @@ export default function RecommendationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-amber-800 mb-2">
+          <h1 className="text-2xl font-bold text-primary font-serif mb-2">
             William R. Stark Financial Assistance Program
           </h1>
-          <p className="text-gray-600">Letter of Recommendation</p>
+          <p className="text-muted-foreground">Letter of Recommendation</p>
         </div>
 
         {/* Applicant Info */}
@@ -220,21 +220,21 @@ export default function RecommendationPage() {
             <CardContent className="p-6">
               <h2 className="text-lg font-semibold mb-4">Applicant Information</h2>
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-2xl font-bold text-amber-800">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-2xl font-bold text-primary">
                   {application.firstName?.[0]}{application.lastName?.[0]}
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">
+                  <h3 className="font-medium text-foreground">
                     {application.firstName} {application.lastName}
                   </h3>
-                  <p className="text-sm text-gray-600">{application.highSchoolName}</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">{application.highSchoolName}</p>
+                  <p className="text-sm text-muted-foreground">
                     {application.collegeName} • {application.yearInCollege && 
                       application.yearInCollege.charAt(0).toUpperCase() + application.yearInCollege.slice(1)
                     }
                   </p>
                   {recommendation.relationship && (
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-muted-foreground/70 mt-1">
                       Relationship: {recommendation.relationship}
                     </p>
                   )}
@@ -253,7 +253,7 @@ export default function RecommendationPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-2 text-gray-700">
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
               <li>How long and in what capacity you have known the applicant</li>
               <li>The applicant&apos;s academic abilities and achievements</li>
               <li>The applicant&apos;s character and personal qualities</li>
@@ -275,7 +275,7 @@ export default function RecommendationPage() {
                 <Label>
                   Upload Letter <span className="text-red-500">*</span>
                 </Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-amber-400 transition-colors">
+                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/40 transition-colors">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -286,7 +286,7 @@ export default function RecommendationPage() {
                   
                   {file ? (
                     <div className="flex items-center justify-center gap-2">
-                      <File className="h-5 w-5 text-amber-600" />
+                      <File className="h-5 w-5 text-primary" />
                       <span className="text-sm">{file.name}</span>
                       <Button
                         type="button"
@@ -311,14 +311,14 @@ export default function RecommendationPage() {
                     </Button>
                   )}
                 </div>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground/70">
                   Accepted: PDF, DOC, DOCX • Max size: 5MB
                 </p>
               </div>
 
               {/* Recommender Info */}
               <div className="space-y-4 pt-4 border-t">
-                <h3 className="font-medium text-gray-900">Your Information</h3>
+                <h3 className="font-medium text-foreground">Your Information</h3>
                 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
@@ -373,7 +373,7 @@ export default function RecommendationPage() {
               {/* Submit */}
               <Button
                 type="submit"
-                className="w-full bg-amber-600 hover:bg-amber-700"
+                className="w-full bg-primary hover:bg-primary/90"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -390,9 +390,9 @@ export default function RecommendationPage() {
         </Card>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-sm text-gray-500">
+        <div className="mt-8 text-center text-sm text-muted-foreground">
           <p>Questions? Contact the scholarship committee at</p>
-          <a href="mailto:blackgoldmine@sbcglobal.net" className="text-amber-600 hover:underline">
+          <a href="mailto:blackgoldmine@sbcglobal.net" className="text-primary hover:underline">
             blackgoldmine@sbcglobal.net
           </a>
           <p className="mt-2">

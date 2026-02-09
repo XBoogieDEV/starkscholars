@@ -42,7 +42,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white/80 backdrop-blur-md border-b border-border/40 sticky top-0 z-50">
       <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
         {/* Left: Mobile Menu + Logo */}
         <div className="flex items-center gap-2 sm:gap-3">
@@ -83,17 +83,17 @@ export function AppHeader({ user }: AppHeaderProps) {
             <SheetContent side="left" className="w-72 p-0">
               <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               <div className="flex flex-col h-full">
-                <div className="p-4 border-b border-gray-200">
+                <div className="p-4 border-b border-border">
                   <Link
                     href="/apply/dashboard"
                     className="flex items-center gap-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <span className="text-lg font-bold text-amber-600">
+                    <span className="text-lg font-bold font-serif text-foreground">
                       Stark Scholars
                     </span>
                   </Link>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Financial Assistance Program
                   </p>
                 </div>
@@ -110,19 +110,19 @@ export function AppHeader({ user }: AppHeaderProps) {
                         <Link
                           href={item.href}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors min-h-[44px]"
+                          className="flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium text-foreground/80 hover:bg-muted hover:text-foreground transition-colors min-h-[44px]"
                         >
-                          <Icon className="h-5 w-5 text-gray-400" />
+                          <Icon className="h-5 w-5 text-muted-foreground/70" />
                           {item.name}
                         </Link>
                       </motion.div>
                     );
                   })}
                 </nav>
-                <div className="p-4 border-t border-gray-200">
+                <div className="p-4 border-t border-border">
                   <button
                     onClick={() => {
-                      window.location.href = "/api/auth/signout";
+                      window.location.href = "/signout";
                     }}
                     className="flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors w-full min-h-[44px]"
                   >
@@ -136,10 +136,10 @@ export function AppHeader({ user }: AppHeaderProps) {
 
           {/* Logo */}
           <Link href="/apply/dashboard" className="flex items-center gap-2">
-            <span className="text-base sm:text-xl font-bold text-amber-600 truncate max-w-[140px] sm:max-w-none">
+            <span className="text-base sm:text-xl font-bold font-serif text-foreground truncate max-w-[140px] sm:max-w-none">
               Stark Scholars
             </span>
-            <span className="text-xs sm:text-sm text-gray-600 hidden sm:inline">
+            <span className="text-xs sm:text-sm text-primary hidden sm:inline">
               Financial Assistance
             </span>
           </Link>
@@ -151,7 +151,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             <Link
               key={item.name}
               href={item.href}
-              className="text-sm font-medium text-gray-700 hover:text-amber-600 transition-colors"
+              className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
             >
               {item.name}
             </Link>
@@ -166,7 +166,7 @@ export function AppHeader({ user }: AppHeaderProps) {
               className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full p-0"
             >
               <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
-                <AvatarFallback className="bg-amber-100 text-amber-800 text-xs sm:text-sm">
+                <AvatarFallback className="bg-primary/10 text-primary text-xs sm:text-sm">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -192,7 +192,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             <DropdownMenuItem
               className="cursor-pointer text-red-600 focus:text-red-600 text-sm"
               onClick={() => {
-                window.location.href = "/api/auth/signout";
+                window.location.href = "/signout";
               }}
             >
               <LogOut className="mr-2 h-4 w-4" />

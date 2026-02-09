@@ -44,22 +44,22 @@ export default function ForgotPasswordPage() {
 
   if (isEmailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="w-full max-w-md">
           <Card>
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Mail className="h-8 w-8 text-green-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 Check Your Email
               </h2>
-              <p className="text-gray-500 mb-6">
+              <p className="text-muted-foreground mb-6">
                 We&apos;ve sent a password reset link to{" "}
-                <strong className="text-gray-900">{email}</strong>. Click the
+                <strong className="text-foreground">{email}</strong>. Click the
                 link in the email to reset your password.
               </p>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-sm text-amber-800">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6 text-sm text-primary">
                 <p className="mb-2">
                   <strong>Didn&apos;t receive the email?</strong>
                 </p>
@@ -87,13 +87,13 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-amber-800">
+          <h1 className="text-2xl font-bold text-primary font-serif">
             Stark Scholars
           </h1>
-          <p className="text-gray-500">Financial Assistance Program</p>
+          <p className="text-muted-foreground">Financial Assistance Program</p>
         </div>
 
         <Card>
@@ -139,7 +139,7 @@ export default function ForgotPasswordPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-amber-600 hover:bg-amber-700"
+                className="w-full bg-primary hover:bg-primary/90"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -156,7 +156,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-6 text-center text-sm">
               <Link
                 href="/login"
-                className="text-amber-600 hover:underline font-medium inline-flex items-center"
+                className="text-primary hover:underline font-medium inline-flex items-center"
               >
                 <ArrowLeft className="mr-1 h-4 w-4" />
                 Back to Sign In
@@ -165,7 +165,7 @@ export default function ForgotPasswordPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm text-gray-400 mt-8">
+        <p className="text-center text-sm text-muted-foreground/70 mt-8">
           <Link href="/" className="hover:underline">
             ← Back to home
           </Link>

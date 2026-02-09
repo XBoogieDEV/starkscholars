@@ -32,7 +32,7 @@ export function CommitteeHeader({ user }: CommitteeHeaderProps) {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-md border-b border-border/40 sticky top-0 z-50">
         <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-3 sm:gap-4">
             <Button
@@ -67,20 +67,20 @@ export function CommitteeHeader({ user }: CommitteeHeaderProps) {
               </AnimatePresence>
             </Button>
             <Link href="/committee" className="flex items-center gap-2">
-              <span className="text-lg sm:text-xl font-bold text-amber-600 truncate max-w-[150px] sm:max-w-none">
+              <span className="text-lg sm:text-xl font-bold font-serif text-foreground truncate max-w-[150px] sm:max-w-none">
                 Stark Scholars
               </span>
-              <span className="text-xs sm:text-sm text-gray-600 hidden sm:inline">
+              <span className="text-xs sm:text-sm text-primary hidden sm:inline">
                 Committee Portal
               </span>
             </Link>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <span className="text-xs sm:text-sm text-gray-600 hidden md:inline truncate max-w-[150px] lg:max-w-[200px]">
+            <span className="text-xs sm:text-sm text-muted-foreground hidden md:inline truncate max-w-[150px] lg:max-w-[200px]">
               {user.name || user.email}
             </span>
-            <span className="text-[10px] sm:text-xs px-2 py-1 bg-amber-100 text-amber-800 rounded-full uppercase hidden xs:inline">
+            <span className="text-[10px] sm:text-xs px-2 py-1 bg-primary/10 text-primary rounded-full uppercase hidden xs:inline">
               {user.role}
             </span>
             <DropdownMenu>
@@ -90,7 +90,7 @@ export function CommitteeHeader({ user }: CommitteeHeaderProps) {
                   className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full p-0"
                 >
                   <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
-                    <AvatarFallback className="bg-amber-100 text-amber-800 text-xs sm:text-sm">
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs sm:text-sm">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
@@ -124,7 +124,7 @@ export function CommitteeHeader({ user }: CommitteeHeaderProps) {
                 <DropdownMenuItem
                   className="cursor-pointer text-red-600 focus:text-red-600 text-sm"
                   onClick={() => {
-                    window.location.href = "/api/auth/signout";
+                    window.location.href = "/signout";
                   }}
                 >
                   <LogOut className="mr-2 h-4 w-4" />

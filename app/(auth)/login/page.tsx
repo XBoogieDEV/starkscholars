@@ -103,7 +103,7 @@ function LoginForm() {
               <Label htmlFor="password">Password</Label>
               <Link
                 href="/forgot-password"
-                className="text-sm text-amber-600 hover:underline"
+                className="text-sm text-primary hover:underline"
               >
                 Forgot password?
               </Link>
@@ -122,7 +122,7 @@ function LoginForm() {
 
           <Button
             type="submit"
-            className="w-full bg-amber-600 hover:bg-amber-700"
+            className="w-full bg-primary hover:bg-primary/90"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -137,11 +137,11 @@ function LoginForm() {
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link
               href="/register"
-              className="text-amber-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               Create one
             </Link>
@@ -154,22 +154,22 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/">
-            <h1 className="text-2xl font-bold text-amber-800 cursor-pointer">
+            <h1 className="text-2xl font-bold text-primary font-serif cursor-pointer">
               Stark Scholars
             </h1>
           </Link>
-          <p className="text-gray-500">Financial Assistance Program</p>
+          <p className="text-muted-foreground">Financial Assistance Program</p>
         </div>
 
         <Suspense fallback={
           <Card>
             <CardContent className="p-8">
               <div className="flex justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-amber-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             </CardContent>
           </Card>
@@ -177,7 +177,7 @@ export default function LoginPage() {
           <LoginForm />
         </Suspense>
 
-        <p className="text-center text-sm text-gray-400 mt-8">
+        <p className="text-center text-sm text-muted-foreground/70 mt-8">
           <Link href="/" className="hover:underline">
             ← Back to home
           </Link>

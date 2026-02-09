@@ -56,15 +56,15 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
           Welcome!
         </h1>
         <Card>
           <CardContent className="p-4 sm:p-6">
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               You haven&apos;t started your application yet. Click below to begin.
             </p>
-            <Button asChild className="bg-amber-600 hover:bg-amber-700 w-full sm:w-auto">
+            <Button asChild className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
               <Link href="/apply/step/1">Start Application</Link>
             </Button>
           </CardContent>
@@ -117,12 +117,12 @@ export default function DashboardPage() {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          <Alert className="border-amber-500 bg-amber-50">
-            <AlertTriangle className="h-5 w-5 text-amber-600" />
-            <AlertTitle className="text-amber-900 font-semibold">
+          <Alert className="border-primary/50 bg-primary/5">
+            <AlertTriangle className="h-5 w-5 text-primary" />
+            <AlertTitle className="text-primary font-semibold">
               Deadline Approaching
             </AlertTitle>
-            <AlertDescription className="text-amber-700">
+            <AlertDescription className="text-primary">
               Only {daysRemaining} {daysRemaining === 1 ? "day" : "days"} remaining until the April 15, 2026 deadline. Submit your application soon!
             </AlertDescription>
           </Alert>
@@ -130,7 +130,7 @@ export default function DashboardPage() {
       )}
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
           Welcome back{application.firstName ? `, ${application.firstName}` : ""}!
         </h1>
       </div>
@@ -141,14 +141,14 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="border-amber-200 bg-amber-50/50">
+        <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
               <div>
-                <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                <h2 className="text-base sm:text-lg font-semibold text-foreground">
                   Application Progress
                 </h2>
-                <p className="text-xs sm:text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {completedSteps.length} of 7 steps completed
                 </p>
               </div>
@@ -157,14 +157,14 @@ export default function DashboardPage() {
                   initial={shouldReduceMotion ? {} : { opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                  className="text-2xl sm:text-3xl font-bold text-amber-600"
+                  className="text-2xl sm:text-3xl font-bold text-primary"
                 >
                   {progress}%
                 </motion.span>
               </div>
             </div>
             <div 
-              className="h-2 bg-gray-200 rounded-full overflow-hidden" 
+              className="h-2 bg-muted rounded-full overflow-hidden" 
               role="progressbar" 
               aria-valuenow={progress} 
               aria-valuemin={0} 
@@ -172,7 +172,7 @@ export default function DashboardPage() {
               aria-label={`Application progress: ${progress}%`}
             >
               <motion.div
-                className="h-full bg-amber-600 rounded-full"
+                className="h-full bg-primary rounded-full"
                 initial={shouldReduceMotion ? {} : { width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1], delay: 0.2 }}
@@ -189,15 +189,15 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className={`${isUrgent ? "border-amber-300 bg-amber-50" : "border-blue-200 bg-blue-50"}`}>
+          <Card className={`${isUrgent ? "border-primary/30 bg-primary/5" : "border-blue-200 bg-blue-50"}`}>
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-start gap-3">
-                <Clock className={`h-5 w-5 shrink-0 mt-0.5 ${isUrgent ? "text-amber-600" : "text-blue-600"}`} />
+                <Clock className={`h-5 w-5 shrink-0 mt-0.5 ${isUrgent ? "text-primary" : "text-blue-600"}`} />
                 <div className="min-w-0">
-                  <h3 className={`font-semibold text-sm sm:text-base ${isUrgent ? "text-amber-900" : "text-blue-900"}`}>
+                  <h3 className={`font-semibold text-sm sm:text-base ${isUrgent ? "text-primary" : "text-blue-900"}`}>
                     Deadline Reminder
                   </h3>
-                  <p className={`text-xs sm:text-sm ${isUrgent ? "text-amber-700" : "text-blue-700"}`}>
+                  <p className={`text-xs sm:text-sm ${isUrgent ? "text-primary" : "text-blue-700"}`}>
                     Applications are due April 15, 2026 at 11:59 PM EST
                     {daysRemaining > 0 && (
                       <span className="font-medium">
@@ -240,8 +240,8 @@ export default function DashboardPage() {
                       status === "completed"
                         ? "border-green-200 bg-green-50/50"
                         : status === "current"
-                        ? "border-amber-200 bg-amber-50/50 ring-2 ring-amber-200"
-                        : "border-gray-200 bg-gray-50/50 opacity-75"
+                        ? "border-primary/20 bg-primary/5 ring-2 ring-primary/20"
+                        : "border-border bg-muted/30 opacity-75"
                     }`}
                     role="link"
                     aria-label={`Step ${step.id}: ${step.title} - ${status === "completed" ? "Completed" : status === "current" ? "In progress" : "Pending"}`}
@@ -254,15 +254,15 @@ export default function DashboardPage() {
                               status === "completed"
                                 ? "bg-green-100 text-green-600"
                                 : status === "current"
-                                ? "bg-amber-100 text-amber-600"
-                                : "bg-gray-100 text-gray-400"
+                                ? "bg-primary/10 text-primary"
+                                : "bg-muted text-muted-foreground/70"
                             }`}
                           >
                             <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-xs text-gray-500">Step {step.id}</p>
-                            <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">
+                            <p className="text-xs text-muted-foreground">Step {step.id}</p>
+                            <h3 className="font-medium text-foreground text-sm sm:text-base truncate">
                               {step.title}
                             </h3>
                           </div>
@@ -271,9 +271,9 @@ export default function DashboardPage() {
                           {status === "completed" ? (
                             <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                           ) : status === "current" ? (
-                            <Circle className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
+                            <Circle className="h-4 w-4 sm:h-5 sm:w-5 text-primary/80" />
                           ) : (
-                            <Circle className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
+                            <Circle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground/50" />
                           )}
                         </div>
                       </div>
@@ -303,10 +303,10 @@ export default function DashboardPage() {
             {currentStep <= 7 && application.status !== "submitted" ? (
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="min-w-0">
-                  <h3 className="font-medium text-gray-900 text-sm sm:text-base">
+                  <h3 className="font-medium text-foreground text-sm sm:text-base">
                     {steps[currentStep - 1]?.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     {isPassed 
                       ? "Applications are closed. You can no longer edit your application."
                       : "Complete this step to continue your application."
@@ -315,7 +315,7 @@ export default function DashboardPage() {
                 </div>
                 <Button 
                   asChild 
-                  className="bg-amber-600 hover:bg-amber-700 w-full sm:w-auto shrink-0"
+                  className="bg-primary hover:bg-primary/90 w-full sm:w-auto shrink-0"
                   disabled={isPassed}
                 >
                   <Link href={steps[currentStep - 1]?.path || "/apply/step/1"} className="flex items-center justify-center">
@@ -331,10 +331,10 @@ export default function DashboardPage() {
             ) : (
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h3 className="font-medium text-gray-900 text-sm sm:text-base">
+                  <h3 className="font-medium text-foreground text-sm sm:text-base">
                     Application Complete
                   </h3>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     Your application has been submitted successfully.
                   </p>
                 </div>

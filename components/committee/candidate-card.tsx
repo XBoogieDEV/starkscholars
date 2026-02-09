@@ -72,16 +72,16 @@ export function CandidateCard({
                       className="object-cover"
                     />
                   ) : (
-                    <AvatarFallback className="bg-amber-100 text-amber-800">
+                    <AvatarFallback className="bg-primary/10 text-primary">
                       {initials}
                     </AvatarFallback>
                   )}
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate">
+                  <p className="font-medium text-foreground truncate">
                     {candidate.firstName} {candidate.lastName}
                   </p>
-                  <p className="text-sm text-gray-600 truncate">
+                  <p className="text-sm text-muted-foreground truncate">
                     {candidate.collegeName}
                   </p>
                 </div>
@@ -128,7 +128,7 @@ export function CandidateCard({
                     className="object-cover"
                   />
                 ) : (
-                  <AvatarFallback className="bg-amber-100 text-amber-800 text-base sm:text-lg">
+                  <AvatarFallback className="bg-primary/10 text-primary text-base sm:text-lg">
                     {initials}
                   </AvatarFallback>
                 )}
@@ -137,10 +137,10 @@ export function CandidateCard({
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">
                       {candidate.firstName} {candidate.lastName}
                     </h3>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs sm:text-sm text-gray-600 mt-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs sm:text-sm text-muted-foreground mt-1">
                       {candidate.city && (
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3 w-3 shrink-0" />
@@ -169,7 +169,7 @@ export function CandidateCard({
                         </Badge>
                       </motion.div>
                     ) : (
-                      <Badge variant="outline" className="text-amber-600 border-amber-200 text-xs">
+                      <Badge variant="outline" className="text-primary border-primary/20 text-xs">
                         <span className="hidden sm:inline">Needs Review</span>
                         <span className="sm:hidden">Review</span>
                       </Badge>
@@ -178,10 +178,10 @@ export function CandidateCard({
                 </div>
 
                 {/* Quick Stats */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-gray-600">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-muted-foreground">
                   {candidate.gpa && (
                     <span className="flex items-center gap-1">
-                      <Star className="h-3 w-3 text-amber-500" />
+                      <Star className="h-3 w-3 text-primary/80" />
                       GPA: {candidate.gpa.toFixed(2)}
                     </span>
                   )}
@@ -202,7 +202,7 @@ export function CandidateCard({
             {/* AI Summary */}
             {candidate.aiSummary && (
               <div className="mb-4 flex-1">
-                <p className="text-sm text-gray-700 line-clamp-3">
+                <p className="text-sm text-foreground/80 line-clamp-3">
                   {candidate.aiSummary}
                 </p>
               </div>
@@ -215,9 +215,9 @@ export function CandidateCard({
                   {candidate.aiHighlights.slice(0, 3).map((highlight, index) => (
                     <li
                       key={index}
-                      className="text-xs sm:text-sm text-gray-600 flex items-start gap-2"
+                      className="text-xs sm:text-sm text-muted-foreground flex items-start gap-2"
                     >
-                      <span className="text-amber-500 mt-0.5 shrink-0">•</span>
+                      <span className="text-primary/80 mt-0.5 shrink-0">•</span>
                       <span className="line-clamp-1">{highlight}</span>
                     </li>
                   ))}
@@ -226,8 +226,8 @@ export function CandidateCard({
             )}
 
             {/* Footer */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-4 border-t border-gray-100 gap-3 sm:gap-0 mt-auto">
-              <div className="text-xs sm:text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-4 border-t border-border/50 gap-3 sm:gap-0 mt-auto">
+              <div className="text-xs sm:text-sm text-muted-foreground">
                 <span className="font-medium">{candidate.evaluationCount || 0}</span>{" "}
                 <span className="hidden sm:inline">
                   committee {candidate.evaluationCount === 1 ? "rating" : "ratings"} received
@@ -240,8 +240,8 @@ export function CandidateCard({
                   <Button
                     className={`w-full sm:w-auto ${
                       hasEvaluated
-                        ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        : "bg-amber-600 hover:bg-amber-700"
+                        ? "bg-muted text-foreground/80 hover:bg-muted"
+                        : "bg-primary hover:bg-primary/90"
                     }`}
                     variant={hasEvaluated ? "outline" : "default"}
                     size="sm"

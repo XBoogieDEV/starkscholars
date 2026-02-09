@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, LogIn, Home } from "lucide-react";
+import { CheckCircle, LogIn, Home, FileText, Activity } from "lucide-react";
 
 export default function SignOutPage() {
     const router = useRouter();
@@ -26,28 +26,40 @@ export default function SignOutPage() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white flex items-center justify-center px-4">
+        <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex items-center justify-center px-4">
             <div className="max-w-md w-full text-center">
                 {/* Logo */}
                 <div className="mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-amber-100 rounded-full mb-4">
-                        <CheckCircle className="h-10 w-10 text-amber-600" />
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full mb-4">
+                        <CheckCircle className="h-10 w-10 text-primary" />
                     </div>
-                    <h1 className="text-2xl font-semibold text-gray-900">
-                        {isSigningOut ? "Signing you out..." : "You've been signed out"}
+                    <h1 className="text-2xl font-semibold text-foreground">
+                        {isSigningOut ? "Signing you out..." : "Sorry to See You Go!"}
                     </h1>
                 </div>
 
                 {/* Message */}
                 {!isSigningOut && (
                     <div className="space-y-4">
-                        <p className="text-gray-500">
-                            Thank you for using Stark Scholars. Your session has been securely ended.
+                        <p className="text-muted-foreground">
+                            You&apos;ve been securely signed out. Come back anytime to resume your application or check your status — we&apos;re here whenever you&apos;re ready.
                         </p>
 
                         {/* Actions */}
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
-                            <Button asChild className="bg-amber-600 hover:bg-amber-700">
+                        <div className="grid grid-cols-2 gap-3 mt-8">
+                            <Button asChild className="bg-primary hover:bg-primary/90">
+                                <Link href="/apply/dashboard">
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Resume Application
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline">
+                                <Link href="/apply/status">
+                                    <Activity className="mr-2 h-4 w-4" />
+                                    Check Status
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline">
                                 <Link href="/login">
                                     <LogIn className="mr-2 h-4 w-4" />
                                     Sign In Again
@@ -66,13 +78,13 @@ export default function SignOutPage() {
                 {/* Loading state */}
                 {isSigningOut && (
                     <div className="flex justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                 )}
 
                 {/* Footer */}
-                <div className="mt-12 pt-6 border-t border-gray-200">
-                    <p className="text-sm text-gray-400">
+                <div className="mt-12 pt-6 border-t border-border">
+                    <p className="text-sm text-muted-foreground/70">
                         William R. Stark Financial Assistance Program
                     </p>
                 </div>

@@ -200,15 +200,15 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Profile Photo Upload */}
       <div className="space-y-3">
-        <Label className="text-base font-medium">Profile Photo <span className="text-gray-400 font-normal">(Optional)</span></Label>
-        <p className="text-sm text-gray-500">
+        <Label className="text-base font-medium">Profile Photo <span className="text-muted-foreground/70 font-normal">(Optional)</span></Label>
+        <p className="text-sm text-muted-foreground">
           Upload a professional headshot. Accepted formats: JPG, PNG (max 5MB)
         </p>
 
         <div className="flex items-center gap-6">
           {/* Photo Preview or Placeholder */}
           <div className="relative">
-            <div className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 overflow-hidden">
+            <div className="w-24 h-24 rounded-full border-2 border-dashed border-border flex items-center justify-center bg-muted/50 overflow-hidden">
               {photoPreview ? (
                 <Image
                   src={photoPreview}
@@ -218,7 +218,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="h-10 w-10 text-gray-400" />
+                <User className="h-10 w-10 text-muted-foreground/70" />
               )}
             </div>
             {photoUploadStatus === "uploading" && (
@@ -247,7 +247,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
 
             {profilePhoto ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">{profilePhoto.name}</span>
+                <span className="text-sm text-muted-foreground">{profilePhoto.name}</span>
                 <Button
                   type="button"
                   variant="ghost"
@@ -322,7 +322,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
             required
             disabled={isLoading}
           />
-          <p className="text-sm text-gray-400">Format: (XXX) XXX-XXXX</p>
+          <p className="text-sm text-muted-foreground/70">Format: (XXX) XXX-XXXX</p>
         </div>
 
         <div className="space-y-2">
@@ -343,7 +343,7 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
       <div className="pt-4 border-t">
         <Button
           type="submit"
-          className="bg-amber-600 hover:bg-amber-700"
+          className="bg-primary hover:bg-primary/90"
           disabled={isLoading}
         >
           {isLoading ? (

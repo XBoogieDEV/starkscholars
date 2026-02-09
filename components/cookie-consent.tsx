@@ -50,19 +50,19 @@ export function CookieConsent() {
           className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6"
         >
           <div className="mx-auto max-w-4xl">
-            <div className="rounded-lg border border-amber-200 bg-white shadow-lg">
+            <div className="rounded-lg border border-primary/20 bg-card shadow-lg">
               <div className="p-4 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   {/* Icon and Content */}
                   <div className="flex gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
-                      <Cookie className="h-5 w-5 text-amber-600" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <Cookie className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="mb-1 text-sm font-semibold text-gray-900 sm:text-base">
+                      <h3 className="mb-1 text-sm font-semibold text-foreground sm:text-base">
                         We value your privacy
                       </h3>
-                      <p className="text-xs text-gray-600 sm:text-sm">
+                      <p className="text-xs text-muted-foreground sm:text-sm">
                         We use essential cookies to make our platform work. 
                         These cookies are necessary for security, authentication, 
                         and basic functionality. By continuing to use our site, 
@@ -71,13 +71,13 @@ export function CookieConsent() {
                       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
                         <Link 
                           href="/cookie-policy"
-                          className="text-xs font-medium text-amber-600 hover:text-amber-700 hover:underline sm:text-sm"
+                          className="text-xs font-medium text-primary hover:text-primary/90 hover:underline sm:text-sm"
                         >
                           Learn More
                         </Link>
                         <Link 
                           href="/privacy"
-                          className="text-xs text-gray-500 hover:text-gray-700 hover:underline sm:text-sm"
+                          className="text-xs text-muted-foreground hover:text-foreground/80 hover:underline sm:text-sm"
                         >
                           Privacy Policy
                         </Link>
@@ -90,7 +90,7 @@ export function CookieConsent() {
                     <Button
                       onClick={handleAccept}
                       size="sm"
-                      className="bg-amber-600 text-white hover:bg-amber-700"
+                      className="bg-primary text-white hover:bg-primary/90"
                     >
                       Accept
                     </Button>
@@ -98,7 +98,7 @@ export function CookieConsent() {
                       onClick={handleDismiss}
                       variant="ghost"
                       size="sm"
-                      className="h-auto p-2 text-gray-400 hover:text-gray-600 sm:absolute sm:right-2 sm:top-2"
+                      className="h-auto p-2 text-muted-foreground/70 hover:text-muted-foreground sm:absolute sm:right-2 sm:top-2"
                       aria-label="Dismiss cookie notice"
                     >
                       <X className="h-4 w-4" />

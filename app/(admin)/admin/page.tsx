@@ -39,8 +39,8 @@ function MetricCard({
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <div className="h-8 w-8 rounded-md bg-amber-100 flex items-center justify-center">
-          <Icon className="h-4 w-4 text-amber-600" />
+        <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center">
+          <Icon className="h-4 w-4 text-primary" />
         </div>
       </CardHeader>
       <CardContent>
@@ -240,7 +240,7 @@ export default function AdminDashboardPage() {
                     className="flex items-center justify-between py-2 border-b last:border-0"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600">
+                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                         {app.firstName?.[0] || "?"}
                         {app.lastName?.[0] || "?"}
                       </div>

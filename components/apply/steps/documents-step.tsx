@@ -180,7 +180,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
 
   const getWordCountColor = () => {
     if (wordCount < ESSAY_MIN_WORDS) return "text-red-500";
-    if (wordCount > ESSAY_MAX_WORDS) return "text-amber-600";
+    if (wordCount > ESSAY_MAX_WORDS) return "text-primary";
     return "text-green-600";
   };
 
@@ -198,13 +198,13 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Transcript Upload */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Transcript</h3>
-        <p className="text-sm text-gray-500">
+        <h3 className="text-lg font-semibold text-foreground">Transcript</h3>
+        <p className="text-sm text-muted-foreground">
           Upload your official or unofficial transcript showing your current GPA.
           Accepted formats: PDF, JPG, PNG (max 10MB)
         </p>
 
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-amber-400 transition-colors">
+        <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors">
           <input
             ref={transcriptRef}
             type="file"
@@ -215,13 +215,13 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
 
           {files.transcript ? (
             <div className="flex items-center justify-center gap-2">
-              <File className="h-5 w-5 text-amber-600" />
+              <File className="h-5 w-5 text-primary" />
               <span className="text-sm">{files.transcript.name}</span>
               {uploadStatus.transcript === "success" && (
                 <CheckCircle className="h-4 w-4 text-green-600" />
               )}
               {uploadStatus.transcript === "uploading" && (
-                <Loader2 className="h-4 w-4 animate-spin text-amber-600" />
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
               )}
               <Button
                 type="button"
@@ -251,7 +251,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
         </div>
 
         {uploadStatus.transcript === "uploading" && (
-          <p className="text-sm text-amber-600 flex items-center gap-2">
+          <p className="text-sm text-primary flex items-center gap-2">
             <Loader2 className="h-3 w-3 animate-spin" />
             Uploading transcript...
           </p>
@@ -260,16 +260,16 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
 
       {/* Essay Section */}
       <div className="space-y-4 pt-4 border-t">
-        <h3 className="text-lg font-semibold text-gray-900">Essay</h3>
+        <h3 className="text-lg font-semibold text-foreground">Essay</h3>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <p className="font-medium text-amber-900">Essay Topic:</p>
-          <p className="text-amber-800 italic">
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+          <p className="font-medium text-primary">Essay Topic:</p>
+          <p className="text-primary italic">
             &ldquo;How Will Furthering My Studies Help Me Improve My Community?&rdquo;
           </p>
         </div>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Write a {ESSAY_MIN_WORDS}-{ESSAY_MAX_WORDS} word essay on the topic above.
           Be specific about your community and how your field of study relates to community impact.
         </p>
@@ -289,7 +289,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
               <span className={getWordCountColor()}>
                 {wordCount} / {ESSAY_MAX_WORDS} words
               </span>
-              <span className="text-gray-400">
+              <span className="text-muted-foreground/70">
                 {wordCount < ESSAY_MIN_WORDS
                   ? `${ESSAY_MIN_WORDS - wordCount} more needed`
                   : wordCount > ESSAY_MAX_WORDS
@@ -305,9 +305,9 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
         </div>
 
         {/* Writing Tips */}
-        <div className="bg-gray-50 rounded-lg p-4 text-sm">
-          <p className="font-medium text-gray-900 mb-2">Tips for a strong essay:</p>
-          <ul className="list-disc list-inside space-y-1 text-gray-500">
+        <div className="bg-muted/50 rounded-lg p-4 text-sm">
+          <p className="font-medium text-foreground mb-2">Tips for a strong essay:</p>
+          <ul className="list-disc list-inside space-y-1 text-muted-foreground">
             <li>Be specific about your community and its needs</li>
             <li>Explain how your field of study relates to community impact</li>
             <li>Share personal experiences that shaped your perspective</li>
@@ -319,7 +319,7 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
       <div className="pt-4 border-t">
         <Button
           type="submit"
-          className="bg-amber-600 hover:bg-amber-700"
+          className="bg-primary hover:bg-primary/90"
           disabled={isLoading || !isEssayMinMet}
         >
           {isLoading ? (

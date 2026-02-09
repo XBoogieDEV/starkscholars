@@ -127,18 +127,18 @@ function MobileApplicationCard({
       initial={shouldReduceMotion ? {} : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03 }}
-      className="bg-white border rounded-lg p-4 space-y-3 shadow-sm"
+      className="bg-card border rounded-lg p-4 space-y-3 shadow-sm"
     >
       {/* Header with avatar and name */}
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0">
-          <AvatarFallback className="bg-amber-100 text-amber-800 text-sm">
+          <AvatarFallback className="bg-primary/10 text-primary text-sm">
             {app.firstName?.[0] || "?"}
             {app.lastName?.[0] || "?"}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-gray-900 truncate">
+          <p className="font-medium text-foreground truncate">
             {app.firstName} {app.lastName}
           </p>
           <p className="text-sm text-muted-foreground truncate">
@@ -155,18 +155,18 @@ function MobileApplicationCard({
       {/* Details grid */}
       <div className="grid grid-cols-2 gap-2 text-sm">
         <div>
-          <span className="text-gray-500">City:</span>{" "}
-          <span className="text-gray-900">{app.city || "N/A"}</span>
+          <span className="text-muted-foreground">City:</span>{" "}
+          <span className="text-foreground">{app.city || "N/A"}</span>
         </div>
         <div>
-          <span className="text-gray-500">GPA:</span>{" "}
-          <span className={app.gpa && app.gpa >= 3.5 ? "text-green-600 font-medium" : "text-gray-900"}>
+          <span className="text-muted-foreground">GPA:</span>{" "}
+          <span className={app.gpa && app.gpa >= 3.5 ? "text-green-600 font-medium" : "text-foreground"}>
             {app.gpa ? app.gpa.toFixed(2) : "N/A"}
           </span>
         </div>
         <div>
-          <span className="text-gray-500">Recs:</span>{" "}
-          <span className={app.recommendationsSubmitted >= 2 ? "text-green-600 font-medium" : "text-gray-900"}>
+          <span className="text-muted-foreground">Recs:</span>{" "}
+          <span className={app.recommendationsSubmitted >= 2 ? "text-green-600 font-medium" : "text-foreground"}>
             {app.recommendationsSubmitted}/{app.recommendationsCount}
           </span>
         </div>
@@ -361,12 +361,12 @@ export default function ApplicationsPage() {
                         animate="animate"
                         variants={tableRowAnimation}
                         transition={{ delay: index * 0.03 }}
-                        className="border-b last:border-0 hover:bg-gray-50/50"
+                        className="border-b last:border-0 hover:bg-muted/30"
                       >
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
-                              <AvatarFallback className="bg-amber-100 text-amber-800 text-sm">
+                              <AvatarFallback className="bg-primary/10 text-primary text-sm">
                                 {app.firstName?.[0] || "?"}
                                 {app.lastName?.[0] || "?"}
                               </AvatarFallback>

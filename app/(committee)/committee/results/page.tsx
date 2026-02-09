@@ -79,10 +79,10 @@ export default function ResultsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-foreground">
             Results & Rankings
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             Committee evaluation results and candidate rankings
           </p>
         </div>
@@ -99,23 +99,23 @@ export default function ResultsPage() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-semibold text-gray-900">
+              <h3 className="font-semibold text-foreground">
                 Evaluation Progress
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {totalEvaluations} of {totalPossibleEvaluations} evaluations
                 completed across {committeeMembers.length} committee members
               </p>
             </div>
             <div className="text-right">
-              <span className="text-3xl font-bold text-amber-600">
+              <span className="text-3xl font-bold text-primary">
                 {progressPercentage}%
               </span>
             </div>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-amber-600 transition-all duration-500"
+              className="h-full bg-primary transition-all duration-500"
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
@@ -128,8 +128,8 @@ export default function ResultsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Applications</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-muted-foreground">Total Applications</p>
+                <p className="text-2xl font-bold text-foreground">
                   {totalApplications}
                 </p>
               </div>
@@ -143,8 +143,8 @@ export default function ResultsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Evaluations</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-muted-foreground">Total Evaluations</p>
+                <p className="text-2xl font-bold text-foreground">
                   {totalEvaluations}
                 </p>
               </div>
@@ -158,8 +158,8 @@ export default function ResultsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Committee Members</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-muted-foreground">Committee Members</p>
+                <p className="text-2xl font-bold text-foreground">
                   {committeeMembers.length}
                 </p>
               </div>
@@ -173,15 +173,15 @@ export default function ResultsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Avg per Candidate</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-muted-foreground">Avg per Candidate</p>
+                <p className="text-2xl font-bold text-foreground">
                   {totalApplications > 0
                     ? (totalEvaluations / totalApplications).toFixed(1)
                     : "0"}
                 </p>
               </div>
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-amber-600" />
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -192,7 +192,7 @@ export default function ResultsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-amber-500" />
+            <Trophy className="h-5 w-5 text-primary/80" />
             Candidate Rankings
           </CardTitle>
         </CardHeader>
@@ -234,8 +234,8 @@ export default function ResultsPage() {
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                             index < 3
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-gray-100 text-gray-700"
+                              ? "bg-primary/10 text-primary"
+                              : "bg-muted text-foreground/80"
                           }`}
                         >
                           {index + 1}
@@ -245,11 +245,11 @@ export default function ResultsPage() {
                         <div>
                           <Link
                             href={`/committee/candidates/${app._id}`}
-                            className="font-medium text-gray-900 hover:text-amber-600"
+                            className="font-medium text-foreground hover:text-primary"
                           >
                             {app.firstName} {app.lastName}
                           </Link>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             {app.collegeName}
                             {app.major && ` • ${app.major}`}
                           </p>
@@ -257,11 +257,11 @@ export default function ResultsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                          <Star className="h-4 w-4 text-primary/80 fill-primary/80" />
                           <span className="font-semibold">
                             {avgRating.toFixed(2)}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             / 5.0
                           </span>
                         </div>
@@ -291,7 +291,7 @@ export default function ResultsPage() {
                                 }
                               </span>
                             ) : (
-                              <span className="text-gray-300">-</span>
+                              <span className="text-muted-foreground/50">-</span>
                             )}
                           </TableCell>
                         );
@@ -316,15 +316,15 @@ export default function ResultsPage() {
           </div>
 
           {/* Legend */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">
+          <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+            <h4 className="text-sm font-medium text-foreground/80 mb-2">
               Rating Legend
             </h4>
             <div className="flex flex-wrap gap-4">
               {Object.entries(ratingEmojis).map(([key, emoji]) => (
                 <div key={key} className="flex items-center gap-1 text-sm">
                   <span>{emoji}</span>
-                  <span className="text-gray-600">
+                  <span className="text-muted-foreground">
                     {ratingLabels[key as keyof typeof ratingLabels]}
                   </span>
                 </div>
