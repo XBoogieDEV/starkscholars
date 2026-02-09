@@ -431,35 +431,100 @@ export const notifyRecommendationReceived = action({
     const user = await ctx.runQuery(api.users.getById, { id: application.userId });
     if (!user) throw new Error("User not found");
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+
     const subject = "Recommendation Received - Stark Scholars";
 
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #15803d;">Recommendation Received!</h2>
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f0fdf4; line-height: 1.6;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f0fdf4;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
 
-        <p>Hello ${application.firstName || user.name || "Applicant"},</p>
+                <!-- Header Banner -->
+                <tr>
+                  <td style="background-color: #15803d; padding: 40px 30px; text-align: center;">
+                    <img src="https://starkscholars.com/images/SS-LOGO1.png" alt="Stark Scholars" width="80" style="display:block; margin:0 auto 12px auto;" />
+                    <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; font-weight: normal; letter-spacing: 1px;">
+                      STARK SCHOLARS
+                    </h1>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0; text-transform: uppercase; letter-spacing: 2px;">
+                      William R. Stark Financial Assistance Program
+                    </p>
+                  </td>
+                </tr>
 
-        <p>
-          Good news! <strong>${recommenderName}</strong> has submitted their letter of recommendation
-          for your William R. Stark Financial Assistance application.
-        </p>
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 40px 40px 20px 40px;">
+                    <h2 style="color: #15803d; font-size: 24px; margin: 0 0 20px 0;">
+                      Recommendation Received!
+                    </h2>
+                    <p style="color: #374151; font-size: 16px; margin: 0 0 20px 0;">
+                      Hello ${application.firstName || user.name || "Applicant"},
+                    </p>
+                    <p style="color: #374151; font-size: 16px; margin: 0 0 20px 0;">
+                      Good news! <strong>${recommenderName}</strong> has submitted their letter of recommendation
+                      for your William R. Stark Financial Assistance application.
+                    </p>
+                  </td>
+                </tr>
 
-        <div style="background: #dcfce7; padding: 16px; border-radius: 8px; margin: 20px 0;">
-          <p style="margin: 0;">
-            You can check the status of all your recommendations by visiting your
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/apply/dashboard">application dashboard</a>.
-          </p>
-        </div>
+                <!-- Info Box -->
+                <tr>
+                  <td style="padding: 0 40px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #dcfce7; border-radius: 8px; border-left: 4px solid #15803d;">
+                      <tr>
+                        <td style="padding: 20px;">
+                          <p style="color: #166534; font-size: 15px; margin: 0;">
+                            You can check the status of all your recommendations by visiting your application dashboard.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
 
-        <p>
-          Remember, you need 2 recommendations before you can submit your application.
-        </p>
+                <!-- CTA Button -->
+                <tr>
+                  <td style="padding: 30px 40px;" align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="background-color: #15803d; border-radius: 6px;">
+                          <a href="${appUrl}/apply/dashboard" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; letter-spacing: 0.5px;">
+                            View Application Status
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
 
-        <p>
-          <em>Best regards,</em><br>
-          <strong>William R. Stark Financial Assistance Committee</strong>
-        </p>
-      </div>
+                <!-- Signature -->
+                <tr>
+                  <td style="padding: 0 40px 40px 40px;">
+                    <p style="color: #6b7280; font-size: 14px; margin: 0 0 4px 0;">
+                      <em>Best regards,</em>
+                    </p>
+                    <p style="color: #374151; font-size: 14px; margin: 0; font-weight: bold;">
+                      William R. Stark Financial Assistance Committee
+                    </p>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
     `;
 
     // Create email log
@@ -526,7 +591,8 @@ export const sendWelcomeEmail = action({
 
                 <!-- Header Banner -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #92400e 0%, #b45309 50%, #d97706 100%); padding: 40px 30px; text-align: center;">
+                  <td style="background-color: #b45309; padding: 40px 30px; text-align: center;">
+                    <img src="https://starkscholars.com/images/SS-LOGO1.png" alt="Stark Scholars" width="80" style="display:block; margin:0 auto 12px auto;" />
                     <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; font-weight: normal; letter-spacing: 1px;">
                       ★ STARK SCHOLARS ★
                     </h1>
@@ -588,7 +654,7 @@ export const sendWelcomeEmail = action({
                 <tr>
                   <td align="center" style="padding: 40px;">
                     <a href="${appUrl}/apply/dashboard"
-                       style="display: inline-block; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);">
+                       style="display: inline-block; background-color: #d97706; color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);">
                       Start Your Application →
                     </a>
                   </td>
