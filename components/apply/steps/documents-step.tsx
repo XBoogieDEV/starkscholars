@@ -85,31 +85,62 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
   };
 
   const uploadFileToStorage = async (file: File, type: "transcript" | "essay"): Promise<string> => {
-    // Step 1: Request upload URL from Convex
-    const uploadUrl = await generateUploadUrl({ type });
+    const attemptUpload = async (): Promise<string> => {
+      const uploadUrl = await generateUploadUrl({ type });
 
-    // Step 2: Upload file directly to Convex storage
-    const response = await fetch(uploadUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": file.type || "application/octet-stream",
-      },
-      body: file,
-    });
+      return new Promise<string>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const timeoutId = setTimeout(() => {
+          xhr.abort();
+          reject(new Error("Upload timed out after 60 seconds"));
+        }, 60000);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Upload failed: ${errorText}`);
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            setUploadProgress(Math.round((event.loaded / event.total) * 100));
+          }
+        });
+
+        xhr.addEventListener("load", () => {
+          clearTimeout(timeoutId);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const result = JSON.parse(xhr.responseText);
+              if (!result.storageId) {
+                reject(new Error("No storageId returned from upload"));
+                return;
+              }
+              resolve(result.storageId);
+            } catch {
+              reject(new Error("Invalid response from upload"));
+            }
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        });
+
+        xhr.addEventListener("error", () => {
+          clearTimeout(timeoutId);
+          reject(new Error("Network error during upload"));
+        });
+
+        xhr.addEventListener("abort", () => {
+          clearTimeout(timeoutId);
+        });
+
+        xhr.open("POST", uploadUrl);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+        xhr.send(file);
+      });
+    };
+
+    try {
+      return await attemptUpload();
+    } catch (firstError) {
+      console.warn("Upload failed, retrying...", firstError);
+      setUploadProgress(0);
+      return await attemptUpload();
     }
-
-    // Step 3: Get storageId from response
-    const result = await response.json();
-
-    if (!result.storageId) {
-      throw new Error("No storageId returned from upload");
-    }
-
-    return result.storageId;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -251,10 +282,15 @@ export function DocumentsStep({ application, onComplete }: DocumentsStepProps) {
         </div>
 
         {uploadStatus.transcript === "uploading" && (
-          <p className="text-sm text-primary flex items-center gap-2">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Uploading transcript...
-          </p>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-sm text-primary">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Uploading transcript...{uploadProgress > 0 && ` ${uploadProgress}%`}
+            </div>
+            {uploadProgress > 0 && (
+              <Progress value={uploadProgress} className="h-1.5" />
+            )}
+          </div>
         )}
       </div>
 

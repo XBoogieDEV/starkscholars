@@ -150,8 +150,8 @@ export const submitRecommendation = mutation({
       recommenderName: args.recommenderName,
     });
 
-    // Trigger AI summary regeneration
-    await ctx.scheduler.runAfter(0, internal.ai.generateSummary, {
+    // Trigger AI summary regeneration (delayed to not compete with notification email)
+    await ctx.scheduler.runAfter(5000, internal.ai.generateSummary, {
       applicationId: rec.applicationId,
     });
 
@@ -313,20 +313,15 @@ export const sendAutoReminders = internalAction({
 
       if (shouldSendReminder) {
         try {
-          // Send the reminder email
-          await ctx.runAction(api.emails.sendRecommendationReminder, {
-            recommendationId: rec._id,
-          });
-
-          // Update the recommendation record
-          await ctx.runMutation(internal.recommendations.updateReminderSent, {
+          // Schedule the reminder email (fire-and-forget via mutation scheduler)
+          await ctx.runMutation(internal.recommendations.scheduleReminderEmail, {
             recommendationId: rec._id,
           });
 
           remindersSent++;
-          console.log(`[Cron] Sent auto-reminder to ${rec.recommenderEmail} for application ${rec.applicationId}`);
+          console.log(`[Cron] Scheduled auto-reminder to ${rec.recommenderEmail} for application ${rec.applicationId}`);
         } catch (error) {
-          console.error(`[Cron] Failed to send reminder to ${rec.recommenderEmail}:`, error);
+          console.error(`[Cron] Failed to schedule reminder to ${rec.recommenderEmail}:`, error);
         }
       }
     }
@@ -351,7 +346,7 @@ export const getPendingForReminders = internalQuery({
           q.lt(q.field("emailRemindersSent"), 2)
         )
       )
-      .collect();
+      .take(100);
   },
 });
 
@@ -364,6 +359,31 @@ export const updateReminderSent = internalMutation({
     const rec = await ctx.db.get(recommendationId);
     if (!rec) return;
 
+    await ctx.db.patch(recommendationId, {
+      emailRemindersSent: rec.emailRemindersSent + 1,
+      lastReminderAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Internal mutation that schedules a reminder email (fire-and-forget)
+ * and updates the reminder count. Used by sendAutoReminders to avoid
+ * blocking on each email send.
+ */
+export const scheduleReminderEmail = internalMutation({
+  args: { recommendationId: v.id("recommendations") },
+  handler: async (ctx, { recommendationId }) => {
+    const rec = await ctx.db.get(recommendationId);
+    if (!rec) return;
+
+    // Schedule the email send (fire-and-forget)
+    await ctx.scheduler.runAfter(0, api.emails.sendRecommendationReminder, {
+      recommendationId,
+    });
+
+    // Update reminder count immediately
     await ctx.db.patch(recommendationId, {
       emailRemindersSent: rec.emailRemindersSent + 1,
       lastReminderAt: Date.now(),

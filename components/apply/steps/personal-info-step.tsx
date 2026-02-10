@@ -163,8 +163,8 @@ export function PersonalInfoStep({ application, onComplete }: PersonalInfoStepPr
 
       await updateStep1({
         applicationId: application._id,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
         phone: formData.phone,
         dateOfBirth: formData.dateOfBirth,
         profilePhotoId: profilePhotoId as Id<"_storage"> | undefined,

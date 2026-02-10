@@ -200,8 +200,8 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
   const allCertificationsChecked = certifications.accurate && certifications.publish && certifications.disqualify;
 
   // Check if signature is valid
-  const fullName = `${application.firstName} ${application.lastName}`.toLowerCase().trim();
-  const signatureLower = signature.toLowerCase().trim();
+  const fullName = `${application.firstName} ${application.lastName}`.toLowerCase().trim().replace(/\s+/g, ' ');
+  const signatureLower = signature.toLowerCase().trim().replace(/\s+/g, ' ');
   const signatureValid = signatureLower === fullName && signature.length > 0;
 
   // Determine if submit button should be enabled

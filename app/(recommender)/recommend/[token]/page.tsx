@@ -3,12 +3,14 @@
 import { useParams } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, File, CheckCircle, AlertTriangle, Info } from "lucide-react";
@@ -30,6 +32,7 @@ export default function RecommendationPage() {
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
@@ -168,24 +171,68 @@ export default function RecommendationPage() {
         return;
       }
 
-      // Upload file
-      const uploadUrl = await generateUploadUrl({ type: "recommendation" });
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      
-      if (!response.ok) {
-        throw new Error("Upload failed");
+      // Upload file with progress tracking, timeout, and retry
+      const attemptUpload = async (): Promise<string> => {
+        const uploadUrl = await generateUploadUrl({ type: "recommendation" });
+        return new Promise<string>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          const timeoutId = setTimeout(() => {
+            xhr.abort();
+            reject(new Error("Upload timed out after 60 seconds"));
+          }, 60000);
+
+          xhr.upload.addEventListener("progress", (event) => {
+            if (event.lengthComputable) {
+              setUploadProgress(Math.round((event.loaded / event.total) * 100));
+            }
+          });
+
+          xhr.addEventListener("load", () => {
+            clearTimeout(timeoutId);
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const result = JSON.parse(xhr.responseText);
+                if (!result.storageId) {
+                  reject(new Error("No storageId returned"));
+                  return;
+                }
+                resolve(result.storageId);
+              } catch {
+                reject(new Error("Invalid upload response"));
+              }
+            } else {
+              reject(new Error(`Upload failed with status ${xhr.status}`));
+            }
+          });
+
+          xhr.addEventListener("error", () => {
+            clearTimeout(timeoutId);
+            reject(new Error("Network error during upload"));
+          });
+
+          xhr.addEventListener("abort", () => {
+            clearTimeout(timeoutId);
+          });
+
+          xhr.open("POST", uploadUrl);
+          xhr.setRequestHeader("Content-Type", file.type);
+          xhr.send(file);
+        });
+      };
+
+      let storageId: string;
+      try {
+        storageId = await attemptUpload();
+      } catch (firstError) {
+        console.warn("Upload failed, retrying...", firstError);
+        setUploadProgress(0);
+        storageId = await attemptUpload();
       }
-      
-      const { storageId } = await response.json();
 
       // Submit recommendation
       await submitRecommendation({
         token,
-        letterFileId: storageId,
+        letterFileId: storageId as Id<"_storage">,
         recommenderName: formData.recommenderName,
         recommenderTitle: formData.recommenderTitle,
         recommenderOrganization: formData.recommenderOrganization,
@@ -200,6 +247,7 @@ export default function RecommendationPage() {
       });
     } finally {
       setIsLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -314,6 +362,15 @@ export default function RecommendationPage() {
                 <p className="text-sm text-muted-foreground/70">
                   Accepted: PDF, DOC, DOCX • Max size: 5MB
                 </p>
+                {isLoading && uploadProgress > 0 && (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm text-primary">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Uploading...{` ${uploadProgress}%`}
+                    </div>
+                    <Progress value={uploadProgress} className="h-1.5" />
+                  </div>
+                )}
               </div>
 
               {/* Recommender Info */}

@@ -165,8 +165,8 @@ export const create = mutation({
     let lastName = "";
     if (user?.name) {
       const parts = user.name.trim().split(/\s+/);
-      firstName = parts[0] || "";
-      lastName = parts.slice(1).join(" ") || "";
+      firstName = (parts[0] || "").trim();
+      lastName = (parts.slice(1).join(" ") || "").trim();
     }
 
     const applicationId = await ctx.db.insert("applications", {
@@ -212,6 +212,8 @@ export const updateStep1 = mutation({
 
     await ctx.db.patch(applicationId, {
       ...data,
+      firstName: data.firstName.trim(),
+      lastName: data.lastName.trim(),
       ...(profilePhotoId && { profilePhotoId }),
       completedSteps,
       updatedAt: Date.now(),
@@ -490,8 +492,8 @@ export const submit = mutation({
     // The application will be marked as "submitted" and letters arrive separately
 
     // Validate signature matches name
-    const fullName = `${application.firstName} ${application.lastName}`.toLowerCase().trim();
-    const sigLower = signature.toLowerCase().trim();
+    const fullName = `${application.firstName} ${application.lastName}`.toLowerCase().trim().replace(/\s+/g, ' ');
+    const sigLower = signature.toLowerCase().trim().replace(/\s+/g, ' ');
     if (sigLower !== fullName) {
       throw new Error("Signature does not match name");
     }
