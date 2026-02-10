@@ -171,7 +171,7 @@ export default function RegisterPage() {
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
-                    placeholder="Cooper"
+                    placeholder="Stark"
                     value={formData.lastName}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, lastName: e.target.value }))
