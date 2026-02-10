@@ -241,7 +241,7 @@ function emailHeader(): string {
         <table role="presentation" width="80" cellspacing="0" cellpadding="0" style="margin: 0 auto 20px auto;">
           <tr><td style="border-top: 2px solid ${GOLD}; font-size: 0; line-height: 0;">&nbsp;</td></tr>
         </table>
-        <img src="https://starkscholars.com/images/SS-LOGO1.png" alt="Stark Scholars" width="240" style="display:block; margin:0 auto 16px auto;" />
+        <img src="https://starkscholars.com/images/Stark2023_heritage.png" alt="Stark Scholars" width="240" style="display:block; margin:0 auto 16px auto;" />
         <!-- Gold accent line below logo -->
         <table role="presentation" width="80" cellspacing="0" cellpadding="0" style="margin: 0 auto 16px auto;">
           <tr><td style="border-top: 2px solid ${GOLD}; font-size: 0; line-height: 0;">&nbsp;</td></tr>

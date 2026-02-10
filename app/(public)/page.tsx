@@ -14,8 +14,8 @@ import {
   BookOpen,
   Mail
 } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
 
 export default function LandingPage() {
   const containerRef = useRef(null);
@@ -26,6 +26,12 @@ export default function LandingPage() {
 
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
+  const [heroIndex, setHeroIndex] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setHeroIndex(i => (i + 1) % 2), 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
@@ -61,7 +67,7 @@ export default function LandingPage() {
               {/* Logo */}
               <div className="relative w-12 h-12 transition-transform group-hover:scale-105">
                 <Image
-                  src="/images/SS-LOGO1.png"
+                  src="/images/Stark2023_heritage.png"
                   alt="Stark Scholars Logo"
                   fill
                   className="object-contain"
@@ -163,7 +169,7 @@ export default function LandingPage() {
               </motion.div>
             </motion.div>
 
-            {/* Hero Image */}
+            {/* Hero Image — Crossfade between logo and celebration */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -171,20 +177,43 @@ export default function LandingPage() {
               className="relative hidden lg:block h-[600px] w-full"
             >
               <div className="absolute inset-0 bg-secondary rounded-[2rem] rotate-3 transform translate-x-4 translate-y-4 opacity-10" />
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.5 }}
-                className="relative h-full w-full rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white"
-              >
-                <Image
-                  src="/images/hero-celebration.png"
-                  alt="Diverse students celebrating graduation"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
-              </motion.div>
+              <div className="relative h-full w-full rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={heroIndex}
+                    initial={{ opacity: 0, x: 40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -40 }}
+                    transition={{ duration: 0.8 }}
+                    className="absolute inset-0"
+                  >
+                    {heroIndex === 0 ? (
+                      <div className="relative w-full h-full bg-secondary flex items-center justify-center">
+                        <div className="relative w-[300px] h-[300px] drop-shadow-[0_0_40px_rgba(212,175,55,0.3)]">
+                          <Image
+                            src="/images/Stark2023_heritage.png"
+                            alt="Stark Scholars Heritage Logo"
+                            fill
+                            className="object-contain"
+                            priority
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative w-full h-full">
+                        <Image
+                          src="/images/hero-celebration.png"
+                          alt="Diverse students celebrating graduation"
+                          fill
+                          className="object-cover"
+                          priority
+                        />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
               {/* Floating Card */}
               <motion.div
@@ -500,7 +529,7 @@ export default function LandingPage() {
               <div className="flex items-center gap-4">
                 <div className="relative w-12 h-12">
                   <Image
-                    src="/images/SS-LOGO1.png"
+                    src="/images/Stark2023_heritage.png"
                     alt="Stark Scholars Logo"
                     fill
                     className="object-contain filter brightness-0 invert"

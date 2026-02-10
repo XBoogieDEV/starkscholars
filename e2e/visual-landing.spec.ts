@@ -13,7 +13,7 @@ test.describe("Landing Page Visual Verification - Production", () => {
     await page.waitForLoadState("networkidle");
     
     // Wait for images to load
-    await page.waitForSelector("img[src*='SS-LOGO1.png']", { timeout: 10000 });
+    await page.waitForSelector("img[src*='Stark2023_heritage.png']", { timeout: 10000 });
     await page.waitForSelector("img[src*='simage1.jpeg']", { timeout: 10000 });
     
     // Take full page screenshot
@@ -28,7 +28,7 @@ test.describe("Landing Page Visual Verification - Production", () => {
     await expect(page.locator("text=About the Program")).toBeVisible();
     
     // Verify images loaded
-    const logo = page.locator("img[src*='SS-LOGO1.png']").first();
+    const logo = page.locator("img[src*='Stark2023_heritage.png']").first();
     await expect(logo).toBeVisible();
     
     console.log("✅ Desktop screenshot saved");
@@ -94,7 +94,7 @@ test.describe("Landing Page Visual Verification - Production", () => {
     
     // Wait for all images to load
     const images = [
-      "SS-LOGO1.png",
+      "Stark2023_heritage.png",
       "simage1.jpeg",
       "simage2.jpeg",
       "simage3.jpeg",
