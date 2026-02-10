@@ -134,7 +134,8 @@ export default function LandingPage() {
 
               <motion.p variants={fadeInUp} className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0">
                 The William R. Stark Financial Assistance Program awards prestigious scholarships
-                to Michigan students committed to academic excellence and community impact.
+                to students committed to academic excellence and community impact that reside in the
+                host state (Orient). This year its MICHIGAN!
               </motion.p>
 
               <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
