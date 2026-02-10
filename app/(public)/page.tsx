@@ -29,7 +29,7 @@ export default function LandingPage() {
 
   const [heroIndex, setHeroIndex] = useState(0);
   useEffect(() => {
-    const timer = setInterval(() => setHeroIndex(i => (i + 1) % 2), 5000);
+    const timer = setInterval(() => setHeroIndex(i => (i + 1) % 3), 5000);
     return () => clearInterval(timer);
   }, []);
 
@@ -132,11 +132,55 @@ export default function LandingPage() {
                 <span className="text-primary italic">Future Legacy</span>
               </motion.h1>
 
-              <motion.p variants={fadeInUp} className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0">
-                The William R. Stark Financial Assistance Program awards prestigious scholarships
-                to students committed to academic excellence and community impact that reside in the
-                host state (Orient). This year its MICHIGAN!
-              </motion.p>
+              {/* Body copy — static on desktop, cycling on mobile */}
+              <motion.div variants={fadeInUp} className="max-w-xl mx-auto lg:mx-0">
+                {/* Desktop: always show text */}
+                <p className="hidden lg:block text-lg md:text-xl text-muted-foreground leading-relaxed">
+                  The William R. Stark Financial Assistance Program awards prestigious scholarships
+                  to students committed to academic excellence and community impact that reside in the
+                  host state (Orient). This year its MICHIGAN!
+                </p>
+
+                {/* Mobile: cycle through text + 2 images */}
+                <div className="lg:hidden relative h-[200px] overflow-hidden rounded-2xl">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={heroIndex}
+                      initial={{ opacity: 0, x: 30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -30 }}
+                      transition={{ duration: 0.6 }}
+                      className="absolute inset-0 flex items-center justify-center"
+                    >
+                      {heroIndex === 0 ? (
+                        <p className="text-lg text-muted-foreground leading-relaxed text-center px-2">
+                          The William R. Stark Financial Assistance Program awards prestigious scholarships
+                          to students committed to academic excellence and community impact that reside in the
+                          host state (Orient). This year its MICHIGAN!
+                        </p>
+                      ) : heroIndex === 1 ? (
+                        <div className="relative w-full h-full bg-secondary rounded-2xl flex items-center justify-center">
+                          <div className="relative w-[160px] h-[160px] drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]">
+                            <Image src="/images/Stark2023_heritage.png" alt="Stark Scholars Heritage Logo" fill className="object-contain" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative w-full h-full rounded-2xl overflow-hidden">
+                          <Image src="/images/hero-celebration.png" alt="Graduation celebration" fill className="object-cover" />
+                          <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
+                        </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Dot indicators (mobile only) */}
+                <div className="lg:hidden flex justify-center gap-2 mt-3">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className={`w-2 h-2 rounded-full transition-colors duration-300 ${heroIndex === i ? 'bg-primary' : 'bg-border'}`} />
+                  ))}
+                </div>
+              </motion.div>
 
               <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
                 <Button asChild size="lg" className="rounded-xl h-14 px-8 text-lg shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-1 transition-all duration-300">
@@ -188,7 +232,7 @@ export default function LandingPage() {
                     transition={{ duration: 0.8 }}
                     className="absolute inset-0"
                   >
-                    {heroIndex === 0 ? (
+                    {heroIndex % 2 === 0 ? (
                       <div className="relative w-full h-full bg-secondary flex items-center justify-center">
                         <div className="relative w-[550px] h-[550px] drop-shadow-[0_0_60px_rgba(212,175,55,0.4)]">
                           <Image
