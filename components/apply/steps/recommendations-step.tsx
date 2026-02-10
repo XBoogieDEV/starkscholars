@@ -50,6 +50,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
 
   const [isLoading, setIsLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showSpamAdvisory, setShowSpamAdvisory] = useState(false);
   const [formData, setFormData] = useState<RecommenderForm>({
     recommenderEmail: "",
     recommenderName: "",
@@ -118,7 +119,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
 
       toast({
         title: "Request sent!",
-        description: `An email has been sent to ${formData.recommenderName}.`,
+        description: `An email has been sent to ${formData.recommenderName}. Ask them to check their Junk/Spam folder if they don't see it.`,
       });
 
       // Reset form
@@ -130,6 +131,7 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
         relationship: "",
       });
       setShowAddForm(false);
+      setShowSpamAdvisory(true);
     } catch (error) {
       toast({
         title: "Error",
@@ -400,13 +402,29 @@ export function RecommendationsStep({ application, onComplete }: Recommendations
         recommendations && recommendations.length < 2 && (
           <Button
             variant="outline"
-            onClick={() => setShowAddForm(true)}
+            onClick={() => { setShowAddForm(true); setShowSpamAdvisory(false); }}
             className="w-full py-6 border-dashed"
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Recommender ({recommendations.length}/2)
           </Button>
         )
+      )}
+
+      {/* Junk/Spam Advisory */}
+      {showSpamAdvisory && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-blue-900">Check with your recommender</p>
+              <p className="text-sm text-blue-700 mt-1">
+                Please contact your recommender to confirm they received the email. If they
+                haven&apos;t received it, ask them to check their Junk or Spam folder.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Validation Messages */}

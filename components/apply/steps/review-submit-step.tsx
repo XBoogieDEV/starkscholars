@@ -320,6 +320,8 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
     return "bg-red-500";
   };
 
+  const isSubmitted = application.status === "submitted";
+
   if (!validationStatus) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -335,9 +337,32 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
       <div className="text-center">
         <h2 className="text-2xl font-bold text-foreground">Review & Submit</h2>
         <p className="text-muted-foreground mt-2">
-          Review your application and complete the certification before submitting
+          {isSubmitted
+            ? "Your application has been submitted. Below is a read-only summary."
+            : "Review your application and complete the certification before submitting"}
         </p>
       </div>
+
+      {/* Submitted Confirmation Banner */}
+      {isSubmitted && (
+        <Card className="border-green-300 bg-green-50/50">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-full bg-green-100 shrink-0">
+                <CheckCircle2 className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-green-900">Application Submitted</h3>
+                <p className="text-sm text-green-700 mt-1">
+                  {application.submittedAt
+                    ? `Submitted on ${new Date(application.submittedAt).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`
+                    : "Your application has been submitted successfully."}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Progress Overview Card */}
       <Card className="border-primary/20">
@@ -623,151 +648,153 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
         </CardContent>
       </Card>
 
-      {/* Certifications & Signature */}
-      <Card className={allRequirementsMet ? "" : "opacity-75"}>
-        <CardHeader>
-          <CardTitle className="text-lg">Certification & Signature</CardTitle>
-          <p className="text-sm text-muted-foreground/70">
-            Please review and confirm the following before submitting
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Certifications */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-foreground">Required Certifications</h4>
-
-            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.accurate ? "bg-green-50 border-green-200" : "bg-muted/50 border-border"
-              }`}>
-              <Checkbox
-                id="cert-accurate"
-                checked={certifications.accurate}
-                onCheckedChange={(checked) =>
-                  setCertifications((prev) => ({ ...prev, accurate: checked as boolean }))
-                }
-                disabled={!allRequirementsMet}
-              />
-              <div className="flex-1">
-                <Label htmlFor="cert-accurate" className="text-sm font-normal cursor-pointer">
-                  I certify that all information provided in this application is true and accurate
-                  to the best of my knowledge.
-                </Label>
-                {!certifications.accurate && touched.certifications && (
-                  <p className="text-red-500 text-xs mt-1">This certification is required</p>
-                )}
-              </div>
-            </div>
-
-            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.publish ? "bg-green-50 border-green-200" : "bg-muted/50 border-border"
-              }`}>
-              <Checkbox
-                id="cert-publish"
-                checked={certifications.publish}
-                onCheckedChange={(checked) =>
-                  setCertifications((prev) => ({ ...prev, publish: checked as boolean }))
-                }
-                disabled={!allRequirementsMet}
-              />
-              <div className="flex-1">
-                <Label htmlFor="cert-publish" className="text-sm font-normal cursor-pointer">
-                  I understand that if selected, my name, photograph, city, state, major, and
-                  university may be published on the William R. Stark Class website, social media,
-                  and publications nationally or internationally.
-                </Label>
-                {!certifications.publish && touched.certifications && (
-                  <p className="text-red-500 text-xs mt-1">This certification is required</p>
-                )}
-              </div>
-            </div>
-
-            <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.disqualify ? "bg-green-50 border-green-200" : "bg-muted/50 border-border"
-              }`}>
-              <Checkbox
-                id="cert-disqualify"
-                checked={certifications.disqualify}
-                onCheckedChange={(checked) =>
-                  setCertifications((prev) => ({ ...prev, disqualify: checked as boolean }))
-                }
-                disabled={!allRequirementsMet}
-              />
-              <div className="flex-1">
-                <Label htmlFor="cert-disqualify" className="text-sm font-normal cursor-pointer">
-                  I understand that false information may result in disqualification from this
-                  scholarship program.
-                </Label>
-                {!certifications.disqualify && touched.certifications && (
-                  <p className="text-red-500 text-xs mt-1">This certification is required</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Electronic Signature */}
-          <div className="pt-4 border-t">
-            <Label htmlFor="signature" className="text-base font-medium flex items-center gap-2">
-              Electronic Signature
-              <span className="text-red-500">*</span>
-            </Label>
-            <p className="text-sm text-muted-foreground/70 mb-3">
-              Type your full legal name exactly as it appears: <strong>{application.firstName} {application.lastName}</strong>
+      {/* Certifications & Signature - Hidden when submitted */}
+      {!isSubmitted && (
+        <Card className={allRequirementsMet ? "" : "opacity-75"}>
+          <CardHeader>
+            <CardTitle className="text-lg">Certification & Signature</CardTitle>
+            <p className="text-sm text-muted-foreground/70">
+              Please review and confirm the following before submitting
             </p>
-            <Input
-              id="signature"
-              value={signature}
-              onChange={(e) => setSignature(e.target.value)}
-              onBlur={() => setTouched((prev) => ({ ...prev, signature: true }))}
-              placeholder={`${application.firstName} ${application.lastName}`}
-              className={`max-w-md ${touched.signature && signature && !signatureValid
-                ? "border-red-500 focus-visible:ring-red-500"
-                : signatureValid
-                  ? "border-green-500 focus-visible:ring-green-500"
-                  : ""
-                }`}
-              disabled={!allRequirementsMet}
-            />
-            {touched.signature && signature && !signatureValid && (
-              <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" />
-                Signature must match exactly: &ldquo;{application.firstName} {application.lastName}&rdquo;
-              </p>
-            )}
-            {signatureValid && (
-              <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
-                <CheckCircle2 className="h-4 w-4" />
-                Signature verified
-              </p>
-            )}
-          </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Certifications */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-foreground">Required Certifications</h4>
 
-          {/* Submit Button */}
-          <div className="pt-4">
-            {!allRequirementsMet && (
-              <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                <p className="text-primary text-sm flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                  <span>
-                    Please complete all application requirements before submitting.
-                    Check the requirements checklist above for details.
-                  </span>
+              <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.accurate ? "bg-green-50 border-green-200" : "bg-muted/50 border-border"
+                }`}>
+                <Checkbox
+                  id="cert-accurate"
+                  checked={certifications.accurate}
+                  onCheckedChange={(checked) =>
+                    setCertifications((prev) => ({ ...prev, accurate: checked as boolean }))
+                  }
+                  disabled={!allRequirementsMet}
+                />
+                <div className="flex-1">
+                  <Label htmlFor="cert-accurate" className="text-sm font-normal cursor-pointer">
+                    I certify that all information provided in this application is true and accurate
+                    to the best of my knowledge.
+                  </Label>
+                  {!certifications.accurate && touched.certifications && (
+                    <p className="text-red-500 text-xs mt-1">This certification is required</p>
+                  )}
+                </div>
+              </div>
+
+              <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.publish ? "bg-green-50 border-green-200" : "bg-muted/50 border-border"
+                }`}>
+                <Checkbox
+                  id="cert-publish"
+                  checked={certifications.publish}
+                  onCheckedChange={(checked) =>
+                    setCertifications((prev) => ({ ...prev, publish: checked as boolean }))
+                  }
+                  disabled={!allRequirementsMet}
+                />
+                <div className="flex-1">
+                  <Label htmlFor="cert-publish" className="text-sm font-normal cursor-pointer">
+                    I understand that if selected, my name, photograph, city, state, major, and
+                    university may be published on the William R. Stark Class website, social media,
+                    and publications nationally or internationally.
+                  </Label>
+                  {!certifications.publish && touched.certifications && (
+                    <p className="text-red-500 text-xs mt-1">This certification is required</p>
+                  )}
+                </div>
+              </div>
+
+              <div className={`flex items-start gap-3 p-3 rounded-lg border ${certifications.disqualify ? "bg-green-50 border-green-200" : "bg-muted/50 border-border"
+                }`}>
+                <Checkbox
+                  id="cert-disqualify"
+                  checked={certifications.disqualify}
+                  onCheckedChange={(checked) =>
+                    setCertifications((prev) => ({ ...prev, disqualify: checked as boolean }))
+                  }
+                  disabled={!allRequirementsMet}
+                />
+                <div className="flex-1">
+                  <Label htmlFor="cert-disqualify" className="text-sm font-normal cursor-pointer">
+                    I understand that false information may result in disqualification from this
+                    scholarship program.
+                  </Label>
+                  {!certifications.disqualify && touched.certifications && (
+                    <p className="text-red-500 text-xs mt-1">This certification is required</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Electronic Signature */}
+            <div className="pt-4 border-t">
+              <Label htmlFor="signature" className="text-base font-medium flex items-center gap-2">
+                Electronic Signature
+                <span className="text-red-500">*</span>
+              </Label>
+              <p className="text-sm text-muted-foreground/70 mb-3">
+                Type your full legal name exactly as it appears: <strong>{application.firstName} {application.lastName}</strong>
+              </p>
+              <Input
+                id="signature"
+                value={signature}
+                onChange={(e) => setSignature(e.target.value)}
+                onBlur={() => setTouched((prev) => ({ ...prev, signature: true }))}
+                placeholder={`${application.firstName} ${application.lastName}`}
+                className={`max-w-md ${touched.signature && signature && !signatureValid
+                  ? "border-red-500 focus-visible:ring-red-500"
+                  : signatureValid
+                    ? "border-green-500 focus-visible:ring-green-500"
+                    : ""
+                  }`}
+                disabled={!allRequirementsMet}
+              />
+              {touched.signature && signature && !signatureValid && (
+                <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                  <AlertCircle className="h-4 w-4" />
+                  Signature must match exactly: &ldquo;{application.firstName} {application.lastName}&rdquo;
                 </p>
-              </div>
-            )}
+              )}
+              {signatureValid && (
+                <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Signature verified
+                </p>
+              )}
+            </div>
 
-            <Button
-              onClick={handleSubmitClick}
-              className="w-full bg-primary hover:bg-primary/90"
-              size="lg"
-              disabled={isLoading}
-            >
-              <Send className="mr-2 h-4 w-4" />
-              {allRequirementsMet ? "Submit Application" : "Complete Requirements to Submit"}
-            </Button>
+            {/* Submit Button */}
+            <div className="pt-4">
+              {!allRequirementsMet && (
+                <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                  <p className="text-primary text-sm flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                    <span>
+                      Please complete all application requirements before submitting.
+                      Check the requirements checklist above for details.
+                    </span>
+                  </p>
+                </div>
+              )}
 
-            <p className="text-center text-sm text-muted-foreground/70 mt-3">
-              By submitting, you confirm all information is accurate and complete.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+              <Button
+                onClick={handleSubmitClick}
+                className="w-full bg-primary hover:bg-primary/90"
+                size="lg"
+                disabled={isLoading}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                {allRequirementsMet ? "Submit Application" : "Complete Requirements to Submit"}
+              </Button>
+
+              <p className="text-center text-sm text-muted-foreground/70 mt-3">
+                By submitting, you confirm all information is accurate and complete.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Validation Details Dialog */}
       <Dialog open={showValidationDetails} onOpenChange={setShowValidationDetails}>
