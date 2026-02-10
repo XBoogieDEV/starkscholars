@@ -189,7 +189,7 @@ export default function LandingPage() {
                   >
                     {heroIndex === 0 ? (
                       <div className="relative w-full h-full bg-secondary flex items-center justify-center">
-                        <div className="relative w-[300px] h-[300px] drop-shadow-[0_0_40px_rgba(212,175,55,0.3)]">
+                        <div className="relative w-[550px] h-[550px] drop-shadow-[0_0_60px_rgba(212,175,55,0.4)]">
                           <Image
                             src="/images/Stark2023_heritage.png"
                             alt="Stark Scholars Heritage Logo"
