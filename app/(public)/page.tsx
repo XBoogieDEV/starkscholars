@@ -80,7 +80,7 @@ export default function LandingPage() {
               </div>
             </Link>
             <nav className="hidden md:flex items-center gap-8">
-              {['About', 'Timeline', 'Eligibility'].map((item) => (
+              {['About', 'Recipients', 'Timeline', 'Eligibility'].map((item) => (
                 <a
                   key={item}
                   href={`#${item.toLowerCase()}`}
@@ -336,6 +336,152 @@ export default function LandingPage() {
                   </motion.div>
                 ))}
               </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Past Recipients Section */}
+      <section id="recipients" className="py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="text-center mb-16"
+          >
+            <motion.span variants={fadeInUp} className="text-primary font-bold tracking-widest uppercase text-sm mb-4 block">
+              Our Scholars
+            </motion.span>
+            <motion.h2 variants={fadeInUp} className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6">
+              Past Recipients
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Celebrating the outstanding students who have been awarded the Stark Scholarship.
+            </motion.p>
+          </motion.div>
+
+          {/* 2025 - Pennsylvania */}
+          <div className="mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex justify-center mb-10"
+            >
+              <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">
+                <Award className="w-4 h-4" />
+                2025 &mdash; Pennsylvania
+              </span>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+              className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+            >
+              {[
+                { name: "Kesmyn Mugo", initials: "KM", school: "Upper Merion Area '25", college: "College Undecided", major: "Biomedical Engineering", gpa: "5.5" },
+                { name: "Justin Bowser", initials: "JB", school: "William Tennent HS '25", college: "Widener University", major: "Physical Therapy", gpa: "3.1" },
+              ].map((recipient, idx) => (
+                <motion.div
+                  key={idx}
+                  variants={fadeInUp}
+                  whileHover={{ y: -6, boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.1)" }}
+                  className="bg-white rounded-2xl border border-border/50 p-8 shadow-md transition-all duration-300"
+                >
+                  <div className="flex items-center gap-5 mb-6">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-serif font-bold shadow-lg shrink-0">
+                      {recipient.initials}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-serif font-bold text-foreground">{recipient.name}</h3>
+                      <p className="text-sm text-muted-foreground">{recipient.school}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">College</span>
+                      <span className="text-sm font-medium text-foreground">{recipient.college}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Major</span>
+                      <span className="text-sm font-medium text-foreground">{recipient.major}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">GPA</span>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary">{recipient.gpa}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* 2024 - Wisconsin */}
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex justify-center mb-10"
+            >
+              <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider">
+                <Award className="w-4 h-4" />
+                2024 &mdash; Wisconsin
+              </span>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+              className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+            >
+              {[
+                { name: "William Bell", photo: "/images/recipients/william-bell.jpg", school: "Kingdom Prep Lutheran '24", college: "College Undecided", major: "IT", gpa: "3.4" },
+                { name: "Joy Mitchell", photo: "/images/recipients/joy-mitchell.jpg", school: "U of Minnesota-Twin Cities", college: "U of Minnesota-Twin Cities", major: "Sports Management & Economics", gpa: "3.7" },
+              ].map((recipient, idx) => (
+                <motion.div
+                  key={idx}
+                  variants={fadeInUp}
+                  whileHover={{ y: -6, boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.1)" }}
+                  className="bg-white rounded-2xl border border-border/50 p-8 shadow-md transition-all duration-300"
+                >
+                  <div className="flex items-center gap-5 mb-6">
+                    <div className="relative w-20 h-20 rounded-full overflow-hidden ring-4 ring-primary/30 shadow-lg shrink-0">
+                      <Image
+                        src={recipient.photo}
+                        alt={recipient.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-serif font-bold text-foreground">{recipient.name}</h3>
+                      <p className="text-sm text-muted-foreground">{recipient.school}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">College</span>
+                      <span className="text-sm font-medium text-foreground">{recipient.college}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Major</span>
+                      <span className="text-sm font-medium text-foreground">{recipient.major}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">GPA</span>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary">{recipient.gpa}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
           </div>
         </div>
