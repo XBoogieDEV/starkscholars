@@ -251,11 +251,31 @@ export const getCandidateDetails = query({
 
     const submittedRecommendations = recommendations.filter(r => r.status === "submitted");
 
+    // Resolve file URLs for recommendations
+    const recommendationsWithUrls = await Promise.all(
+      submittedRecommendations.map(async (rec) => ({
+        ...rec,
+        letterFileUrl: rec.letterFileId
+          ? await ctx.storage.getUrl(rec.letterFileId)
+          : null,
+      }))
+    );
+
+    // Resolve file URLs for application documents
+    const transcriptUrl = application.transcriptFileId
+      ? await ctx.storage.getUrl(application.transcriptFileId)
+      : null;
+    const essayFileUrl = application.essayFileId
+      ? await ctx.storage.getUrl(application.essayFileId)
+      : null;
+
     return {
       application,
       myEvaluation,
       otherEvaluations,
-      recommendations: submittedRecommendations,
+      recommendations: recommendationsWithUrls,
+      transcriptUrl,
+      essayFileUrl,
     };
   },
 });

@@ -113,7 +113,7 @@ export default function CandidateDetailPage() {
     );
   }
 
-  const { application, myEvaluation, otherEvaluations, recommendations } = data;
+  const { application, myEvaluation, otherEvaluations, recommendations, transcriptUrl, essayFileUrl } = data;
 
   const hasEvaluated = !!myEvaluation;
 
@@ -127,9 +127,9 @@ export default function CandidateDetailPage() {
         rating: rating as typeof ratingOptions[number]["value"],
         notes: notes || undefined,
       });
+      router.push("/committee");
     } catch (error) {
       console.error("Failed to submit evaluation:", error);
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -382,13 +382,17 @@ export default function CandidateDetailPage() {
                         {application.essayText}
                       </p>
                     </div>
-                  ) : application.essayFileId ? (
+                  ) : application.essayFileId && essayFileUrl ? (
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                       <p className="text-muted-foreground">
                         Essay uploaded as file. Download to view.
                       </p>
-                      <Button className="mt-4" variant="outline">
+                      <Button
+                        className="mt-4"
+                        variant="outline"
+                        onClick={() => window.open(essayFileUrl, "_blank")}
+                      >
                         Download Essay
                       </Button>
                     </div>
@@ -410,11 +414,15 @@ export default function CandidateDetailPage() {
                   <CardTitle>Transcript</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {application.transcriptFileId ? (
+                  {application.transcriptFileId && transcriptUrl ? (
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                       <p className="text-muted-foreground">Transcript uploaded.</p>
-                      <Button className="mt-4" variant="outline">
+                      <Button
+                        className="mt-4"
+                        variant="outline"
+                        onClick={() => window.open(transcriptUrl, "_blank")}
+                      >
                         View Transcript
                       </Button>
                     </div>
@@ -459,8 +467,12 @@ export default function CandidateDetailPage() {
                                 {rec.letterText}
                               </p>
                             </div>
-                          ) : rec.letterFileId ? (
-                            <Button variant="outline" size="sm">
+                          ) : rec.letterFileUrl ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(rec.letterFileUrl!, "_blank")}
+                            >
                               View Letter
                             </Button>
                           ) : null}
