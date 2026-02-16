@@ -45,15 +45,13 @@ function LoginForm() {
         return;
       }
 
-      // Success — determine redirect based on role if no explicit redirect
+      // Success — determine redirect based on role (role always takes priority for non-applicants)
       let targetRedirect = explicitRedirect || "/apply/dashboard";
       const userRole = (data?.user as any)?.role as string | undefined;
-      if (!explicitRedirect && userRole) {
-        if (userRole === "admin") {
-          targetRedirect = "/admin";
-        } else if (userRole === "committee") {
-          targetRedirect = "/committee";
-        }
+      if (userRole === "admin") {
+        targetRedirect = "/admin";
+      } else if (userRole === "committee") {
+        targetRedirect = "/committee";
       }
 
       console.log("[LOGIN] Login successful, redirecting to:", targetRedirect);

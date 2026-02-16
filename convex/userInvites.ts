@@ -47,6 +47,36 @@ export const create = mutation({
       throw new Error(`A user with this email already has the ${args.role} role`);
     }
 
+    // If user exists with a different role, upgrade them immediately
+    if (existingUser && existingUser.role !== args.role) {
+      await ctx.db.patch(existingUser._id, { role: args.role });
+
+      // If committee role, auto-create committeeMembers record
+      if (args.role === "committee") {
+        const existingMember = await ctx.db
+          .query("committeeMembers")
+          .withIndex("by_user", (q) => q.eq("userId", existingUser._id))
+          .first();
+
+        if (!existingMember) {
+          const allMembers = await ctx.db.query("committeeMembers").collect();
+          const maxOrder = allMembers.length > 0
+            ? Math.max(...allMembers.map((m) => m.order))
+            : -1;
+
+          await ctx.db.insert("committeeMembers", {
+            userId: existingUser._id,
+            name: args.name || existingUser.name || "Committee Member",
+            title: args.title || "Committee Member",
+            phone: args.phone,
+            isChairman: args.isChairman || false,
+            isExOfficio: args.isExOfficio || false,
+            order: maxOrder + 1,
+          });
+        }
+      }
+    }
+
     // Check for existing pending invite
     const existingInvite = await ctx.db
       .query("userInvites")

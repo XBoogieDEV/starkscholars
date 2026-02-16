@@ -92,7 +92,7 @@ export default function LandingPage() {
               ))}
             </nav>
             <div className="flex items-center gap-4">
-              <Link href="/login" className="hidden sm:block text-xs font-medium text-muted-foreground/60 hover:text-primary transition-colors">
+              <Link href="/login?redirect=/committee" className="hidden sm:block text-xs font-medium text-muted-foreground/60 hover:text-primary transition-colors">
                 Committee
               </Link>
               <Link href="/login" className="hidden sm:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
