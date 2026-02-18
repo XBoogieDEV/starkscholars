@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, AlertCircle, CheckCircle, Mail, ArrowLeft } from "lucide-react";
-// Password reset is handled via API route
+import { authClient } from "@/lib/auth-client";
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,16 +22,14 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      // Call the API route to trigger password reset email
-      const response = await fetch("/api/trigger-password-reset", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+      const result = await authClient.requestPasswordReset({
+        email,
+        redirectTo: `${appUrl}/reset-password`,
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        setError(data.error || "Failed to send reset email");
+      if (result.error) {
+        setError(result.error.message || "Failed to send reset email");
       } else {
         setIsEmailSent(true);
       }

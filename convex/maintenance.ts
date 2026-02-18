@@ -134,3 +134,141 @@ export const purgeAllExceptAdmin = mutation({
         };
     },
 });
+
+// Selective purge: preserve ALL admin + committee users, clean up storage files
+export const purgeTestData = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const results: Record<string, number> = {};
+
+        // 1. Find all admin + committee users to preserve
+        const allUsers = await ctx.db.query("user").collect();
+        const preservedUserIds = new Set<string>();
+        for (const user of allUsers) {
+            if (user.role === "admin" || user.role === "committee") {
+                preservedUserIds.add(user._id);
+            }
+        }
+
+        if (preservedUserIds.size === 0) {
+            throw new Error(
+                "No admin/committee users found. Aborting purge to prevent accidental full wipe."
+            );
+        }
+
+        // 2. Delete storage files from applications & recommendations
+        let storageDeleteCount = 0;
+        const applications = await ctx.db.query("applications").collect();
+        for (const app of applications) {
+            for (const fieldId of [app.transcriptFileId, app.essayFileId, app.profilePhotoId]) {
+                if (fieldId) {
+                    try {
+                        await ctx.storage.delete(fieldId);
+                        storageDeleteCount++;
+                    } catch {
+                        // File may already be deleted
+                    }
+                }
+            }
+        }
+
+        const recommendations = await ctx.db.query("recommendations").collect();
+        for (const rec of recommendations) {
+            if (rec.letterFileId) {
+                try {
+                    await ctx.storage.delete(rec.letterFileId);
+                    storageDeleteCount++;
+                } catch {
+                    // File may already be deleted
+                }
+            }
+        }
+        results["_storage"] = storageDeleteCount;
+
+        // 3. Delete non-preserved users
+        let userDeleteCount = 0;
+        for (const user of allUsers) {
+            if (!preservedUserIds.has(user._id)) {
+                await ctx.db.delete(user._id);
+                userDeleteCount++;
+            }
+        }
+        results["user"] = userDeleteCount;
+
+        // 4. Delete sessions/accounts for non-preserved users
+        const allSessions = await ctx.db.query("session").collect();
+        let sessionDeleteCount = 0;
+        for (const session of allSessions) {
+            if (!preservedUserIds.has(session.userId)) {
+                await ctx.db.delete(session._id);
+                sessionDeleteCount++;
+            }
+        }
+        results["session"] = sessionDeleteCount;
+
+        const allAccounts = await ctx.db.query("account").collect();
+        let accountDeleteCount = 0;
+        for (const account of allAccounts) {
+            if (!preservedUserIds.has(account.userId)) {
+                await ctx.db.delete(account._id);
+                accountDeleteCount++;
+            }
+        }
+        results["account"] = accountDeleteCount;
+
+        // 5. Selectively clean committeeMembers (keep for preserved users)
+        const allCommitteeMembers = await ctx.db.query("committeeMembers").collect();
+        let committeeMemberDeleteCount = 0;
+        for (const member of allCommitteeMembers) {
+            if (!preservedUserIds.has(member.userId)) {
+                await ctx.db.delete(member._id);
+                committeeMemberDeleteCount++;
+            }
+        }
+        results["committeeMembers"] = committeeMemberDeleteCount;
+
+        // 6. Fully wipe data tables (applications/recommendations already queried above)
+        for (const app of applications) {
+            await ctx.db.delete(app._id);
+        }
+        results["applications"] = applications.length;
+
+        for (const rec of recommendations) {
+            await ctx.db.delete(rec._id);
+        }
+        results["recommendations"] = recommendations.length;
+
+        const tablesToWipe = [
+            "evaluations",
+            "userInvites",
+            "emailLogs",
+            "activityLog",
+            "settings",
+            "verification",
+            "rateLimit",
+            "twoFactor",
+            "passkey",
+            "oauthApplication",
+            "oauthAccessToken",
+            "oauthConsent",
+        ] as const;
+
+        for (const table of tablesToWipe) {
+            try {
+                const docs = await ctx.db.query(table as any).collect();
+                for (const doc of docs) {
+                    await ctx.db.delete(doc._id);
+                }
+                results[table] = docs.length;
+            } catch {
+                results[table] = 0;
+            }
+        }
+
+        return {
+            success: true,
+            preservedUsers: preservedUserIds.size,
+            deletedCounts: results,
+        };
+    },
+});
