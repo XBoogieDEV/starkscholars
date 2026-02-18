@@ -3,7 +3,7 @@ import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
 import type { GenericCtx } from "@convex-dev/better-auth/utils";
 import type { BetterAuthOptions } from "better-auth";
 import { betterAuth } from "better-auth";
-import { components, internal } from "../_generated/api";
+import { api, components, internal } from "../_generated/api";
 import type { DataModel } from "../_generated/dataModel";
 import authConfig from "../auth.config";
 import schema from "./schema";
@@ -30,6 +30,16 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false, // Changed to false for immediate access
+      sendResetPassword: async ({ user, url }) => {
+        if ("scheduler" in ctx && typeof (ctx as any).scheduler?.runAfter === "function") {
+          await (ctx as any).scheduler.runAfter(0, api.emails.sendPasswordResetEmail, {
+            email: user.email,
+            url,
+          });
+        } else {
+          console.error("[Better Auth] Cannot send reset email: scheduler not available");
+        }
+      },
     },
     session: {
       expiresIn: 60 * 60 * 24 * 7, // 7 days
