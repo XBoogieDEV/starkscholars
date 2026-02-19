@@ -49,7 +49,7 @@ export default function ConfirmationPage() {
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 <span>
-                  Selections will be announced after April 15, 2026
+                  Selections will be announced by May 1, 2026
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -71,7 +71,7 @@ export default function ConfirmationPage() {
             </div>
             <Badge className="bg-primary/10 text-primary hover:bg-primary/10">
               <Clock className="mr-1 h-3 w-3" />
-              Decisions by April 15, 2026
+              Decisions by May 1, 2026
             </Badge>
           </div>
 

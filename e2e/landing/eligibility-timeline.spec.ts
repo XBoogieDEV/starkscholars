@@ -98,9 +98,9 @@ test.describe("Landing Page > Timeline (#timeline)", () => {
   const timelineEntries = [
     { date: "Feb 1, 2026", title: "Applications Open", desc: "Online portal opens" },
     { date: "Apr 15, 2026", title: "Application Deadline", desc: "Final day to submit" },
-    { date: "Apr 16 - May 15", title: "Review Period", desc: "Committee reviews" },
-    { date: "May 20 - 30", title: "Final Determinations", desc: "Recipients for awards are finalized" },
-    { date: "May 23, 2026", title: "Awards Ceremony", desc: "Winners announced" },
+    { date: "Apr 16 - Apr 26", title: "Review Period", desc: "Committee reviews" },
+    { date: "Apr 27 - Apr 30", title: "Final Determinations", desc: "Recipients for awards are finalized" },
+    { date: "May 1, 2026", title: "Award Recipients Notified", desc: "Award recipients notified" },
   ];
 
   for (const entry of timelineEntries) {

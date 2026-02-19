@@ -963,7 +963,7 @@ export const sendApplicationSubmitted = action({
         <ul style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; padding-left: 20px; margin: 0; line-height: 1.8;">
           <li>Your application will be reviewed by the scholarship committee</li>
           <li>All committee members will evaluate your application</li>
-          <li>Selections will be announced after the deadline (April 15, 2026)</li>
+          <li>Selections will be announced by May 1, 2026</li>
           <li>You will be notified via email of the decision</li>
         </ul>
       `))}
@@ -1321,7 +1321,7 @@ export const sendAllTestEmails = action({
         <ul style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; padding-left: 20px; margin: 0; line-height: 1.8;">
           <li>Your application will be reviewed by the scholarship committee</li>
           <li>All committee members will evaluate your application</li>
-          <li>Selections will be announced after the deadline (April 15, 2026)</li>
+          <li>Selections will be announced by May 1, 2026</li>
           <li>You will be notified via email of the decision</li>
         </ul>
       `))}

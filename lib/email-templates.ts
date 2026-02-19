@@ -567,7 +567,7 @@ const templates: Record<string, string> = {
                 <ul style="color: #1e3a8a; font-size: 14px; line-height: 1.9; margin: 0; padding-left: 20px;">
                   <li style="margin-bottom: 6px;">Your application will be reviewed by the scholarship committee</li>
                   <li style="margin-bottom: 6px;">All committee members will evaluate your application thoroughly</li>
-                  <li style="margin-bottom: 6px;">Selections will be announced after the deadline (April 15, 2026)</li>
+                  <li style="margin-bottom: 6px;">Selections will be announced by May 1, 2026</li>
                   <li>You will be notified via email of the committee's decision</li>
                 </ul>
               </div>

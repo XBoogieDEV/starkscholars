@@ -351,7 +351,7 @@ export default function StatusPage() {
                     ? "Congratulations! You have been selected."
                     : application.status === "not_selected"
                     ? "Thank you for your application."
-                    : "Expected by April 15, 2026"}
+                    : "Expected by May 1, 2026"}
                 </p>
               </div>
             </div>
