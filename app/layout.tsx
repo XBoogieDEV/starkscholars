@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { ConvexClientProvider } from "@/components/convex-provider";
 import { CookieConsent } from "@/components/cookie-consent";
 import { getToken } from "@/lib/auth-server";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 import { Playfair_Display, Inter } from "next/font/google";
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://starkscholars.com"),
+};
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
