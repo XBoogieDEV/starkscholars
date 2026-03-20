@@ -1461,3 +1461,92 @@ export const sendSelectionNotification = action({
     return { success: result.success };
   },
 });
+
+// ============================================
+// RECOMMENDATION RETRY NOTIFICATION
+// ============================================
+
+export const sendRecommendationRetryNotification = action({
+  args: {
+    recommendationId: v.id("recommendations"),
+    applicantName: v.string(),
+  },
+  handler: async (ctx, { recommendationId, applicantName }) => {
+    const rec = await ctx.runQuery(api.recommendations.getById, { id: recommendationId });
+    if (!rec) throw new Error("Recommendation not found");
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+    const recommendationUrl = `${appUrl}/recommend/${rec.accessToken}`;
+
+    const subject = `Action Required: Please Resubmit Your Recommendation for ${applicantName}`;
+
+    const html = wrapEmail(`
+      ${emailHeader()}
+      ${goldDivider()}
+      ${contentSection(`
+        ${sectionHeading('We Need Your Help')}
+        ${bodyText(`Dear ${rec.recommenderName || "Recommender"},`)}
+        ${bodyText(`We sincerely apologize for the inconvenience. We recently identified and resolved a technical issue on our website that was preventing recommendation letters from being uploaded successfully.`)}
+        ${bodyText(`We understand you previously attempted to submit your letter of recommendation for <strong>${applicantName}</strong> and encountered difficulties. The issue has now been fully corrected, and we kindly ask that you please try again using the button below.`)}
+      `)}
+      ${ctaSection(recommendationUrl, 'Submit Recommendation Letter', 'default', recommendationUrl)}
+      ${contentSectionFull(`
+        ${infoBox('default', 'Your Original Link Still Works', `
+          <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0;">
+            You do not need a new link. Your original submission page is ready and waiting for your upload. Simply click the button above or use the link provided.
+          </p>
+        `)}
+      `)}
+      ${contentSectionFull(`
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0 0 16px 0;">
+          <strong>Deadline:</strong> Please submit by ${new Date(rec.tokenExpiresAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
+        </p>
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0 0 16px 0;">
+          <strong>Accepted formats:</strong> PDF, DOC, or DOCX (up to 5MB).
+        </p>
+        <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0 0 16px 0;">
+          If you experience any further issues, please contact the scholarship committee at
+          <a href="mailto:blackgoldmine@sbcglobal.net" style="color: ${GOLD};">blackgoldmine@sbcglobal.net</a>.
+        </p>
+      `)}
+      ${contentSectionBottom(`
+        ${bodyText('We greatly appreciate your time, patience, and continued support of our scholars.')}
+        ${signatureBlock('Fraternally,', true)}
+      `)}
+      ${emailFooter()}
+    `);
+
+    // Create email log
+    const logId = await ctx.runMutation(internal.emails.createEmailLog, {
+      type: "recommendation_retry_notification",
+      recipientEmail: rec.recommenderEmail,
+      subject,
+      relatedId: recommendationId,
+      relatedType: "recommendation",
+    });
+
+    // Send email
+    const result = await sendEmailToResend({
+      to: rec.recommenderEmail,
+      subject,
+      html,
+    });
+
+    // Update log with result
+    if (result.success && result.resendId) {
+      await ctx.runMutation(internal.emails.updateEmailLogSuccess, {
+        logId,
+        resendId: result.resendId,
+      });
+    } else {
+      await ctx.runMutation(internal.emails.updateEmailLogFailure, {
+        logId,
+        error: result.error || "Unknown error",
+        attempts: 1,
+      });
+      throw new Error(`Failed to send retry notification: ${result.error}`);
+    }
+
+    return { success: true, resendId: result.resendId };
+  },
+});

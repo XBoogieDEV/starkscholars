@@ -10,7 +10,7 @@ const ALLOWED_FILE_TYPES = {
   transcript: ['application/pdf', 'image/jpeg', 'image/png'],
   essay: ['application/pdf', 'image/jpeg', 'image/png', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
   photo: ['image/jpeg', 'image/png'],
-  recommendation: ['application/pdf', 'image/jpeg', 'image/png', 'text/plain']
+  recommendation: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'text/plain']
 };
 
 const MAX_FILE_SIZES = {
@@ -24,6 +24,26 @@ const MAX_FILE_SIZES = {
 // STORAGE MUTATIONS
 // ============================================
 
+// Token-based upload URL for unauthenticated recommenders
+export const generateRecommendationUploadUrl = mutation({
+  args: {
+    token: v.string(),
+  },
+  handler: async (ctx, { token }) => {
+    const rec = await ctx.db
+      .query("recommendations")
+      .withIndex("by_token", (q) => q.eq("accessToken", token))
+      .first();
+
+    if (!rec) throw new Error("Invalid token");
+    if (rec.tokenExpiresAt < Date.now()) throw new Error("Token expired");
+    if (rec.status === "submitted") throw new Error("Already submitted");
+
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+// Authenticated upload URL for applicants (transcript, essay, photo)
 export const generateUploadUrl = mutation({
   args: {
     type: v.union(

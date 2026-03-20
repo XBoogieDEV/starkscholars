@@ -547,3 +547,65 @@ export const adminResendEmail = mutation({
     };
   },
 });
+
+// ============================================
+// STUCK RECOMMENDER NOTIFICATIONS
+// ============================================
+
+/**
+ * Get all recommenders who viewed the page but couldn't submit
+ * (due to the upload auth bug). Only returns non-expired tokens.
+ */
+export const getStuckRecommenders = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const viewedRecs = await ctx.db
+      .query("recommendations")
+      .filter((q) => q.eq(q.field("status"), "viewed"))
+      .collect();
+
+    // Filter to non-expired tokens and join with application data
+    const results = [];
+    for (const rec of viewedRecs) {
+      if (rec.tokenExpiresAt < now) continue;
+
+      const application = await ctx.db.get(rec.applicationId);
+      if (!application) continue;
+
+      results.push({
+        _id: rec._id,
+        recommenderEmail: rec.recommenderEmail,
+        recommenderName: rec.recommenderName,
+        accessToken: rec.accessToken,
+        tokenExpiresAt: rec.tokenExpiresAt,
+        applicantName: `${application.firstName} ${application.lastName}`,
+      });
+    }
+
+    return results;
+  },
+});
+
+/**
+ * Send retry notification emails to all stuck recommenders.
+ * One-time use after the upload auth bug fix is deployed.
+ */
+export const notifyStuckRecommenders = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const stuckRecs = await ctx.runQuery(internal.recommendations.getStuckRecommenders);
+
+    let scheduled = 0;
+    for (const rec of stuckRecs) {
+      await ctx.scheduler.runAfter(0, api.emails.sendRecommendationRetryNotification, {
+        recommendationId: rec._id,
+        applicantName: rec.applicantName,
+      });
+      scheduled++;
+    }
+
+    console.log(`Scheduled ${scheduled} retry notification emails for stuck recommenders`);
+    return { scheduled };
+  },
+});

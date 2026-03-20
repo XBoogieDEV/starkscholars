@@ -29,7 +29,7 @@ export default function RecommendationPage() {
   );
   const markAsViewed = useMutation(api.recommendations.markAsViewed);
   const submitRecommendation = useMutation(api.recommendations.submitRecommendation);
-  const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+  const generateUploadUrl = useMutation(api.storage.generateRecommendationUploadUrl);
 
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -173,7 +173,7 @@ export default function RecommendationPage() {
 
       // Upload file with progress tracking, timeout, and retry
       const attemptUpload = async (): Promise<string> => {
-        const uploadUrl = await generateUploadUrl({ type: "recommendation" });
+        const uploadUrl = await generateUploadUrl({ token });
         return new Promise<string>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           const timeoutId = setTimeout(() => {
