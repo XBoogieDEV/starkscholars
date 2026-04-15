@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 
 /**
  * Utility function to fill out the personal information form
@@ -114,4 +114,22 @@ export async function isInViewport(page: Page, selector: string): Promise<boolea
  */
 export async function takeScreenshot(page: Page, name: string) {
   await page.screenshot({ path: `./e2e/screenshots/${name}.png`, fullPage: true });
+}
+
+/**
+ * Wait for unauthenticated redirect to /login
+ * Accounts for Convex SYNC_GRACE_PERIOD_MS (5s)
+ */
+export async function waitForAuthRedirect(page: Page, timeout = 15000) {
+  await page.waitForURL("**/login**", { timeout });
+}
+
+/**
+ * Scroll a section into view and assert it is visible
+ * Useful for Framer Motion whileInView animations
+ */
+export async function assertSectionVisible(page: Page, sectionId: string) {
+  const section = page.locator(`#${sectionId}`);
+  await section.scrollIntoViewIfNeeded();
+  await expect(section).toBeVisible({ timeout: 10000 });
 }

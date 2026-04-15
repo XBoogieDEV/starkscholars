@@ -146,7 +146,7 @@ export const purgeTestData = mutation({
         const preservedUserIds = new Set<string>();
         for (const user of allUsers) {
             if (user.role === "admin" || user.role === "committee") {
-                preservedUserIds.add(user._id);
+                preservedUserIds.add(String(user._id));
             }
         }
 
@@ -188,7 +188,7 @@ export const purgeTestData = mutation({
         // 3. Delete non-preserved users
         let userDeleteCount = 0;
         for (const user of allUsers) {
-            if (!preservedUserIds.has(user._id)) {
+            if (!preservedUserIds.has(String(user._id))) {
                 await ctx.db.delete(user._id);
                 userDeleteCount++;
             }
@@ -199,7 +199,7 @@ export const purgeTestData = mutation({
         const allSessions = await ctx.db.query("session").collect();
         let sessionDeleteCount = 0;
         for (const session of allSessions) {
-            if (!preservedUserIds.has(session.userId)) {
+            if (!preservedUserIds.has(String(session.userId))) {
                 await ctx.db.delete(session._id);
                 sessionDeleteCount++;
             }
@@ -209,7 +209,7 @@ export const purgeTestData = mutation({
         const allAccounts = await ctx.db.query("account").collect();
         let accountDeleteCount = 0;
         for (const account of allAccounts) {
-            if (!preservedUserIds.has(account.userId)) {
+            if (!preservedUserIds.has(String(account.userId))) {
                 await ctx.db.delete(account._id);
                 accountDeleteCount++;
             }
@@ -220,7 +220,7 @@ export const purgeTestData = mutation({
         const allCommitteeMembers = await ctx.db.query("committeeMembers").collect();
         let committeeMemberDeleteCount = 0;
         for (const member of allCommitteeMembers) {
-            if (!preservedUserIds.has(member.userId)) {
+            if (!preservedUserIds.has(String(member.userId))) {
                 await ctx.db.delete(member._id);
                 committeeMemberDeleteCount++;
             }

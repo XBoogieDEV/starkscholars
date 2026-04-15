@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Settings, Clock, Mail, Shield, Award, Loader2, Save, CheckCircle2, AlertCircle } from "lucide-react";
+import { Settings, Clock, Mail, Shield, Award, Loader2, Save, CheckCircle2, AlertCircle, Users, RefreshCw } from "lucide-react";
 
 export default function SettingsPage() {
   const allSettings = useQuery(api.settings.getAll);
@@ -42,6 +43,19 @@ export default function SettingsPage() {
   const [maxRecipients, setMaxRecipients] = useState("2");
   const [scholarshipAmount, setScholarshipAmount] = useState("$500");
   const [savingSelection, setSavingSelection] = useState(false);
+
+  // Stuck recommenders state
+  const stuckRecommenders = useQuery(api.recommendations.getStuckRecommendersForAdmin);
+  const adminResendEmail = useMutation(api.recommendations.adminResendEmail);
+  const [resendingId, setResendingId] = useState<string | null>(null);
+  const [resendingAll, setResendingAll] = useState(false);
+
+  // Bulk outreach state
+  const outreachCounts = useQuery(api.recommendations.getPendingOutreachCounts);
+  const triggerBulkRecommenderOutreach = useMutation(api.recommendations.triggerBulkRecommenderOutreach);
+  const triggerApplicantFollowUpAlert = useMutation(api.recommendations.triggerApplicantFollowUpAlert);
+  const [sendingRecommenderOutreach, setSendingRecommenderOutreach] = useState(false);
+  const [sendingApplicantAlert, setSendingApplicantAlert] = useState(false);
 
   // Load settings when data arrives
   useEffect(() => {
@@ -126,6 +140,63 @@ export default function SettingsPage() {
       toast.error("Failed to save selection settings");
     } finally {
       setSavingSelection(false);
+    }
+  };
+
+  const handleBulkRecommenderOutreach = async () => {
+    setSendingRecommenderOutreach(true);
+    try {
+      await triggerBulkRecommenderOutreach({});
+      toast.success("Emails queued — recommenders will receive fresh submission links shortly.");
+    } catch {
+      toast.error("Failed to queue outreach. Please try again.");
+    } finally {
+      setSendingRecommenderOutreach(false);
+    }
+  };
+
+  const handleApplicantFollowUpAlert = async () => {
+    setSendingApplicantAlert(true);
+    try {
+      await triggerApplicantFollowUpAlert({});
+      toast.success("Emails queued — applicants will be notified to follow up shortly.");
+    } catch {
+      toast.error("Failed to queue applicant alerts. Please try again.");
+    } finally {
+      setSendingApplicantAlert(false);
+    }
+  };
+
+  const handleResendOne = async (recommendationId: string) => {
+    setResendingId(recommendationId);
+    try {
+      await adminResendEmail({ recommendationId: recommendationId as Id<"recommendations"> });
+      toast.success("Resend email sent successfully");
+    } catch {
+      toast.error("Failed to resend email");
+    } finally {
+      setResendingId(null);
+    }
+  };
+
+  const handleResendAll = async () => {
+    if (!stuckRecommenders || stuckRecommenders.length === 0) return;
+    setResendingAll(true);
+    let successCount = 0;
+    let failCount = 0;
+    for (const rec of stuckRecommenders) {
+      try {
+        await adminResendEmail({ recommendationId: rec._id as Id<"recommendations"> });
+        successCount++;
+      } catch {
+        failCount++;
+      }
+    }
+    setResendingAll(false);
+    if (failCount === 0) {
+      toast.success(`Resent ${successCount} invitation${successCount !== 1 ? "s" : ""}`);
+    } else {
+      toast.warning(`Resent ${successCount}, failed ${failCount}`);
     }
   };
 
@@ -343,6 +414,165 @@ export default function SettingsPage() {
               {savingSelection ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               Save Selection Settings
             </Button>
+          </CardContent>
+        </Card>
+        {/* Bulk Outreach */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Bulk Outreach — Issue Resolution
+            </CardTitle>
+            <CardDescription>
+              Send notifications to all affected recommenders and applicants about the resolved
+              upload issue. Both emails reference fresh submission links.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {outreachCounts === undefined ? (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading counts…
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {/* Recommender outreach */}
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div>
+                    <p className="font-medium text-sm">Notify All Pending Recommenders</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Sends an apology + fresh submission link to every recommender who has
+                      not yet submitted. Expired tokens are automatically refreshed.
+                    </p>
+                    <p className="text-xs font-medium text-primary mt-2">
+                      {outreachCounts.recommenderCount} recommender
+                      {outreachCounts.recommenderCount !== 1 ? "s" : ""} pending
+                    </p>
+                  </div>
+                  <Button
+                    className="w-full"
+                    onClick={handleBulkRecommenderOutreach}
+                    disabled={sendingRecommenderOutreach || outreachCounts.recommenderCount === 0}
+                  >
+                    {sendingRecommenderOutreach ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending…</>
+                    ) : (
+                      <><Mail className="mr-2 h-4 w-4" />Email All Recommenders</>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Applicant alert */}
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div>
+                    <p className="font-medium text-sm">Notify Applicants to Follow Up</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Alerts each applicant with pending recommendations that the issue was
+                      fixed and asks them to personally re-contact their recommenders.
+                    </p>
+                    <p className="text-xs font-medium text-primary mt-2">
+                      {outreachCounts.applicantCount} applicant
+                      {outreachCounts.applicantCount !== 1 ? "s" : ""} affected
+                    </p>
+                  </div>
+                  <Button
+                    className="w-full"
+                    onClick={handleApplicantFollowUpAlert}
+                    disabled={sendingApplicantAlert || outreachCounts.applicantCount === 0}
+                  >
+                    {sendingApplicantAlert ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending…</>
+                    ) : (
+                      <><Mail className="mr-2 h-4 w-4" />Email All Applicants</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Both actions are one-time safe — emails are queued asynchronously and logged
+              under Admin → Emails for verification.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Stuck Recommenders */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Stuck Recommenders
+              {stuckRecommenders && stuckRecommenders.length > 0 && (
+                <Badge variant="destructive" className="ml-2">
+                  {stuckRecommenders.length}
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription>
+              Recommenders who visited the submission page but could not complete their upload.
+              Resending generates a fresh 30-day link.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {stuckRecommenders === undefined ? (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading…
+              </div>
+            ) : stuckRecommenders.length === 0 ? (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm py-4">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                No stuck recommenders — all clear.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="rounded-md border divide-y">
+                  {stuckRecommenders.map((rec) => (
+                    <div key={rec._id} className="flex items-center justify-between px-4 py-3 gap-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">
+                          {rec.recommenderName || rec.recommenderEmail}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {rec.recommenderEmail} · for {rec.applicantName}
+                        </p>
+                        <p className={`text-xs mt-0.5 ${rec.isExpired ? "text-red-500" : "text-muted-foreground"}`}>
+                          {rec.isExpired
+                            ? "Link expired — resend will generate a new one"
+                            : `Expires ${new Date(rec.tokenExpiresAt).toLocaleDateString()}`}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleResendOne(rec._id)}
+                        disabled={resendingId === rec._id || resendingAll}
+                      >
+                        {resendingId === rec._id ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <>
+                            <Mail className="h-3 w-3 mr-1" />
+                            Resend
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  variant="default"
+                  onClick={handleResendAll}
+                  disabled={resendingAll}
+                >
+                  {resendingAll ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Resending all…</>
+                  ) : (
+                    <><RefreshCw className="mr-2 h-4 w-4" />Resend All ({stuckRecommenders.length})</>
+                  )}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

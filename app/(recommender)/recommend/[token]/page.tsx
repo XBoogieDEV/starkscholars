@@ -240,9 +240,26 @@ export default function RecommendationPage() {
 
       setIsSubmitted(true);
     } catch (error) {
+      const msg = error instanceof Error ? error.message : "";
+      let description = "Failed to submit. Please try again.";
+      if (msg.includes("Token expired") || msg.includes("token expired")) {
+        description = "This link has expired. Please contact the applicant to request a new invitation.";
+      } else if (msg.includes("Invalid token") || msg.includes("invalid token")) {
+        description = "This link is no longer valid. Please contact the applicant.";
+      } else if (msg.includes("Already submitted") || msg.includes("already submitted")) {
+        description = "This recommendation has already been submitted.";
+      } else if (
+        msg.includes("Upload") ||
+        msg.includes("upload") ||
+        msg.includes("Network") ||
+        msg.includes("network") ||
+        msg.includes("timed out")
+      ) {
+        description = "File upload failed. Please check your connection and try again.";
+      }
       toast({
-        title: "Error",
-        description: "Failed to submit. Please try again.",
+        title: "Submission failed",
+        description,
         variant: "destructive",
       });
     } finally {

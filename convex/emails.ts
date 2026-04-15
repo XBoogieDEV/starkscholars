@@ -1467,6 +1467,7 @@ export const sendSelectionNotification = action({
 // ============================================
 
 export const sendRecommendationRetryNotification = action({
+
   args: {
     recommendationId: v.id("recommendations"),
     applicantName: v.string(),
@@ -1548,5 +1549,235 @@ export const sendRecommendationRetryNotification = action({
     }
 
     return { success: true, resendId: result.resendId };
+  },
+});
+
+// ============================================
+// BULK OUTREACH ACTIONS
+// ============================================
+
+/**
+ * Sends the "issue resolved — please submit" email to ALL non-submitted recommenders.
+ * Expired tokens are refreshed before sending. Safe to run once.
+ */
+export const sendBulkRecommenderOutreach = action({
+  args: {},
+  handler: async (ctx) => {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+    const now = Date.now();
+
+    const allRecs = await ctx.runQuery(internal.emails.getAllPendingRecommendations, {});
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const rec of allRecs) {
+      try {
+        let accessToken = rec.accessToken;
+
+        // Refresh expired tokens before sending
+        if (rec.tokenExpiresAt < now) {
+          const refreshed = await ctx.runMutation(
+            internal.recommendations.refreshTokenForOutreach,
+            { recommendationId: rec._id }
+          );
+          accessToken = refreshed.newToken;
+        }
+
+        const recommendationUrl = `${appUrl}/recommend/${accessToken}`;
+        const applicantName = rec.applicantName;
+        const subject = `Action Required: Please Submit Your Recommendation for ${applicantName}`;
+
+        const html = wrapEmail(`
+          ${emailHeader()}
+          ${goldDivider()}
+          ${contentSection(`
+            ${sectionHeading('We Need Your Help')}
+            ${bodyText(`Dear ${rec.recommenderName || "Recommender"},`)}
+            ${bodyText(`We are reaching out regarding your letter of recommendation for <strong>${applicantName}</strong> for the <strong>William R. Stark Financial Assistance Program</strong>.`)}
+            ${bodyText(`We recently resolved a technical issue on our website that was preventing recommendation letters from being uploaded. If you previously attempted to submit and encountered difficulties, we sincerely apologize — the issue has been fully corrected.`)}
+            ${bodyText(`Please use the button below to submit (or resubmit) your letter at your earliest convenience.`)}
+          `)}
+          ${ctaSection(recommendationUrl, 'Submit Recommendation Letter', 'default', recommendationUrl)}
+          ${contentSectionFull(infoBox('default', 'Submission Details', `
+            <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0 0 8px 0;">
+              <strong>Applicant:</strong> ${applicantName}
+            </p>
+            <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0 0 8px 0;">
+              <strong>Accepted formats:</strong> PDF, DOC, or DOCX (up to 5MB)
+            </p>
+            <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0;">
+              If you experience any issues, contact us at
+              <a href="mailto:blackgoldmine@sbcglobal.net" style="color: ${GOLD};">blackgoldmine@sbcglobal.net</a>.
+            </p>
+          `))}
+          ${contentSectionBottom(`
+            ${bodyText('We greatly appreciate your time, patience, and continued support of our scholars.')}
+            ${signatureBlock('Fraternally,', true)}
+          `)}
+          ${emailFooter()}
+        `);
+
+        const logId = await ctx.runMutation(internal.emails.createEmailLog, {
+          type: "recommendation_retry_notification",
+          recipientEmail: rec.recommenderEmail,
+          subject,
+          relatedId: rec._id,
+          relatedType: "recommendation",
+        });
+
+        const result = await sendEmailToResend({ to: rec.recommenderEmail, subject, html });
+
+        if (result.success && result.resendId) {
+          await ctx.runMutation(internal.emails.updateEmailLogSuccess, { logId, resendId: result.resendId });
+          sent++;
+        } else {
+          await ctx.runMutation(internal.emails.updateEmailLogFailure, { logId, error: result.error || "Unknown error", attempts: 1 });
+          failed++;
+        }
+      } catch (error) {
+        console.error(`[BulkOutreach] Failed for ${rec.recommenderEmail}:`, error);
+        failed++;
+      }
+    }
+
+    console.log(`[BulkOutreach] Complete. Sent: ${sent}, Failed: ${failed}`);
+    return { sent, failed };
+  },
+});
+
+/**
+ * Sends an alert to every applicant who has at least one non-submitted recommendation,
+ * asking them to personally follow up with their recommenders.
+ */
+export const sendApplicantPendingAlert = action({
+  args: {},
+  handler: async (ctx) => {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://starkscholars.com";
+
+    const pendingByApplicant = await ctx.runQuery(internal.emails.getPendingRecsByApplicant, {});
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const entry of pendingByApplicant) {
+      try {
+        const pendingNames = entry.pendingRecommenders
+          .map((r: string) => `<li style="margin-bottom: 4px;">${r}</li>`)
+          .join("");
+
+        const subject = "Action Required: Recommender Follow-Up — Stark Scholars";
+
+        const html = wrapEmail(`
+          ${emailHeader()}
+          ${goldDivider()}
+          ${contentSection(`
+            ${sectionHeading('Recommender Follow-Up Needed')}
+            ${bodyText(`Dear ${entry.firstName},`)}
+            ${bodyText(`We are writing to let you know that we recently resolved a technical issue on our website that was preventing recommendation letters from being uploaded. We have sent fresh submission links directly to your recommender(s) listed below.`)}
+            ${bodyText(`We strongly encourage you to also reach out to them personally to ensure they received our email and are aware of the submission deadline.`)}
+          `)}
+          ${contentSectionFull(infoBox('alert', 'Your Pending Recommenders', `
+            <ul style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; padding-left: 20px; margin: 0; line-height: 2;">
+              ${pendingNames}
+            </ul>
+          `))}
+          ${ctaSection(`${appUrl}/apply/status`, 'View Your Application Status', 'default')}
+          ${contentSectionFull(`
+            <p style="color: ${BODY_TEXT}; font-family: ${BODY_FONT}; font-size: 15px; margin: 0;">
+              If you have any questions, contact the scholarship committee at
+              <a href="mailto:blackgoldmine@sbcglobal.net" style="color: ${GOLD};">blackgoldmine@sbcglobal.net</a>.
+            </p>
+          `)}
+          ${contentSectionBottom(signatureBlock('Fraternally,', true))}
+          ${emailFooter()}
+        `);
+
+        const logId = await ctx.runMutation(internal.emails.createEmailLog, {
+          type: "recommendation_reminder",
+          recipientEmail: entry.userEmail,
+          subject,
+          relatedId: entry.applicationId,
+          relatedType: "application",
+        });
+
+        const result = await sendEmailToResend({ to: entry.userEmail, subject, html });
+
+        if (result.success && result.resendId) {
+          await ctx.runMutation(internal.emails.updateEmailLogSuccess, { logId, resendId: result.resendId });
+          sent++;
+        } else {
+          await ctx.runMutation(internal.emails.updateEmailLogFailure, { logId, error: result.error || "Unknown error", attempts: 1 });
+          failed++;
+        }
+      } catch (error) {
+        console.error(`[ApplicantAlert] Failed for ${entry.userEmail}:`, error);
+        failed++;
+      }
+    }
+
+    console.log(`[ApplicantAlert] Complete. Sent: ${sent}, Failed: ${failed}`);
+    return { sent, failed };
+  },
+});
+
+// ============================================
+// INTERNAL QUERIES FOR BULK OUTREACH
+// ============================================
+
+export const getAllPendingRecommendations = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const recs = await ctx.db
+      .query("recommendations")
+      .filter((q) => q.neq(q.field("status"), "submitted"))
+      .collect();
+
+    const results = [];
+    for (const rec of recs) {
+      const application = await ctx.db.get(rec.applicationId);
+      if (!application) continue;
+      results.push({
+        _id: rec._id,
+        recommenderEmail: rec.recommenderEmail,
+        recommenderName: rec.recommenderName,
+        accessToken: rec.accessToken,
+        tokenExpiresAt: rec.tokenExpiresAt,
+        applicantName: `${application.firstName} ${application.lastName}`,
+      });
+    }
+    return results;
+  },
+});
+
+export const getPendingRecsByApplicant = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const recs = await ctx.db
+      .query("recommendations")
+      .filter((q) => q.neq(q.field("status"), "submitted"))
+      .collect();
+
+    const byApp = new Map<string, typeof recs>();
+    for (const rec of recs) {
+      const key = rec.applicationId as string;
+      if (!byApp.has(key)) byApp.set(key, []);
+      byApp.get(key)!.push(rec);
+    }
+
+    const results = [];
+    for (const [, appRecs] of byApp.entries()) {
+      const application = await ctx.db.get(appRecs[0].applicationId);
+      if (!application) continue;
+      const user = await ctx.db.get(application.userId);
+      if (!user) continue;
+      results.push({
+        applicationId: application._id as string,
+        userEmail: user.email,
+        firstName: application.firstName || user.name || "Applicant",
+        pendingRecommenders: appRecs.map((r) => r.recommenderName || r.recommenderEmail),
+      });
+    }
+    return results;
   },
 });

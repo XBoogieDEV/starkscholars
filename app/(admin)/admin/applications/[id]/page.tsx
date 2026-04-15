@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useQuery, useMutation } from "convex/react";
@@ -36,6 +36,7 @@ import {
   Sparkles,
   Activity,
   Printer,
+  Loader2,
 } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
@@ -184,17 +185,40 @@ function RecommendationCard({
     recommenderType: string;
     status: string;
     submittedAt?: number;
+    tokenExpiresAt?: number;
   };
 }) {
+  const adminResendEmail = useMutation(api.recommendations.adminResendEmail);
+  const [resending, setResending] = useState(false);
+
+  const isExpired = recommendation.tokenExpiresAt
+    ? recommendation.tokenExpiresAt < Date.now()
+    : false;
+  const isStuck = recommendation.status === "viewed";
+
   const getStatusIcon = () => {
     switch (recommendation.status) {
       case "submitted":
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case "viewed":
+        return <AlertCircle className="h-4 w-4 text-orange-500" />;
       case "pending":
       case "email_sent":
         return <Clock className="h-4 w-4 text-primary/80" />;
       default:
         return <AlertCircle className="h-4 w-4 text-muted-foreground/70" />;
+    }
+  };
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      await adminResendEmail({ recommendationId: recommendation._id as Id<"recommendations"> });
+      toast.success(`Resent to ${recommendation.recommenderEmail}`);
+    } catch (error) {
+      toast.error("Failed to resend. Please try again.");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -213,10 +237,50 @@ function RecommendationCard({
             Submitted {formatDate(recommendation.submittedAt)}
           </p>
         )}
+        {isStuck && (
+          <p className="text-xs text-orange-600 mt-1">
+            Visited page but could not submit
+          </p>
+        )}
+        {isExpired && recommendation.status !== "submitted" && (
+          <p className="text-xs text-red-500 mt-1">Link expired</p>
+        )}
       </div>
-      <Badge variant={recommendation.status === "submitted" ? "default" : "outline"}>
-        {recommendation.status === "submitted" ? "Received" : "Pending"}
-      </Badge>
+      <div className="flex flex-col items-end gap-2 shrink-0">
+        <Badge
+          variant={
+            recommendation.status === "submitted"
+              ? "default"
+              : isStuck
+                ? "destructive"
+                : "outline"
+          }
+        >
+          {recommendation.status === "submitted"
+            ? "Received"
+            : isStuck
+              ? "Stuck"
+              : "Pending"}
+        </Badge>
+        {recommendation.status !== "submitted" && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={handleResend}
+            disabled={resending}
+          >
+            {resending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <>
+                <Mail className="h-3 w-3 mr-1" />
+                Resend
+              </>
+            )}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

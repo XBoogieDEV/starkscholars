@@ -549,8 +549,168 @@ export const adminResendEmail = mutation({
 });
 
 // ============================================
+// BULK OUTREACH SUPPORT
+// ============================================
+
+/**
+ * Admin-gated query returning counts of pending recommenders and applicants
+ * that would be affected by a bulk outreach, so the admin can confirm before sending.
+ */
+export const getPendingOutreachCounts = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", identity.email as string))
+      .first();
+
+    if (!user || (user.role !== "admin" && user.role !== "committee")) {
+      throw new Error("Admin access required");
+    }
+
+    const pendingRecs = await ctx.db
+      .query("recommendations")
+      .filter((q) => q.neq(q.field("status"), "submitted"))
+      .collect();
+
+    const uniqueApplicationIds = new Set(pendingRecs.map((r) => r.applicationId));
+
+    return {
+      recommenderCount: pendingRecs.length,
+      applicantCount: uniqueApplicationIds.size,
+    };
+  },
+});
+
+/**
+ * Admin mutation that triggers the bulk recommender outreach action.
+ */
+export const triggerBulkRecommenderOutreach = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", identity.email as string))
+      .first();
+
+    if (!user || (user.role !== "admin" && user.role !== "committee")) {
+      throw new Error("Admin access required");
+    }
+
+    await ctx.scheduler.runAfter(0, api.emails.sendBulkRecommenderOutreach, {});
+
+    await logAction(ctx, {
+      action: "admin:export",
+      userId: user._id,
+      details: { action: "bulk_recommender_outreach_triggered" },
+    });
+
+    return { scheduled: true };
+  },
+});
+
+/**
+ * Admin mutation that triggers the applicant follow-up alert action.
+ */
+export const triggerApplicantFollowUpAlert = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", identity.email as string))
+      .first();
+
+    if (!user || (user.role !== "admin" && user.role !== "committee")) {
+      throw new Error("Admin access required");
+    }
+
+    await ctx.scheduler.runAfter(0, api.emails.sendApplicantPendingAlert, {});
+
+    await logAction(ctx, {
+      action: "admin:export",
+      userId: user._id,
+      details: { action: "applicant_follow_up_alert_triggered" },
+    });
+
+    return { scheduled: true };
+  },
+});
+
+/**
+ * Internal mutation to refresh a recommendation token without sending email.
+ * Used by the bulk outreach action for expired tokens.
+ */
+export const refreshTokenForOutreach = internalMutation({
+  args: { recommendationId: v.id("recommendations") },
+  handler: async (ctx, { recommendationId }) => {
+    const newToken = generateSecureToken();
+    const newExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+    await ctx.db.patch(recommendationId, {
+      accessToken: newToken,
+      tokenExpiresAt: newExpiresAt,
+      updatedAt: Date.now(),
+    });
+    return { newToken, newExpiresAt };
+  },
+});
+
+// ============================================
 // STUCK RECOMMENDER NOTIFICATIONS
 // ============================================
+
+/**
+ * Admin-accessible query to get stuck recommenders (status="viewed" with valid tokens).
+ * Used by the admin settings panel to identify and resend to blocked recommenders.
+ */
+export const getStuckRecommendersForAdmin = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", identity.email as string))
+      .first();
+
+    if (!user || (user.role !== "admin" && user.role !== "committee")) {
+      throw new Error("Admin access required");
+    }
+
+    const now = Date.now();
+    const viewedRecs = await ctx.db
+      .query("recommendations")
+      .filter((q) => q.eq(q.field("status"), "viewed"))
+      .collect();
+
+    const results = [];
+    for (const rec of viewedRecs) {
+      const application = await ctx.db.get(rec.applicationId);
+      if (!application) continue;
+
+      results.push({
+        _id: rec._id,
+        recommenderEmail: rec.recommenderEmail,
+        recommenderName: rec.recommenderName,
+        tokenExpiresAt: rec.tokenExpiresAt,
+        isExpired: rec.tokenExpiresAt < now,
+        applicantName: `${application.firstName} ${application.lastName}`,
+        applicationId: rec.applicationId,
+      });
+    }
+
+    return results;
+  },
+});
 
 /**
  * Get all recommenders who viewed the page but couldn't submit
