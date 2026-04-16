@@ -429,7 +429,7 @@ export default function StatusPage() {
                     <div className="space-y-4 py-4">
                       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                         <p className="text-sm text-primary">
-                          <strong>Important:</strong> If you withdraw before the deadline (April 15, 2026), 
+                          <strong>Important:</strong> If you withdraw before the deadline (April 20, 2026), 
                           you may submit a new application. After the deadline, you cannot reapply.
                         </p>
                       </div>

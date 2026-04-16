@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation, action, internalQuery } from "./_generated/server";
+import { query, mutation, action, internalQuery, internalMutation } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 
 // ============================================
@@ -531,5 +531,189 @@ export const finalizeSelection = mutation({
     }
 
     return { selectedCount: selectedIds.length, notSelectedCount };
+  },
+});
+
+// ============================================
+// ADMIN RECOMMENDATION MANAGEMENT
+// ============================================
+
+export const adminUploadRecommendationLetter = mutation({
+  args: {
+    recommendationId: v.id("recommendations"),
+    letterFileId: v.id("_storage"),
+    recommenderName: v.optional(v.string()),
+    recommenderOrganization: v.optional(v.string()),
+  },
+  handler: async (ctx, { recommendationId, letterFileId, recommenderName, recommenderOrganization }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const email = identity.email;
+    if (!email) throw new Error("Email not available");
+
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (!user || user.role !== "admin") throw new Error("Unauthorized");
+
+    const recommendation = await ctx.db.get(recommendationId);
+    if (!recommendation) throw new Error("Recommendation not found");
+
+    const patch: Record<string, unknown> = {
+      letterFileId,
+      status: "submitted" as const,
+      submittedAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    if (recommenderName) patch.recommenderName = recommenderName;
+    if (recommenderOrganization) patch.recommenderOrganization = recommenderOrganization;
+
+    await ctx.db.patch(recommendationId, patch);
+
+    await ctx.db.insert("activityLog", {
+      applicationId: recommendation.applicationId,
+      userId: user._id,
+      action: "recommendation_uploaded",
+      details: `Admin uploaded recommendation letter for ${recommendation.recommenderEmail}`,
+      createdAt: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
+
+// ============================================
+// INTERNAL: CLI / ADMIN FORCE-SUBMIT TOOLS
+// ============================================
+
+export const findApplicationByName = internalQuery({
+  args: { firstName: v.string(), lastName: v.string() },
+  handler: async (ctx, { firstName, lastName }) => {
+    const apps = await ctx.db.query("applications").collect();
+    return apps
+      .filter(
+        (a) =>
+          a.firstName?.toLowerCase() === firstName.toLowerCase() &&
+          a.lastName?.toLowerCase() === lastName.toLowerCase()
+      )
+      .map((a) => ({
+        _id: a._id,
+        status: a.status,
+        firstName: a.firstName,
+        lastName: a.lastName,
+        submittedAt: a.submittedAt,
+        completedSteps: a.completedSteps,
+        essayWordCount: a.essayWordCount,
+        hasEssayText: !!a.essayText,
+        hasEssayFileId: !!a.essayFileId,
+        hasTranscript: !!a.transcriptFileId,
+        hasPhoto: !!a.profilePhotoId,
+      }));
+  },
+});
+
+export const forceSubmitApplication = internalMutation({
+  args: { applicationId: v.id("applications") },
+  handler: async (ctx, { applicationId }) => {
+    const application = await ctx.db.get(applicationId);
+    if (!application) throw new Error("Application not found");
+
+    if (application.status === "submitted") {
+      return { success: false, message: "Application is already submitted" };
+    }
+
+    // Force-submit: bypass deadline and signature requirements (admin override)
+    await ctx.db.patch(applicationId, {
+      status: "submitted",
+      submittedAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    // Send confirmation email
+    await ctx.scheduler.runAfter(0, api.emails.sendApplicationSubmitted, {
+      applicationId,
+    });
+
+    // Trigger AI summary
+    await ctx.scheduler.runAfter(0, internal.ai.generateSummary, {
+      applicationId,
+    });
+
+    return { success: true, message: `Application ${applicationId} submitted successfully` };
+  },
+});
+
+// Find all unsubmitted applications that appear to meet all requirements
+export const findReadyToSubmit = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const apps = await ctx.db
+      .query("applications")
+      .collect();
+
+    return apps
+      .filter((a) => {
+        if (a.status === "submitted" || a.status === "withdrawn") return false;
+        // Must have all required fields
+        if (!a.firstName || !a.lastName) return false;
+        if (!a.streetAddress || a.state !== "MI") return false;
+        if (!a.highSchoolName || !a.gpa || a.gpa < 3.0) return false;
+        if (a.isFullTimeStudent !== true || a.isMichiganResident !== true) return false;
+        if (!a.transcriptFileId) return false;
+        if ((!a.essayText && !a.essayFileId) || !a.essayWordCount || a.essayWordCount < 250 || a.essayWordCount > 500) return false;
+        if (!a.collegeName || !a.yearInCollege) return false;
+        return true;
+      })
+      .map((a) => ({
+        _id: a._id,
+        status: a.status,
+        firstName: a.firstName,
+        lastName: a.lastName,
+        essayWordCount: a.essayWordCount,
+        completedSteps: a.completedSteps,
+      }));
+  },
+});
+
+// Batch force-submit all applications that meet requirements
+export const batchForceSubmit = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const apps = await ctx.db.query("applications").collect();
+    const ready = apps.filter((a) => {
+      if (a.status === "submitted" || a.status === "withdrawn") return false;
+      if (!a.firstName || !a.lastName) return false;
+      if (!a.streetAddress || a.state !== "MI") return false;
+      if (!a.highSchoolName || !a.gpa || a.gpa < 3.0) return false;
+      if (a.isFullTimeStudent !== true || a.isMichiganResident !== true) return false;
+      if (!a.transcriptFileId) return false;
+      if ((!a.essayText && !a.essayFileId) || !a.essayWordCount || a.essayWordCount < 250 || a.essayWordCount > 500) return false;
+      if (!a.collegeName || !a.yearInCollege) return false;
+      return true;
+    });
+
+    const results: { id: string; name: string; success: boolean }[] = [];
+    for (const app of ready) {
+      try {
+        await ctx.db.patch(app._id, {
+          status: "submitted",
+          submittedAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+        await ctx.scheduler.runAfter(0, api.emails.sendApplicationSubmitted, {
+          applicationId: app._id,
+        });
+        await ctx.scheduler.runAfter(0, internal.ai.generateSummary, {
+          applicationId: app._id,
+        });
+        results.push({ id: app._id, name: `${app.firstName} ${app.lastName}`, success: true });
+      } catch (err) {
+        results.push({ id: app._id, name: `${app.firstName} ${app.lastName}`, success: false });
+      }
+    }
+    return results;
   },
 });

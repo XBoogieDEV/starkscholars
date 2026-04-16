@@ -74,9 +74,9 @@ export const getValidationStatus = query({
     const filesMet = profilePhotoUploaded && transcriptUploaded && essayUploaded;
     if (filesMet) metRequirements++;
 
-    // 6. Essay word count valid (250-500)
+    // 6. Essay word count valid (250-500) AND essay content present (text or file)
     const wordCount = application.essayWordCount || 0;
-    const essayValid = wordCount >= 250 && wordCount <= 500;
+    const essayValid = (!!application.essayText || !!application.essayFileId) && wordCount >= 250 && wordCount <= 500;
     if (essayValid) metRequirements++;
 
     // 7. Eligibility info complete (name, address, education)
@@ -455,9 +455,9 @@ export const submit = mutation({
   },
   handler: async (ctx, { applicationId, signature }) => {
     // DEADLINE CHECK: Must be first - server-side enforcement
-    const DEADLINE = new Date("2026-04-15T23:59:59-04:00").getTime();
+    const DEADLINE = new Date("2026-04-20T23:59:59-04:00").getTime();
     if (Date.now() > DEADLINE) {
-      throw new Error("Application deadline has passed. Applications closed on April 15, 2026.");
+      throw new Error("Application deadline has passed. Applications closed on April 20, 2026.");
     }
 
     const identity = await ctx.auth.getUserIdentity();
@@ -478,7 +478,7 @@ export const submit = mutation({
       { check: !!application.streetAddress && application.state === "MI", error: "Address incomplete" },
       { check: !!application.highSchoolName && !!application.gpa && (application.gpa || 0) >= 3.0, error: "Education requirements not met" },
       { check: application.isFullTimeStudent === true && application.isMichiganResident === true, error: "Eligibility requirements not met" },
-      { check: !!application.essayText && (application.essayWordCount || 0) >= 250 && (application.essayWordCount || 0) <= 500, error: "Essay must be between 250-500 words" },
+      { check: (!!application.essayText || !!application.essayFileId) && (application.essayWordCount || 0) >= 250 && (application.essayWordCount || 0) <= 500, error: "Essay must be between 250-500 words" },
       { check: !!application.transcriptFileId, error: "Transcript not uploaded" },
     ];
 
@@ -570,7 +570,7 @@ export const withdraw = mutation({
     }
 
     // Check deadline (can only reapply if withdrawn before deadline)
-    const DEADLINE = new Date("2026-04-15T23:59:59-04:00").getTime();
+    const DEADLINE = new Date("2026-04-20T23:59:59-04:00").getTime();
     const canReapply = Date.now() <= DEADLINE;
 
     // Update application status

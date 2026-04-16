@@ -27,7 +27,7 @@ function DeadlineBanner() {
           Applications Closed
         </AlertTitle>
         <AlertDescription className="text-red-700 text-xs">
-          The application deadline has passed (April 15, 2026). You can no longer submit or edit your application.
+          The application deadline has passed (April 20, 2026). You can no longer submit or edit your application.
         </AlertDescription>
       </Alert>
     );
@@ -41,7 +41,7 @@ function DeadlineBanner() {
           Deadline Approaching
         </AlertTitle>
         <AlertDescription className="text-foreground/80 text-xs">
-          Only {daysRemaining} {daysRemaining === 1 ? "day" : "days"} remaining until April 15, 2026 deadline.
+          Only {daysRemaining} {daysRemaining === 1 ? "day" : "days"} remaining until April 20, 2026 deadline.
         </AlertDescription>
       </Alert>
     );

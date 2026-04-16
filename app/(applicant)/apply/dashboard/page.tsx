@@ -141,7 +141,7 @@ export default function DashboardPage() {
             Applications Closed
           </AlertTitle>
           <AlertDescription className="text-red-700">
-            The application deadline has passed (April 15, 2026). You can no longer submit or edit your application.
+            The application deadline has passed (April 20, 2026). You can no longer submit or edit your application.
           </AlertDescription>
         </Alert>
       )}
@@ -158,7 +158,7 @@ export default function DashboardPage() {
               Deadline Approaching
             </AlertTitle>
             <AlertDescription className="text-primary">
-              Only {daysRemaining} {daysRemaining === 1 ? "day" : "days"} remaining until the April 15, 2026 deadline. Submit your application soon!
+              Only {daysRemaining} {daysRemaining === 1 ? "day" : "days"} remaining until the April 20, 2026 deadline. Submit your application soon!
             </AlertDescription>
           </Alert>
         </motion.div>
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                     Deadline Reminder
                   </h3>
                   <p className={`text-xs sm:text-sm ${isUrgent ? "text-primary" : "text-blue-700"}`}>
-                    Applications are due April 15, 2026 at 11:59 PM EST
+                    Applications are due April 20, 2026 at 11:59 PM EST
                     {daysRemaining > 0 && (
                       <span className="font-medium">
                         {" "}

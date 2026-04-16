@@ -476,7 +476,7 @@ export default function LandingPage() {
             <div className="space-y-12">
               {[
                 { date: "Feb 1, 2026", title: "Applications Open", desc: "Online portal opens for new registrations." },
-                { date: "Apr 15, 2026", title: "Application Deadline", desc: "Final day to submit all required documents." },
+                { date: "Apr 20, 2026", title: "Application Deadline", desc: "Final day to submit all required documents." },
                 { date: "Apr 16 - Apr 26", title: "Review Period", desc: "Committee reviews all eligible applications." },
                 { date: "Apr 27 - Apr 30", title: "Final Determinations", desc: "Recipients for awards are finalized." },
                 { date: "May 1, 2026", title: "Award Recipients Notified", desc: "Award recipients notified via email." }
@@ -695,7 +695,7 @@ export default function LandingPage() {
             transition={{ delay: 0.1 }}
             className="text-white/90 text-xl mb-10 max-w-2xl mx-auto"
           >
-            The application deadline is <span className="font-bold underline text-white">April 15, 2026</span>.
+            The application deadline is <span className="font-bold underline text-white">April 20, 2026</span>.
             Don&apos;t wait to take the next step in your educational journey.
           </motion.p>
           <motion.div

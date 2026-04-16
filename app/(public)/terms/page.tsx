@@ -59,7 +59,7 @@ const sections = [
       • You may only submit one application per scholarship cycle
       • You are responsible for ensuring all required materials are submitted before the deadline
       
-      The application deadline for the 2026 scholarship cycle is April 15, 2026 at 11:59 PM EST.
+      The application deadline for the 2026 scholarship cycle is April 20, 2026 at 11:59 PM EST.
     `
   },
   {

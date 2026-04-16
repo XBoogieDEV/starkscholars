@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useRef } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useQuery, useMutation } from "convex/react";
@@ -37,7 +37,18 @@ import {
   Activity,
   Printer,
   Loader2,
+  Upload,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
 
@@ -175,6 +186,157 @@ function AISummaryCard({ summary, highlights }: { summary?: string; highlights?:
   );
 }
 
+// Admin upload dialog — allows uploading a recommendation letter on behalf of a recommender
+function AdminUploadLetterDialog({
+  recommendationId,
+  recommenderEmail,
+  open,
+  onOpenChange,
+}: {
+  recommendationId: Id<"recommendations">;
+  recommenderEmail: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+  const adminUpload = useMutation(api.admin.adminUploadRecommendationLetter);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [recommenderName, setRecommenderName] = useState("");
+  const [recommenderOrg, setRecommenderOrg] = useState("");
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const allowed = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!allowed.includes(f.type)) {
+      toast.error("Only PDF or Word documents are allowed.");
+      return;
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      toast.error("File must be under 10MB.");
+      return;
+    }
+    setFile(f);
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      toast.error("Please select a file.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const uploadUrl = await generateUploadUrl({ type: "recommendation" });
+      const res = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!res.ok) throw new Error("File upload failed");
+      const { storageId } = await res.json();
+      await adminUpload({
+        recommendationId,
+        letterFileId: storageId as Id<"_storage">,
+        ...(recommenderName && { recommenderName }),
+        ...(recommenderOrg && { recommenderOrganization: recommenderOrg }),
+      });
+      toast.success("Recommendation letter uploaded successfully.");
+      onOpenChange(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Upload failed. Please try again.";
+      toast.error(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            Upload Recommendation Letter
+          </DialogTitle>
+          <DialogDescription>
+            Upload a letter on behalf of <strong>{recommenderEmail}</strong>. The recommendation will be marked as received.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="rec-file">Letter File (PDF or Word) *</Label>
+            <Input
+              id="rec-file"
+              type="file"
+              accept=".pdf,.doc,.docx"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="cursor-pointer"
+            />
+            {file && <p className="text-xs text-muted-foreground">{file.name}</p>}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rec-name">Recommender Name (optional)</Label>
+            <Input
+              id="rec-name"
+              placeholder="Dr. Jane Smith"
+              value={recommenderName}
+              onChange={(e) => setRecommenderName(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rec-org">Organization (optional)</Label>
+            <Input
+              id="rec-org"
+              placeholder="University of Michigan"
+              value={recommenderOrg}
+              onChange={(e) => setRecommenderOrg(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={uploading}>
+            Cancel
+          </Button>
+          <Button onClick={handleUpload} disabled={!file || uploading}>
+            {uploading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Uploading…
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4 mr-2" />
+                Upload Letter
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Fetches letter URL and renders a "View Letter" button — isolated so useQuery is always called
+function LetterViewButton({ letterFileId }: { letterFileId: Id<"_storage"> }) {
+  const url = useQuery(api.storage.getFileUrl, { storageId: letterFileId });
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="h-7 text-xs"
+      onClick={() => url && window.open(url, "_blank")}
+      disabled={!url}
+    >
+      <FileText className="h-3 w-3 mr-1" />
+      View Letter
+    </Button>
+  );
+}
+
 function RecommendationCard({
   recommendation,
 }: {
@@ -186,10 +348,12 @@ function RecommendationCard({
     status: string;
     submittedAt?: number;
     tokenExpiresAt?: number;
+    letterFileId?: Id<"_storage">;
   };
 }) {
   const adminResendEmail = useMutation(api.recommendations.adminResendEmail);
   const [resending, setResending] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const isExpired = recommendation.tokenExpiresAt
     ? recommendation.tokenExpiresAt < Date.now()
@@ -262,25 +426,45 @@ function RecommendationCard({
               ? "Stuck"
               : "Pending"}
         </Badge>
+        {recommendation.status === "submitted" && recommendation.letterFileId && (
+          <LetterViewButton letterFileId={recommendation.letterFileId} />
+        )}
         {recommendation.status !== "submitted" && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={handleResend}
-            disabled={resending}
-          >
-            {resending ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <>
-                <Mail className="h-3 w-3 mr-1" />
-                Resend
-              </>
-            )}
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => setUploadOpen(true)}
+            >
+              <Upload className="h-3 w-3 mr-1" />
+              Upload Letter
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={handleResend}
+              disabled={resending}
+            >
+              {resending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <>
+                  <Mail className="h-3 w-3 mr-1" />
+                  Resend
+                </>
+              )}
+            </Button>
+          </>
         )}
       </div>
+      <AdminUploadLetterDialog
+        recommendationId={recommendation._id as Id<"recommendations">}
+        recommenderEmail={recommendation.recommenderEmail}
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+      />
     </div>
   );
 }

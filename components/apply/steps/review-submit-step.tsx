@@ -767,14 +767,19 @@ export function ReviewSubmitStep({ application, onComplete }: ReviewSubmitStepPr
             {/* Submit Button */}
             <div className="pt-4">
               {!allRequirementsMet && (
-                <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                  <p className="text-primary text-sm flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                    <span>
-                      Please complete all application requirements before submitting.
-                      Check the requirements checklist above for details.
-                    </span>
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-700 text-sm font-medium flex items-center gap-2 mb-2">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    The following requirements must be completed before you can submit:
                   </p>
+                  <ul className="space-y-1 ml-6">
+                    {requirements.filter(r => !r.met).map(r => (
+                      <li key={r.id} className="text-sm text-red-600 flex items-center gap-2">
+                        <XCircle className="h-3 w-3 flex-shrink-0" />
+                        <Link href={r.link} className="underline hover:text-red-800">{r.label}</Link>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
 

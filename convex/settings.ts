@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 
 export const getAll = query({
   args: {},
@@ -66,8 +66,8 @@ export const set = mutation({
   },
 });
 
-// Deadline: April 15, 2026 at 11:59 PM EST (UTC-4)
-export const DEADLINE_TIMESTAMP = new Date("2026-04-15T23:59:59-04:00").getTime();
+// Deadline: April 20, 2026 at 11:59 PM EST (UTC-4)
+export const DEADLINE_TIMESTAMP = new Date("2026-04-20T23:59:59-04:00").getTime();
 
 export const getDeadline = query({
   args: {},
@@ -92,5 +92,27 @@ export const isDeadlinePassed = query({
 
     const deadline = setting ? parseInt(setting.value) : DEADLINE_TIMESTAMP;
     return Date.now() > deadline;
+  },
+});
+
+// Internal: update deadline without auth (for CLI/admin use)
+export const updateDeadlineInternal = internalMutation({
+  args: { isoTimestamp: v.string() },
+  handler: async (ctx, { isoTimestamp }) => {
+    const timestamp = new Date(isoTimestamp).getTime();
+    const existing = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "application_deadline"))
+      .first();
+    if (existing) {
+      await ctx.db.patch(existing._id, { value: timestamp.toString(), updatedAt: Date.now() });
+    } else {
+      await ctx.db.insert("settings", {
+        key: "application_deadline",
+        value: timestamp.toString(),
+        updatedAt: Date.now(),
+      });
+    }
+    return { success: true, deadline: new Date(timestamp).toISOString() };
   },
 });
