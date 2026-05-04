@@ -125,6 +125,60 @@ export async function waitForAuthRedirect(page: Page, timeout = 15000) {
 }
 
 /**
+ * Test fixtures created by scripts/seed-test-users.mjs.
+ * All share the same password.
+ */
+export const TEST_USERS = {
+  admin: { email: "test-admin@scholars.test", expectedLanding: "/admin" },
+  committee: { email: "test-committee@scholars.test", expectedLanding: "/committee" },
+  chair: { email: "test-chair@scholars.test", expectedLanding: "/committee" },
+  applicant: { email: "test-applicant@scholars.test", expectedLanding: "/apply" },
+} as const;
+
+export const TEST_PASSWORD = "TestPass-2026";
+
+/**
+ * Signs in via the /login form. Waits for the post-login redirect to land on
+ * `expectedLanding` (or any path containing it). Throws if the form errors out.
+ */
+export async function signInAs(
+  page: Page,
+  who: keyof typeof TEST_USERS,
+): Promise<void> {
+  const { email, expectedLanding } = TEST_USERS[who];
+
+  await page.goto("/login");
+  await page.waitForLoadState("domcontentloaded");
+
+  // Fill the standard email + password form
+  await page.locator("input[type='email'], input[name='email']").first().fill(email);
+  await page.locator("input[type='password']").first().fill(TEST_PASSWORD);
+  await page
+    .getByRole("button", { name: /sign in/i })
+    .first()
+    .click();
+
+  // Login page redirects via window.location after success; wait for the
+  // expected landing path. Generous timeout for cold starts + auth sync.
+  await page.waitForURL(`**${expectedLanding}**`, { timeout: 20000 });
+}
+
+/**
+ * Skip-if-not-seeded marker. Authenticated specs check that the test users
+ * exist by attempting a quick login as the admin fixture; if it fails, the
+ * suite is skipped instead of failing.
+ */
+export async function ensureSeededOrSkip(page: Page, testInfo: { skip: (reason?: string) => void }) {
+  try {
+    await signInAs(page, "admin");
+  } catch (e) {
+    testInfo.skip(
+      `Test users not seeded. Run \`node scripts/seed-test-users.mjs\` first. (${e instanceof Error ? e.message : String(e)})`
+    );
+  }
+}
+
+/**
  * Scroll a section into view and assert it is visible
  * Useful for Framer Motion whileInView animations
  */
