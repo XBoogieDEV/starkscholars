@@ -101,6 +101,67 @@ export const seedSetChair = internalMutation({
   },
 });
 
+// Inserts a minimal test application owned by the test-applicant fixture so
+// the admin detail page (/admin/applications/[id]) has something to render
+// while we diagnose the view-crash. Idempotent.
+export const seedTestApplication = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const applicant = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", "test-applicant@scholars.test"))
+      .first();
+    if (!applicant) throw new Error("test-applicant fixture not found; run seed-test-users.mjs first");
+
+    // If a test application already exists for this user, return it
+    const existing = await ctx.db
+      .query("applications")
+      .withIndex("by_user", (q) => q.eq("userId", applicant._id))
+      .first();
+    if (existing) return existing._id;
+
+    return await ctx.db.insert("applications", {
+      userId: applicant._id,
+      status: "submitted" as const,
+      currentStep: 7,
+      completedSteps: [1, 2, 3, 4, 5, 6, 7],
+      firstName: "Test",
+      lastName: "Applicant",
+      phone: "555-555-5555",
+      dateOfBirth: "2005-01-01",
+      streetAddress: "123 Main St",
+      city: "Detroit",
+      state: "MI",
+      zipCode: "48201",
+      highSchoolName: "Test High School",
+      highSchoolCity: "Detroit",
+      highSchoolState: "MI",
+      graduationDate: "2023-06-15",
+      gpa: 3.75,
+      collegeName: "Test University",
+      collegeCity: "Ann Arbor",
+      collegeState: "MI",
+      yearInCollege: "sophomore" as const,
+      major: "Computer Science",
+      isFirstTimeApplying: true,
+      isPreviousRecipient: false,
+      isFullTimeStudent: true,
+      isMichiganResident: true,
+      essayText: "Test essay content for diagnostic purposes. ".repeat(50),
+      essayWordCount: 350,
+      endorserName: "Test Endorser",
+      endorserOrient: "Detroit",
+      endorserConsistoryAssembly: "Test Consistory",
+      endorserEmail: "endorser@scholars.test",
+      endorserPhone: "555-555-5556",
+      endorsementConfirmed: true,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      submittedAt: Date.now(),
+    });
+  },
+});
+
 // Cascade-deletes everything tied to a test user. Refuses non-test emails.
 // Order matters: child tables first, then user/account/session, then storage refs.
 export const seedDeleteUser = internalMutation({
