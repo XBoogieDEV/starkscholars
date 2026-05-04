@@ -49,6 +49,8 @@ import Link from "next/link";
 export default function ResultsPage() {
   const data = useQuery(api.evaluations.getRankings);
   const user = useQuery(api.users.getCurrentUser);
+  const myMembership = useQuery(api.committeeMembers.getMyMembership);
+  const maxSetting = useQuery(api.settings.get, { key: "max_scholarship_recipients" });
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(
     new Set()
   );
@@ -56,6 +58,9 @@ export default function ResultsPage() {
   const finalizeSelection = useMutation(api.admin.finalizeSelection);
 
   const isAdmin = user?.role === "admin";
+  const isChair = myMembership?.isChairman === true;
+  const canFinalize = isAdmin || isChair;
+  const maxRecipients = maxSetting?.value ? parseInt(maxSetting.value) : 2;
 
   if (data === undefined || user === undefined) {
     return (
@@ -74,15 +79,15 @@ export default function ResultsPage() {
       ? Math.round((totalEvaluations / totalPossibleEvaluations) * 100)
       : 0;
 
-  // Toggle recipient selection (admin only)
+  // Toggle recipient selection (admin or committee chair only)
   const toggleRecipient = (applicationId: string) => {
-    if (!isAdmin) return;
+    if (!canFinalize) return;
 
     const newSelected = new Set(selectedRecipients);
     if (newSelected.has(applicationId)) {
       newSelected.delete(applicationId);
     } else {
-      if (newSelected.size < 2) {
+      if (newSelected.size < maxRecipients) {
         newSelected.add(applicationId);
       }
     }
@@ -101,10 +106,10 @@ export default function ResultsPage() {
             Committee evaluation results and candidate rankings
           </p>
         </div>
-        {isAdmin && (
+        {canFinalize && (
           <Badge className="bg-purple-100 text-purple-800 px-3 py-1">
             <Lock className="h-3 w-3 mr-1" />
-            Admin Access
+            {isAdmin ? "Admin" : "Chair"} Access
           </Badge>
         )}
       </div>
@@ -227,7 +232,7 @@ export default function ResultsPage() {
                       </span>
                     </TableHead>
                   ))}
-                  {isAdmin && (
+                  {canFinalize && (
                     <TableHead className="text-center">Select</TableHead>
                   )}
                 </TableRow>
@@ -311,14 +316,14 @@ export default function ResultsPage() {
                           </TableCell>
                         );
                       })}
-                      {isAdmin && (
+                      {canFinalize && (
                         <TableCell className="text-center">
                           <Checkbox
                             checked={selectedRecipients.has(app._id)}
                             onCheckedChange={() => toggleRecipient(app._id)}
                             disabled={
                               !selectedRecipients.has(app._id) &&
-                              selectedRecipients.size >= 2
+                              selectedRecipients.size >= maxRecipients
                             }
                           />
                         </TableCell>
@@ -349,8 +354,8 @@ export default function ResultsPage() {
         </CardContent>
       </Card>
 
-      {/* Admin Selection Panel */}
-      {isAdmin && (
+      {/* Selection Panel (admin or committee chair) */}
+      {canFinalize && (
         <Card className="border-purple-200 bg-purple-50/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-purple-900">
@@ -360,9 +365,9 @@ export default function ResultsPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-purple-800 mb-4">
-              Select 2 scholarship recipients. Current selection: {" "}
+              Select {maxRecipients} scholarship recipient{maxRecipients === 1 ? "" : "s"}. Current selection: {" "}
               <strong>
-                {selectedRecipients.size}/2
+                {selectedRecipients.size}/{maxRecipients}
               </strong>
             </p>
 
@@ -393,7 +398,7 @@ export default function ResultsPage() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  disabled={selectedRecipients.size !== 2 || isFinalizing}
+                  disabled={selectedRecipients.size !== maxRecipients || isFinalizing}
                   className="bg-purple-600 hover:bg-purple-700"
                 >
                   {isFinalizing ? (
@@ -432,9 +437,9 @@ export default function ResultsPage() {
               </AlertDialogContent>
             </AlertDialog>
 
-            {selectedRecipients.size !== 2 && (
+            {selectedRecipients.size !== maxRecipients && (
               <p className="text-sm text-purple-600 mt-2">
-                Please select exactly 2 recipients to confirm.
+                Please select exactly {maxRecipients} recipient{maxRecipients === 1 ? "" : "s"} to confirm.
               </p>
             )}
           </CardContent>

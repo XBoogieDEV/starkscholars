@@ -187,12 +187,37 @@ export const getCandidatesForEvaluation = query({
       }
     });
 
-    return applications.map(app => ({
-      ...app,
-      myEvaluation: myEvaluationMap.get(app._id),
-      evaluationCount: evaluationCounts.get(app._id) || 0,
-      recommendationCount: recommendationCounts.get(app._id) || 0,
-    }));
+    // Compute average rating per application from all submitted evaluations
+    const ratingSums = new Map<string, { sum: number; count: number }>();
+    allEvaluations.forEach((e) => {
+      const points = ratingPoints[e.rating as Rating];
+      const cur = ratingSums.get(e.applicationId) || { sum: 0, count: 0 };
+      cur.sum += points;
+      cur.count += 1;
+      ratingSums.set(e.applicationId, cur);
+    });
+
+    // Resolve profile photo URLs server-side (one storage URL per applicant)
+    const enriched = await Promise.all(
+      applications.map(async (app) => {
+        const sums = ratingSums.get(app._id) || { sum: 0, count: 0 };
+        const averageRating =
+          sums.count > 0 ? Math.round((sums.sum / sums.count) * 100) / 100 : 0;
+        const profilePhotoUrl = app.profilePhotoId
+          ? await ctx.storage.getUrl(app.profilePhotoId)
+          : null;
+        return {
+          ...app,
+          myEvaluation: myEvaluationMap.get(app._id),
+          evaluationCount: evaluationCounts.get(app._id) || 0,
+          recommendationCount: recommendationCounts.get(app._id) || 0,
+          averageRating,
+          profilePhotoUrl,
+        };
+      })
+    );
+
+    return enriched;
   },
 });
 
@@ -268,6 +293,9 @@ export const getCandidateDetails = query({
     const essayFileUrl = application.essayFileId
       ? await ctx.storage.getUrl(application.essayFileId)
       : null;
+    const profilePhotoUrl = application.profilePhotoId
+      ? await ctx.storage.getUrl(application.profilePhotoId)
+      : null;
 
     return {
       application,
@@ -276,6 +304,7 @@ export const getCandidateDetails = query({
       recommendations: recommendationsWithUrls,
       transcriptUrl,
       essayFileUrl,
+      profilePhotoUrl,
     };
   },
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -84,13 +84,17 @@ export default function CandidateDetailPage() {
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [seeded, setSeeded] = useState(false);
 
-  // Set initial values if evaluation exists
+  // Seed rating/notes from existing evaluation once data arrives
   const existingEvaluation = data?.myEvaluation;
-  if (existingEvaluation && !rating && !isSubmitting) {
-    setRating(existingEvaluation.rating);
-    setNotes(existingEvaluation.notes || "");
-  }
+  useEffect(() => {
+    if (!seeded && existingEvaluation) {
+      setRating(existingEvaluation.rating);
+      setNotes(existingEvaluation.notes || "");
+      setSeeded(true);
+    }
+  }, [seeded, existingEvaluation]);
 
   if (data === undefined) {
     return (
@@ -113,7 +117,7 @@ export default function CandidateDetailPage() {
     );
   }
 
-  const { application, myEvaluation, otherEvaluations, recommendations, transcriptUrl, essayFileUrl } = data;
+  const { application, myEvaluation, otherEvaluations, recommendations, transcriptUrl, essayFileUrl, profilePhotoUrl } = data;
 
   const hasEvaluated = !!myEvaluation;
 
@@ -138,9 +142,7 @@ export default function CandidateDetailPage() {
     application.lastName?.[0] || ""
   }`.toUpperCase();
 
-  const photoUrl = application.profilePhotoId
-    ? `/api/storage/${application.profilePhotoId}`
-    : null;
+  const photoUrl = profilePhotoUrl || null;
 
   return (
     <div className="space-y-6">

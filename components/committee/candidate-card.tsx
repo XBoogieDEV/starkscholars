@@ -22,12 +22,13 @@ interface CandidateCardProps {
     gpa?: number;
     aiSummary?: string;
     aiHighlights?: string[];
-    profilePhotoId?: string;
+    profilePhotoUrl?: string | null;
     myEvaluation?: {
       rating: string;
     };
     evaluationCount?: number;
     recommendationCount?: number;
+    averageRating?: number;
   };
   showEvaluateButton?: boolean;
   compact?: boolean;
@@ -42,10 +43,8 @@ export function CandidateCard({
   const rating = candidate.myEvaluation?.rating as keyof typeof ratingLabels;
   const shouldReduceMotion = useReducedMotion();
 
-  // Build photo URL if available
-  const photoUrl = candidate.profilePhotoId
-    ? `/api/storage/${candidate.profilePhotoId}` // Adjust based on your storage setup
-    : null;
+  // Photo URL is resolved server-side in the Convex query
+  const photoUrl = candidate.profilePhotoUrl || null;
 
   const initials = `${candidate.firstName?.[0] || ""}${
     candidate.lastName?.[0] || ""

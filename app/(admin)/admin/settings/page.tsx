@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Settings, Clock, Mail, Shield, Award, Loader2, Save, CheckCircle2, AlertCircle, Users, RefreshCw } from "lucide-react";
+import { Settings, Clock, Mail, Shield, Award, Loader2, Save, CheckCircle2, AlertCircle, Users, RefreshCw, FileText, ChevronDown, ChevronRight } from "lucide-react";
 
 export default function SettingsPage() {
   const allSettings = useQuery(api.settings.getAll);
@@ -56,6 +56,10 @@ export default function SettingsPage() {
   const triggerApplicantFollowUpAlert = useMutation(api.recommendations.triggerApplicantFollowUpAlert);
   const [sendingRecommenderOutreach, setSendingRecommenderOutreach] = useState(false);
   const [sendingApplicantAlert, setSendingApplicantAlert] = useState(false);
+
+  // Letter audit (read-only diagnostic)
+  const [auditOpen, setAuditOpen] = useState(false);
+  const audit = useQuery(api.admin.auditOrphanedLetters, auditOpen ? {} : "skip");
 
   // Load settings when data arrives
   useEffect(() => {
@@ -571,6 +575,166 @@ export default function SettingsPage() {
                     <><RefreshCw className="mr-2 h-4 w-4" />Resend All ({stuckRecommenders.length})</>
                   )}
                 </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Letter Audit (read-only diagnostic) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Recommendation Letter Audit
+            </CardTitle>
+            <CardDescription>
+              Read-only diagnostic. Identifies recommendation rows where storage and state appear inconsistent (likely from prior submission bugs). No actions are taken — review and remediate manually.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              onClick={() => setAuditOpen((v) => !v)}
+            >
+              {auditOpen ? <ChevronDown className="mr-2 h-4 w-4" /> : <ChevronRight className="mr-2 h-4 w-4" />}
+              {auditOpen ? "Hide audit results" : "Run audit"}
+            </Button>
+
+            {auditOpen && (
+              <div className="mt-4">
+                {audit === undefined ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Running audit…
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid gap-3 md:grid-cols-4">
+                      <div className="rounded-lg border p-3">
+                        <p className="text-xs text-muted-foreground">Total recommendations</p>
+                        <p className="text-2xl font-bold">{audit.summary.totalRecommendations}</p>
+                      </div>
+                      <div className="rounded-lg border p-3">
+                        <p className="text-xs text-muted-foreground">Orphaned uploads</p>
+                        <p className={`text-2xl font-bold ${audit.summary.orphanedUploads > 0 ? "text-orange-600" : ""}`}>
+                          {audit.summary.orphanedUploads}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border p-3">
+                        <p className="text-xs text-muted-foreground">Submitted, no file</p>
+                        <p className={`text-2xl font-bold ${audit.summary.submittedNoFile > 0 ? "text-red-600" : ""}`}>
+                          {audit.summary.submittedNoFile}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border p-3">
+                        <p className="text-xs text-muted-foreground">Apps stuck pending</p>
+                        <p className={`text-2xl font-bold ${audit.summary.applicationsStuckPending > 0 ? "text-orange-600" : ""}`}>
+                          {audit.summary.applicationsStuckPending}
+                        </p>
+                      </div>
+                    </div>
+
+                    {audit.orphanedUploads.length > 0 && (
+                      <details className="rounded-lg border p-3" open>
+                        <summary className="cursor-pointer font-medium text-orange-600">
+                          Orphaned uploads ({audit.orphanedUploads.length}) — file uploaded, status didn&apos;t advance
+                        </summary>
+                        <div className="mt-3 overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="text-left p-2">Applicant</th>
+                                <th className="text-left p-2">App status</th>
+                                <th className="text-left p-2">Recommender</th>
+                                <th className="text-left p-2">Rec status</th>
+                                <th className="text-left p-2">Token</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {audit.orphanedUploads.map((r) => (
+                                <tr key={r.recommendationId} className="border-b last:border-0">
+                                  <td className="p-2">{r.applicantName}</td>
+                                  <td className="p-2">{r.applicationStatus}</td>
+                                  <td className="p-2">
+                                    {r.recommenderName ? `${r.recommenderName} <${r.recommenderEmail}>` : r.recommenderEmail}
+                                  </td>
+                                  <td className="p-2">{r.recStatus}</td>
+                                  <td className="p-2">{r.tokenExpired ? "expired" : "valid"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </details>
+                    )}
+
+                    {audit.submittedNoFile.length > 0 && (
+                      <details className="rounded-lg border p-3" open>
+                        <summary className="cursor-pointer font-medium text-red-600">
+                          Submitted but no file ({audit.submittedNoFile.length}) — possible data integrity issue
+                        </summary>
+                        <div className="mt-3 overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="text-left p-2">Applicant</th>
+                                <th className="text-left p-2">Recommender</th>
+                                <th className="text-left p-2">Submitted at</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {audit.submittedNoFile.map((r) => (
+                                <tr key={r.recommendationId} className="border-b last:border-0">
+                                  <td className="p-2">{r.applicantName}</td>
+                                  <td className="p-2">{r.recommenderEmail}</td>
+                                  <td className="p-2">
+                                    {r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "—"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </details>
+                    )}
+
+                    {audit.stuckApplications.length > 0 && (
+                      <details className="rounded-lg border p-3">
+                        <summary className="cursor-pointer font-medium">
+                          Applications stuck at pending_recommendations ({audit.stuckApplications.length})
+                        </summary>
+                        <div className="mt-3 overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="text-left p-2">Applicant</th>
+                                <th className="text-left p-2">Submitted recs</th>
+                                <th className="text-left p-2">Total recs</th>
+                                <th className="text-left p-2">Uploaded but unsubmitted</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {audit.stuckApplications.map((a) => (
+                                <tr key={a.applicationId} className="border-b last:border-0">
+                                  <td className="p-2">{a.applicantName}</td>
+                                  <td className="p-2">{a.submittedRecs}</td>
+                                  <td className="p-2">{a.totalRecs}</td>
+                                  <td className={`p-2 ${a.uploadedNotSubmitted > 0 ? "text-orange-600 font-medium" : ""}`}>
+                                    {a.uploadedNotSubmitted}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </details>
+                    )}
+
+                    <p className="text-xs text-muted-foreground italic">{audit.note}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Audited {new Date(audit.auditedAt).toLocaleString()}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
