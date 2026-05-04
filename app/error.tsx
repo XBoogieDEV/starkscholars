@@ -65,29 +65,23 @@ export default function ErrorBoundary({
             We&apos;re sorry, but something unexpected happened. Please try again.
           </motion.p>
 
-          {/* Error Details — visible to aid diagnosis */}
-          <motion.div
-            variants={shouldReduceMotion ? {} : heroTextItem}
-            className="mb-8 p-4 rounded-lg bg-red-50 border border-red-200 text-left"
-          >
-            <p className="text-sm font-medium text-red-800 mb-1">Error Details:</p>
-            <p className="text-sm text-red-600 font-mono break-all whitespace-pre-wrap">
-              {error.message || "Unknown error"}
-            </p>
-            {error.stack && (
-              <details className="mt-2">
-                <summary className="text-xs text-red-500 cursor-pointer">Stack trace</summary>
-                <pre className="text-xs text-red-500 mt-1 whitespace-pre-wrap break-all">
-                  {error.stack}
-                </pre>
-              </details>
-            )}
-            {error.digest && (
-              <p className="text-xs text-red-500 mt-2">
-                Error ID: {error.digest}
+          {/* Error Details (only in development) */}
+          {process.env.NODE_ENV === "development" && (
+            <motion.div
+              variants={shouldReduceMotion ? {} : heroTextItem}
+              className="mb-8 p-4 rounded-lg bg-red-50 border border-red-200 text-left"
+            >
+              <p className="text-sm font-medium text-red-800 mb-1">Error Details:</p>
+              <p className="text-sm text-red-600 font-mono break-all">
+                {error.message || "Unknown error"}
               </p>
-            )}
-          </motion.div>
+              {error.digest && (
+                <p className="text-xs text-red-500 mt-2">
+                  Error ID: {error.digest}
+                </p>
+              )}
+            </motion.div>
+          )}
 
           {/* Action Buttons */}
           <motion.div
