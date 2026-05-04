@@ -28,9 +28,13 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {
+  // Render as a real heading so screen readers + getByRole("heading") locators
+  // find it. <h3> sits cleanly under the typical page <h1> + section <h2>.
+  // Default h3 browser styling is reset by Tailwind preflight; the existing
+  // className (leading-none font-semibold) keeps the visual unchanged.
   return (
-    <div
+    <h3
       data-slot="card-title"
       className={cn("leading-none font-semibold", className)}
       {...props}
