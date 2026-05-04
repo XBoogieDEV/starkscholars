@@ -114,11 +114,23 @@ Cross-references each scenario in [committee-portal-test-plan.md](./committee-po
 
 This section is appended after running the suite. Captures pass/fail counts and notable failures.
 
-### 2026-05-04 — Initial run on PR branch (chromium-desktop only, unauth subset)
+### 2026-05-04 — Initial dry-run on PR branch (chromium-desktop, unauth subset)
 
+**Result:** 12 failed / 0 passed (all auth-redirect tests).
+
+**Root cause:** stale `convex/_generated/api.ts`. The PR adds new Convex functions (`committeeMembers.getMyMembership`, `admin.auditOrphanedLetters`, plus `seedHelpers.*`) that pages import. Without running `npx convex dev` or `npx convex codegen`, the generated types don't include them, so `next dev` fails to compile any page importing them — every route returns a 404 fallback. The auth-redirect tests visit `/admin/*` and `/committee/*`, hit 404 instead of `/login`, and time out waiting for the redirect.
+
+The dry-run was performed without Convex CLI credentials available (Convex auth is per-developer). The path to a clean run is:
+
+```bash
+npx convex dev          # in a separate terminal — regen types + push functions
+node scripts/seed-test-users.mjs
+npx playwright test --project=chromium-desktop e2e/committee-pages.spec.ts e2e/admin-pages.spec.ts e2e/admin-selection.spec.ts e2e/chair-finalize.spec.ts e2e/orphan-audit.spec.ts --reporter=list
 ```
-(populated after first run; see appendix)
-```
+
+The 12 failures are environment, not test-logic. Once codegen is up to date, the existing auth-redirect tests should pass as they did before (they only assert URL behavior, no Convex-data assertions).
+
+The new authenticated tests will skip (graceful) until seeded users exist; once seeded, they will run the assertions documented in the matrix above.
 
 ## Appendix: Skip behavior
 
