@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { setUserRoleByMainId } from "./userRole";
 
 // Admin auth helper
 async function requireAdmin(ctx: any) {
@@ -103,8 +104,15 @@ export const create = mutation({
       order: maxOrder + 1,
     });
 
-    // Update user role to "committee"
-    await ctx.db.patch(args.userId, { role: "committee" });
+    // Update user role to "committee" in BOTH user tables (main + Better Auth).
+    // Without the Better Auth side, signIn.email() returns the stale role and
+    // the /login redirect misroutes the promoted user.
+    const userRow = await ctx.db.get(args.userId);
+    if (userRow) {
+      await setUserRoleByMainId(ctx, args.userId, userRow.email, "committee");
+    } else {
+      await ctx.db.patch(args.userId, { role: "committee" });
+    }
 
     return id;
   },
@@ -133,8 +141,13 @@ export const remove = mutation({
     const member = await ctx.db.get(id);
     if (!member) throw new Error("Member not found");
 
-    // Reset user role to "applicant"
-    await ctx.db.patch(member.userId, { role: "applicant" });
+    // Reset user role to "applicant" in BOTH user tables.
+    const userRow = await ctx.db.get(member.userId);
+    if (userRow) {
+      await setUserRoleByMainId(ctx, member.userId, userRow.email, "applicant");
+    } else {
+      await ctx.db.patch(member.userId, { role: "applicant" });
+    }
 
     // Delete the committee member
     await ctx.db.delete(id);
