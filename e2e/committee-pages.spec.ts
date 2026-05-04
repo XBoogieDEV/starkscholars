@@ -107,6 +107,8 @@ test.describe("Committee Pages", () => {
   // fixture user doesn't exist (so a missing seed doesn't fail the suite).
 
   test.describe("Committee role: authenticated dashboard", () => {
+    test.describe.configure({ timeout: 120000 });
+
     test("committee user lands on /committee after login", async ({ page }) => {
       try {
         await signInAs(page, "committee");
@@ -182,6 +184,8 @@ test.describe("Committee Pages", () => {
   });
 
   test.describe("Applicant role: blocked from /committee", () => {
+    test.describe.configure({ timeout: 120000 });
+
     test("applicant signing in cannot reach /committee", async ({ page }) => {
       try {
         await signInAs(page, "applicant");

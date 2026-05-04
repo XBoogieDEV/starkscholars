@@ -7,6 +7,8 @@ import { signInAs } from "./utils";
 //   - "Selected: X / Y" counter reflects the setting
 
 test.describe("Admin Selection workflow", () => {
+  test.describe.configure({ timeout: 120000 });
+
   test.beforeEach(async ({ page }) => {
     try {
       await signInAs(page, "admin");

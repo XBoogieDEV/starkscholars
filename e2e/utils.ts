@@ -147,20 +147,46 @@ export async function signInAs(
 ): Promise<void> {
   const { email, expectedLanding } = TEST_USERS[who];
 
-  await page.goto("/login");
-  await page.waitForLoadState("domcontentloaded");
+  await page.goto("/login", { waitUntil: "domcontentloaded" });
 
-  // Fill the standard email + password form
-  await page.locator("input[type='email'], input[name='email']").first().fill(email);
-  await page.locator("input[type='password']").first().fill(TEST_PASSWORD);
+  // Dismiss the cookie banner if present — it can intercept interactions
   await page
-    .getByRole("button", { name: /sign in/i })
+    .getByRole("button", { name: /^accept$/i })
+    .first()
+    .click({ timeout: 3000 })
+    .catch(() => {});
+
+  // Wait for inputs to be attached AND interactive (React hydrated)
+  const emailInput = page.locator("#email").first();
+  const pwInput = page.locator("#password").first();
+  await emailInput.waitFor({ state: "visible", timeout: 15000 });
+  await pwInput.waitFor({ state: "visible", timeout: 5000 });
+
+  // Use pressSequentially (simulates real keystrokes — React's onChange picks
+  // up each char). plain fill() can race with React hydration.
+  await emailInput.click();
+  await emailInput.pressSequentially(email, { delay: 10 });
+  await pwInput.click();
+  await pwInput.pressSequentially(TEST_PASSWORD, { delay: 10 });
+
+  // Verify the values are actually in the DOM before submitting
+  await expect(emailInput).toHaveValue(email, { timeout: 3000 });
+  await expect(pwInput).toHaveValue(TEST_PASSWORD, { timeout: 3000 });
+
+  // Submit
+  await page
+    .getByRole("button", { name: /^sign in$/i })
     .first()
     .click();
 
-  // Login page redirects via window.location after success; wait for the
-  // expected landing path. Generous timeout for cold starts + auth sync.
-  await page.waitForURL(`**${expectedLanding}**`, { timeout: 20000 });
+  // Login page redirects via window.location after success. Generous timeout
+  // for Turbopack cold-compile of the destination page, and waitUntil:
+  // domcontentloaded so we don't block on a slow 'load' event (network idle
+  // is also unreliable with Convex WebSocket and image loading).
+  await page.waitForURL(`**${expectedLanding}**`, {
+    timeout: 60000,
+    waitUntil: "domcontentloaded",
+  });
 }
 
 /**

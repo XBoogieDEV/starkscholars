@@ -7,6 +7,8 @@ import { signInAs } from "./utils";
 //   - Calls api.admin.auditOrphanedLetters (read-only, no actions)
 
 test.describe("Orphan letter audit (admin/settings)", () => {
+  test.describe.configure({ timeout: 120000 });
+
   test("admin can open audit and see summary cards", async ({ page }) => {
     try {
       await signInAs(page, "admin");

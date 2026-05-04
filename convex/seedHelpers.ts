@@ -2,6 +2,7 @@
 // Used by scripts/seed-test-users.mjs after better-auth creates the users.
 import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
+import { components } from "./_generated/api";
 
 const TEST_EMAIL_DOMAIN = "@scholars.test";
 
@@ -11,6 +12,31 @@ function assertTestEmail(email: string) {
       `seedHelpers: refusing to operate on non-test email "${email}". Only ${TEST_EMAIL_DOMAIN} addresses are allowed.`
     );
   }
+}
+
+// The role lives in two places: the main app's user table (used by Convex
+// queries like getCurrentUser) AND the better-auth component's user table
+// (returned by signIn.email() and used by the /login redirect logic). They
+// are NOT auto-synced. This helper updates both so login redirects land on
+// the right page.
+async function patchBothUserTables(ctx: any, email: string, patch: Record<string, unknown>) {
+  const user = await ctx.db
+    .query("user")
+    .withIndex("email", (q: any) => q.eq("email", email.toLowerCase()))
+    .first();
+  if (!user) throw new Error(`patchBothUserTables: user not found for ${email}`);
+  await ctx.db.patch(user._id, patch);
+
+  // Update better-auth component's user table via the adapter API
+  await ctx.runMutation(components.betterAuth.adapter.updateOne, {
+    input: {
+      model: "user",
+      where: [{ field: "email", operator: "eq", value: email.toLowerCase() }],
+      update: patch,
+    },
+  });
+
+  return user;
 }
 
 export const seedSetRole = internalMutation({
@@ -24,12 +50,7 @@ export const seedSetRole = internalMutation({
   },
   handler: async (ctx, { email, role }) => {
     assertTestEmail(email);
-    const user = await ctx.db
-      .query("user")
-      .withIndex("email", (q) => q.eq("email", email.toLowerCase()))
-      .first();
-    if (!user) throw new Error(`seedSetRole: user not found for ${email}`);
-    await ctx.db.patch(user._id, { role });
+    const user = await patchBothUserTables(ctx, email, { role });
     return user._id;
   },
 });
@@ -42,15 +63,14 @@ export const seedSetChair = internalMutation({
   },
   handler: async (ctx, { email, isChairman, title }) => {
     assertTestEmail(email);
+    // Promote to committee in BOTH user tables if not already admin
     const user = await ctx.db
       .query("user")
       .withIndex("email", (q) => q.eq("email", email.toLowerCase()))
       .first();
     if (!user) throw new Error(`seedSetChair: user not found for ${email}`);
-
-    // Promote to committee if not already
     if (user.role !== "committee" && user.role !== "admin") {
-      await ctx.db.patch(user._id, { role: "committee" });
+      await patchBothUserTables(ctx, email, { role: "committee" });
     }
 
     // Upsert committeeMembers row

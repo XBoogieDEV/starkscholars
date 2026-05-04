@@ -6,6 +6,7 @@ import { signInAs } from "./utils";
 // This is a NEW behavior introduced in PR #1.
 
 test.describe("Chair finalization rights (NEW in PR #1)", () => {
+  test.describe.configure({ timeout: 120000 });
   test("chair sees Selection panel + Chair Access badge", async ({ page }) => {
     try {
       await signInAs(page, "chair");
