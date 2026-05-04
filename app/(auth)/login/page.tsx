@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, AlertCircle } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
@@ -78,7 +78,10 @@ function LoginForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Sign In</CardTitle>
+        {/* Use a real heading element so screen readers + getByRole("heading")
+            selectors find it. The shadcn CardTitle is a div and would skip
+            both. Same styling preserved. */}
+        <h2 className="leading-none font-semibold">Sign In</h2>
         <CardDescription>
           Enter your email and password to access your application
         </CardDescription>
