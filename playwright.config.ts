@@ -7,6 +7,10 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
+  // Hit each route once before workers spin up so Turbopack doesn't serialize
+  // the cold-compile across 8 parallel workers (was causing flake on the
+  // authenticated committee/admin specs). Adds ~30s to suite startup.
+  globalSetup: require.resolve("./e2e/globalSetup.ts"),
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
     trace: "on-first-retry",
