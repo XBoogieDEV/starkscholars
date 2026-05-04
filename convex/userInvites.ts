@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query, mutation, internalMutation, internalQuery } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { generateSecureToken } from "./utils";
+import { setUserRoleByMainId } from "./userRole";
 
 // Admin auth helper (same pattern as committeeMembers.ts)
 async function requireAdmin(ctx: any) {
@@ -47,9 +48,11 @@ export const create = mutation({
       throw new Error(`A user with this email already has the ${args.role} role`);
     }
 
-    // If user exists with a different role, upgrade them immediately
+    // If user exists with a different role, upgrade them immediately —
+    // in BOTH user tables (main + Better Auth) so the post-login redirect
+    // routes them correctly on next sign-in.
     if (existingUser && existingUser.role !== args.role) {
-      await ctx.db.patch(existingUser._id, { role: args.role });
+      await setUserRoleByMainId(ctx, existingUser._id, normalizedEmail, args.role);
 
       // If committee role, auto-create committeeMembers record
       if (args.role === "committee") {

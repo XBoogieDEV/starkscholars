@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, query, mutation } from "./_generated/server";
 import { api } from "./_generated/api";
 import { logAction } from "./auditLog";
+import { patchBetterAuthRole } from "./userRole";
 
 
 // ... existing code ...
@@ -121,6 +122,15 @@ export const syncUser = internalMutation({
         status: "accepted",
         acceptedAt: Date.now(),
       });
+
+      // Sync the Better Auth component's user.role to match the invited role.
+      // Better Auth created the user with the default "applicant"; the main
+      // user table got the elevated role above. Without this dual-write, the
+      // /login form's redirect (which reads data.user.role from Better Auth)
+      // would misroute the new admin/committee user to /apply/dashboard.
+      if (assignedRole !== "applicant") {
+        await patchBetterAuthRole(ctx, normalizedEmail, assignedRole as "admin" | "committee");
+      }
 
       // If committee role, auto-create committeeMembers record
       if (pendingInvite.role === "committee") {

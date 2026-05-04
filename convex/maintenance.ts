@@ -1,5 +1,6 @@
-import { mutation } from "./_generated/server";
+import { mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { patchBetterAuthRole } from "./userRole";
 
 // Wipe all data from main app tables (includes auth tables in shared namespace)
 export const wipeAllData = mutation({
@@ -269,6 +270,59 @@ export const purgeTestData = mutation({
             success: true,
             preservedUsers: preservedUserIds.size,
             deletedCounts: results,
+        };
+    },
+});
+
+// One-shot backfill: copies the role from the main user table to the Better
+// Auth component's user table for every user whose role is not "applicant".
+// Idempotent — running it twice is a no-op once both tables are in sync.
+//
+// Run via:  npx convex run maintenance:syncAllRoles
+//
+// This is needed once on production because users promoted to admin/committee
+// before the dual-write fix landed still have stale role="applicant" on the
+// Better Auth side. Without backfill, the /login redirect misroutes those
+// existing users to /apply/dashboard.
+export const syncAllRoles = internalMutation({
+    args: {},
+    handler: async (ctx) => {
+        const users = await ctx.db.query("user").collect();
+        let synced = 0;
+        let skippedApplicant = 0;
+        let skippedNoEmail = 0;
+        const errors: { email: string; error: string }[] = [];
+
+        for (const user of users) {
+            if (!user.role || user.role === "applicant") {
+                skippedApplicant++;
+                continue;
+            }
+            if (!user.email) {
+                skippedNoEmail++;
+                continue;
+            }
+            try {
+                await patchBetterAuthRole(
+                    ctx,
+                    user.email,
+                    user.role as "admin" | "committee",
+                );
+                synced++;
+            } catch (e) {
+                errors.push({
+                    email: user.email,
+                    error: e instanceof Error ? e.message : String(e),
+                });
+            }
+        }
+
+        return {
+            totalUsers: users.length,
+            synced,
+            skippedApplicant,
+            skippedNoEmail,
+            errors,
         };
     },
 });
