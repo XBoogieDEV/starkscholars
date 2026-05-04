@@ -484,7 +484,18 @@ export const finalizeSelection = mutation({
       .query("user")
       .withIndex("email", (q) => q.eq("email", email))
       .first();
-    if (!user || user.role !== "admin") throw new Error("Unauthorized");
+    if (!user) throw new Error("Unauthorized");
+
+    // Admin OR committee chair may finalize
+    let canFinalize = user.role === "admin";
+    if (!canFinalize && user.role === "committee") {
+      const member = await ctx.db
+        .query("committeeMembers")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .first();
+      canFinalize = member?.isChairman === true;
+    }
+    if (!canFinalize) throw new Error("Unauthorized");
 
     // Get max recipients setting (default 2)
     const maxSetting = await ctx.db
@@ -531,6 +542,150 @@ export const finalizeSelection = mutation({
     }
 
     return { selectedCount: selectedIds.length, notSelectedCount };
+  },
+});
+
+// ============================================
+// ORPHANED RECOMMENDATION LETTER AUDIT
+// ============================================
+// Read-only diagnostic. Reports rows where storage/state appears inconsistent
+// so an admin can decide whether to remediate manually. Does NOT take action.
+//
+// Note: Convex storage has no list API, so storage-side orphans (blobs with
+// no row referencing them) cannot be detected directly. We surface what we can:
+//   - rec rows with letterFileId set but status != "submitted" (upload landed,
+//     state didn't advance — most common after the recommender-submit bug)
+//   - rec rows with status === "submitted" but no letterFileId (data integrity)
+//   - applications stuck at pending_recommendations with current rec counts
+export const auditOrphanedLetters = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+    const email = identity.email;
+    if (!email) throw new Error("Email not available");
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+    if (!user || user.role !== "admin") throw new Error("Unauthorized");
+
+    const allRecs = await ctx.db.query("recommendations").collect();
+
+    // Resolve applicant context for each rec by application ID lookup
+    const appCache = new Map<string, any>();
+    const getApp = async (id: any) => {
+      const key = id.toString();
+      if (appCache.has(key)) return appCache.get(key);
+      const app = await ctx.db.get(id);
+      appCache.set(key, app);
+      return app;
+    };
+
+    type RecReport = {
+      recommendationId: string;
+      applicationId: string;
+      applicantName: string;
+      applicationStatus: string;
+      recommenderEmail: string;
+      recommenderName?: string;
+      recStatus: string;
+      letterFileId?: string;
+      submittedAt?: number;
+      tokenExpiresAt: number;
+      tokenExpired: boolean;
+      issue: string;
+    };
+
+    const orphanedUploads: RecReport[] = [];
+    const submittedNoFile: RecReport[] = [];
+
+    for (const rec of allRecs) {
+      const app = await getApp(rec.applicationId);
+      const applicantName = app
+        ? `${app.firstName ?? ""} ${app.lastName ?? ""}`.trim() || "(no name)"
+        : "(application missing)";
+      const base = {
+        recommendationId: rec._id.toString(),
+        applicationId: rec.applicationId.toString(),
+        applicantName,
+        applicationStatus: app?.status ?? "(unknown)",
+        recommenderEmail: rec.recommenderEmail,
+        recommenderName: rec.recommenderName,
+        recStatus: rec.status,
+        letterFileId: rec.letterFileId?.toString(),
+        submittedAt: rec.submittedAt,
+        tokenExpiresAt: rec.tokenExpiresAt,
+        tokenExpired: rec.tokenExpiresAt < Date.now(),
+      };
+
+      if (rec.letterFileId && rec.status !== "submitted") {
+        orphanedUploads.push({
+          ...base,
+          issue: "letterFileId set but status != submitted (likely uploaded, state failed to advance)",
+        });
+      }
+      if (rec.status === "submitted" && !rec.letterFileId) {
+        submittedNoFile.push({
+          ...base,
+          issue: "status submitted but no letterFileId (possible data integrity issue)",
+        });
+      }
+    }
+
+    // Stuck applications: pending_recommendations status with rec counts
+    const pendingApps = await ctx.db
+      .query("applications")
+      .withIndex("by_status", (q) => q.eq("status", "pending_recommendations"))
+      .collect();
+
+    type PendingAppReport = {
+      applicationId: string;
+      applicantName: string;
+      submittedRecs: number;
+      totalRecs: number;
+      uploadedNotSubmitted: number;
+      stuckRecommenders: { email: string; status: string; tokenExpired: boolean }[];
+    };
+
+    const stuckApplications: PendingAppReport[] = [];
+    for (const app of pendingApps) {
+      const recs = allRecs.filter((r) => r.applicationId === app._id);
+      const submittedRecs = recs.filter((r) => r.status === "submitted").length;
+      const uploadedNotSubmitted = recs.filter(
+        (r) => r.letterFileId && r.status !== "submitted"
+      ).length;
+      const stuck = recs
+        .filter((r) => r.status !== "submitted")
+        .map((r) => ({
+          email: r.recommenderEmail,
+          status: r.status,
+          tokenExpired: r.tokenExpiresAt < Date.now(),
+        }));
+      stuckApplications.push({
+        applicationId: app._id.toString(),
+        applicantName: `${app.firstName ?? ""} ${app.lastName ?? ""}`.trim() || "(no name)",
+        submittedRecs,
+        totalRecs: recs.length,
+        uploadedNotSubmitted,
+        stuckRecommenders: stuck,
+      });
+    }
+
+    return {
+      summary: {
+        totalRecommendations: allRecs.length,
+        orphanedUploads: orphanedUploads.length,
+        submittedNoFile: submittedNoFile.length,
+        applicationsStuckPending: stuckApplications.length,
+      },
+      orphanedUploads,
+      submittedNoFile,
+      stuckApplications,
+      auditedAt: Date.now(),
+      note:
+        "Convex storage has no list API; storage blobs with no recommendations row referencing them cannot be detected here. To find truly orphan blobs, an export-and-compare script would be needed.",
+    };
   },
 });
 

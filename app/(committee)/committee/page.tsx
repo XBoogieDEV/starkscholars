@@ -33,10 +33,10 @@ export default function CommitteeDashboardPage() {
     .filter((c) => !c.myEvaluation)
     .slice(0, 4);
 
-  // Get top candidates (already evaluated, sorted by average)
+  // Get top candidates by average rating (only those with at least one evaluation)
   const topCandidates = candidates
     .filter((c) => c.evaluationCount > 0)
-    .sort((a, b) => (b.evaluationCount || 0) - (a.evaluationCount || 0))
+    .sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0))
     .slice(0, 3);
 
   return (
@@ -239,11 +239,12 @@ export default function CommitteeDashboardPage() {
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-sm text-muted-foreground">
-                          {candidate.evaluationCount} evaluations
+                        <p className="text-sm font-medium text-foreground">
+                          <Star className="inline h-3 w-3 text-primary/80 fill-primary/80 mr-1" />
+                          {candidate.averageRating?.toFixed(2) || "0.00"} avg
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          GPA: {candidate.gpa?.toFixed(2) || "N/A"}
+                        <p className="text-xs text-muted-foreground">
+                          {candidate.evaluationCount} eval{candidate.evaluationCount === 1 ? "" : "s"} • GPA {candidate.gpa?.toFixed(2) || "N/A"}
                         </p>
                       </div>
                       <Link href={`/committee/candidates/${candidate._id}`}>

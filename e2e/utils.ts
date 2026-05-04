@@ -125,6 +125,86 @@ export async function waitForAuthRedirect(page: Page, timeout = 15000) {
 }
 
 /**
+ * Test fixtures created by scripts/seed-test-users.mjs.
+ * All share the same password.
+ */
+export const TEST_USERS = {
+  admin: { email: "test-admin@scholars.test", expectedLanding: "/admin" },
+  committee: { email: "test-committee@scholars.test", expectedLanding: "/committee" },
+  chair: { email: "test-chair@scholars.test", expectedLanding: "/committee" },
+  applicant: { email: "test-applicant@scholars.test", expectedLanding: "/apply" },
+} as const;
+
+export const TEST_PASSWORD = "TestPass-2026";
+
+/**
+ * Signs in via the /login form. Waits for the post-login redirect to land on
+ * `expectedLanding` (or any path containing it). Throws if the form errors out.
+ */
+export async function signInAs(
+  page: Page,
+  who: keyof typeof TEST_USERS,
+): Promise<void> {
+  const { email, expectedLanding } = TEST_USERS[who];
+
+  await page.goto("/login", { waitUntil: "domcontentloaded" });
+
+  // Dismiss the cookie banner if present — it can intercept interactions
+  await page
+    .getByRole("button", { name: /^accept$/i })
+    .first()
+    .click({ timeout: 3000 })
+    .catch(() => {});
+
+  // Wait for inputs to be attached AND interactive (React hydrated)
+  const emailInput = page.locator("#email").first();
+  const pwInput = page.locator("#password").first();
+  await emailInput.waitFor({ state: "visible", timeout: 15000 });
+  await pwInput.waitFor({ state: "visible", timeout: 5000 });
+
+  // Use pressSequentially (simulates real keystrokes — React's onChange picks
+  // up each char). plain fill() can race with React hydration.
+  await emailInput.click();
+  await emailInput.pressSequentially(email, { delay: 10 });
+  await pwInput.click();
+  await pwInput.pressSequentially(TEST_PASSWORD, { delay: 10 });
+
+  // Verify the values are actually in the DOM before submitting
+  await expect(emailInput).toHaveValue(email, { timeout: 3000 });
+  await expect(pwInput).toHaveValue(TEST_PASSWORD, { timeout: 3000 });
+
+  // Submit
+  await page
+    .getByRole("button", { name: /^sign in$/i })
+    .first()
+    .click();
+
+  // Login page redirects via window.location after success. Generous timeout
+  // for Turbopack cold-compile of the destination page, and waitUntil:
+  // domcontentloaded so we don't block on a slow 'load' event (network idle
+  // is also unreliable with Convex WebSocket and image loading).
+  await page.waitForURL(`**${expectedLanding}**`, {
+    timeout: 60000,
+    waitUntil: "domcontentloaded",
+  });
+}
+
+/**
+ * Skip-if-not-seeded marker. Authenticated specs check that the test users
+ * exist by attempting a quick login as the admin fixture; if it fails, the
+ * suite is skipped instead of failing.
+ */
+export async function ensureSeededOrSkip(page: Page, testInfo: { skip: (reason?: string) => void }) {
+  try {
+    await signInAs(page, "admin");
+  } catch (e) {
+    testInfo.skip(
+      `Test users not seeded. Run \`node scripts/seed-test-users.mjs\` first. (${e instanceof Error ? e.message : String(e)})`
+    );
+  }
+}
+
+/**
  * Scroll a section into view and assert it is visible
  * Useful for Framer Motion whileInView animations
  */

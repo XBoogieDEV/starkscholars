@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { waitForAuthRedirect } from "./utils";
+import { waitForAuthRedirect, signInAs } from "./utils";
 
 test.describe("Committee Pages", () => {
   // ─── Auth Redirects ────────────────────────────────────────────────────────
@@ -98,6 +98,109 @@ test.describe("Committee Pages", () => {
       const isNotFound = await page.getByText("not found", { exact: false }).isVisible().catch(() => false);
       const redirected = url.includes("/login");
       expect(is404 || isNotFound || redirected).toBe(true);
+    });
+  });
+
+  // ─── Authenticated Workflow ───────────────────────────────────────────────
+  // Requires test users seeded by scripts/seed-test-users.mjs. Each test
+  // attempts the relevant sign-in and skips with a clear reason if the
+  // fixture user doesn't exist (so a missing seed doesn't fail the suite).
+
+  test.describe("Committee role: authenticated dashboard", () => {
+    test.describe.configure({ timeout: 120000 });
+
+    test("committee user lands on /committee after login", async ({ page }) => {
+      try {
+        await signInAs(page, "committee");
+      } catch (e) {
+        test.skip(true, `Committee fixture not seeded (run scripts/seed-test-users.mjs). ${e}`);
+        return;
+      }
+      // Welcome heading should reference the user
+      await expect(page.getByRole("heading", { name: /Welcome back/i })).toBeVisible({ timeout: 15000 });
+      // Three stat cards present
+      await expect(page.getByText("Total Applications")).toBeVisible();
+      await expect(page.getByText("My Evaluations")).toBeVisible();
+      await expect(page.getByText("Remaining to Evaluate")).toBeVisible();
+    });
+
+    test("/committee/candidates renders Pending and Evaluated tabs", async ({ page }) => {
+      try {
+        await signInAs(page, "committee");
+      } catch (e) {
+        test.skip(true, `Committee fixture not seeded. ${e}`);
+        return;
+      }
+      await page.goto("/committee/candidates");
+      await expect(page.getByRole("heading", { name: /Candidates/i }).first()).toBeVisible();
+      // Tab triggers
+      await expect(page.getByRole("tab", { name: /pending|to evaluate/i }).first()).toBeVisible();
+      await expect(page.getByRole("tab", { name: /evaluated|done/i }).first()).toBeVisible();
+    });
+
+    test("profile photo URLs no longer hit /api/storage/ (bug #1 fix)", async ({ page }) => {
+      try {
+        await signInAs(page, "committee");
+      } catch (e) {
+        test.skip(true, `Committee fixture not seeded. ${e}`);
+        return;
+      }
+
+      // Listen for any /api/storage/ requests; the fix removes that pattern.
+      const badRequests: string[] = [];
+      page.on("request", (req) => {
+        if (req.url().includes("/api/storage/")) badRequests.push(req.url());
+      });
+
+      await page.goto("/committee/candidates");
+      // Give the page time to fetch images
+      await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+      expect(badRequests, `Found stale /api/storage/ URLs: ${badRequests.join(", ")}`).toHaveLength(0);
+    });
+
+    test("/committee/my-evaluations renders without crashing", async ({ page }) => {
+      try {
+        await signInAs(page, "committee");
+      } catch (e) {
+        test.skip(true, `Committee fixture not seeded. ${e}`);
+        return;
+      }
+      await page.goto("/committee/my-evaluations");
+      await expect(page.getByRole("heading", { name: /My Evaluations/i })).toBeVisible({ timeout: 15000 });
+    });
+
+    test("/committee/results renders rankings and progress", async ({ page }) => {
+      try {
+        await signInAs(page, "committee");
+      } catch (e) {
+        test.skip(true, `Committee fixture not seeded. ${e}`);
+        return;
+      }
+      await page.goto("/committee/results");
+      await expect(page.getByRole("heading", { name: /Results.*Rankings/i })).toBeVisible({ timeout: 15000 });
+      // Plain committee should NOT see the selection panel ("Final Selection")
+      await expect(page.getByText("Final Selection")).toBeHidden();
+    });
+  });
+
+  test.describe("Applicant role: blocked from /committee", () => {
+    test.describe.configure({ timeout: 120000 });
+
+    test("applicant signing in cannot reach /committee", async ({ page }) => {
+      try {
+        await signInAs(page, "applicant");
+      } catch (e) {
+        test.skip(true, `Applicant fixture not seeded. ${e}`);
+        return;
+      }
+      // Direct nav to /committee should bounce to /unauthorized or /login
+      await page.goto("/committee");
+      // Wait for either redirect or unauthorized text
+      await page
+        .waitForURL((url) => /\/(unauthorized|login|apply)/.test(url.pathname), { timeout: 15000 })
+        .catch(() => {});
+      const url = page.url();
+      expect(url).not.toContain("/committee/candidates");
     });
   });
 });

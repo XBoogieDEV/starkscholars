@@ -18,7 +18,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
-  Award, Users, Star, CheckCircle2, Trophy, Loader2, Send,
+  Award, Users, Star, CheckCircle2, Trophy, Loader2, Send, Plus, Minus,
 } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -32,8 +32,25 @@ export default function SelectionPage() {
 
   const finalizeSelection = useMutation(api.admin.finalizeSelection);
   const sendNotification = useAction(api.emails.sendSelectionNotification);
+  const setSetting = useMutation(api.settings.set);
 
   const maxRecipients = maxRecipientsSetting?.value ? parseInt(maxRecipientsSetting.value) : 2;
+
+  const adjustMaxRecipients = async (delta: number) => {
+    const next = Math.max(1, Math.min(20, maxRecipients + delta));
+    if (next === maxRecipients) return;
+    try {
+      await setSetting({ key: "max_scholarship_recipients", value: String(next) });
+      // Drop selected candidates that exceed the new limit
+      if (selectedIds.size > next) {
+        const ids = Array.from(selectedIds).slice(0, next);
+        setSelectedIds(new Set(ids));
+      }
+      toast.success(`Max recipients set to ${next}`);
+    } catch (e) {
+      toast.error("Failed to update setting");
+    }
+  };
 
   const toggleRecipient = (id: string) => {
     const newSelected = new Set(selectedIds);
@@ -136,7 +153,29 @@ export default function SelectionPage() {
                 <p className="text-sm text-muted-foreground">Selected</p>
                 <p className="text-2xl font-bold">{selectedIds.size} / {maxRecipients}</p>
               </div>
-              <Award className="h-5 w-5 text-muted-foreground" />
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => adjustMaxRecipients(-1)}
+                  disabled={isFinalized || maxRecipients <= 1}
+                  aria-label="Decrease award count"
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                <Award className="h-5 w-5 text-muted-foreground" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => adjustMaxRecipients(1)}
+                  disabled={isFinalized || maxRecipients >= 20}
+                  aria-label="Increase award count"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

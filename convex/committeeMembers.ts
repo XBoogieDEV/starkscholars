@@ -15,6 +15,38 @@ async function requireAdmin(ctx: any) {
   return user;
 }
 
+// Lightweight self-lookup: returns { isChairman } for the current user, or null
+// if they are not on the committee. Used to gate finalize-selection UI for chairs.
+export const getMyMembership = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const email = identity.email;
+    if (!email) return null;
+
+    const user = await ctx.db
+      .query("user")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+    if (!user) return null;
+
+    const member = await ctx.db
+      .query("committeeMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    if (!member) return null;
+    return {
+      _id: member._id,
+      name: member.name,
+      title: member.title,
+      isChairman: member.isChairman,
+      isExOfficio: member.isExOfficio,
+    };
+  },
+});
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
